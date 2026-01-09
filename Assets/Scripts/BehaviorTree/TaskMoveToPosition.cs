@@ -8,6 +8,9 @@ namespace BehaviorTree
         private float _speed = 5.0f;
         // 到达判定的误差范围
         private float _stoppingDistance = 0.1f;
+        // --- 新增：带球参数 ---
+        // 球在脚下的偏移量 (圆柱体前方 0.5米)
+        private float _dribbleOffset = 0f;
 
         public TaskMoveToPosition(FootballBlackboard blackboard) : base(blackboard)
         {
@@ -42,20 +45,37 @@ namespace BehaviorTree
             );
             //
             // // 面朝移动方向（为了让圆柱体看起来自然点）
-            // if (targetPos != owner.transform.position)
-            // {
-            //     Vector3 direction = (targetPos - owner.transform.position).normalized;
-            //     // 简单的朝向处理，忽略 Y 轴防止圆柱体歪倒
-            //     direction.y = 0; 
-            //     if (direction != Vector3.zero)
-            //     {
-            //         owner.transform.forward = direction;
-            //     }
-            // }
+            if (targetPos != owner.transform.position)
+            {
+                Vector3 direction = (targetPos - owner.transform.position).normalized;
+                // 简单的朝向处理，忽略 Y 轴防止圆柱体歪倒
+                direction.y = 0; 
+                if (direction != Vector3.zero)
+                {
+                    owner.transform.forward = direction;
+                }
+            }
             owner.transform.position = newPos;
+            // 2. --- 新增：带球逻辑 (Dribble Logic) ---
+            DribbleBall(owner);
             // 5. 还在路上，返回 RUNNING
             NodeState = NodeState.RUNNING;
             return NodeState;
+        }
+        
+        // 核心辅助方法：如果是持球人，就更新球的位置
+        private void DribbleBall(GameObject owner)
+        {
+            // 检查：我是持球人吗？
+            // 注意：这里必须用 Blackboard 里的 BallHolder 判断，因为 MatchManager 是权威
+            if (Blackboard.BallHolder == owner && Blackboard.Ball != null)
+            {
+                // 计算球的理想位置：玩家正前方 + 偏移量
+                Vector3 ballPos = owner.transform.position + owner.transform.forward * _dribbleOffset;
+                ballPos.y = 0f; 
+
+                Blackboard.Ball.transform.position = ballPos;
+            }
         }
     }
 }

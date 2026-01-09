@@ -9,6 +9,9 @@ public class MatchManager : MonoBehaviour
 
     [Header("Scene References")]
     public GameObject Ball;
+    // --- 新增：球门引用 ---
+    public Transform RedGoal;  // 红方防守的球门（蓝方攻击目标）
+    public Transform BlueGoal; // 蓝方防守的球门（红方攻击目标）
     
     // 在 Inspector 中把红队和蓝队的圆柱体分别拖进去
     public List<GameObject> TeamRedPlayers = new List<GameObject>();
@@ -81,16 +84,18 @@ public class MatchManager : MonoBehaviour
     private void SyncAllBlackboards()
     {
         // 为红队同步 (队友是红队，敌人是蓝队)
-        SyncTeamData(TeamRedPlayers, TeamRedPlayers, TeamBluePlayers);
+        SyncTeamData(TeamRedPlayers, TeamRedPlayers, TeamBluePlayers, BlueGoal.position);
 
         // 为蓝队同步 (队友是蓝队，敌人是红队)
-        SyncTeamData(TeamBluePlayers, TeamBluePlayers, TeamRedPlayers);
+        SyncTeamData(TeamBluePlayers, TeamBluePlayers, TeamRedPlayers, RedGoal.position);
     }
 
     /// <summary>
     /// 通用同步方法
     /// </summary>
-    private void SyncTeamData(List<GameObject> playersToSync, List<GameObject> allies, List<GameObject> enemies)
+    private void SyncTeamData(List<GameObject> playersToSync,
+        List<GameObject> allies, List<GameObject> enemies,
+        Vector3 enemyGoalPos)
     {
         foreach (var playerObj in playersToSync)
         {
@@ -109,7 +114,8 @@ public class MatchManager : MonoBehaviour
                 bb.BallHolder = CurrentBallHolder; // 告诉他现在球在谁脚下
                 bb.Teammates = allies;             // 告诉他谁是队友
                 bb.Opponents = enemies;            // 告诉他谁是敌人
-                
+
+                bb.EnemyGoalPosition = enemyGoalPos;
                 // 计算一些常用的个人数据，免得他在节点里重复算
                 // bb.DistanceToBall = Vector3.Distance(playerObj.transform.position, Ball.transform.position);
             }

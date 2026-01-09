@@ -20,8 +20,6 @@ public class PlayerAI : MonoBehaviour
         _tree = new BehaviorTree.BehaviorTree(_blackboard);
 
         // 3. 构建行为树结构 (这里是关键的引用传递！)
-        // 注意：我们在创建 Node 时，把 _blackboard 传进去
-        Node root = BuildTree(_blackboard); 
         _tree.SetRoot(BuildOffensiveTree());
     }
 
@@ -38,14 +36,31 @@ public class PlayerAI : MonoBehaviour
         // ---------------------------------------------
         Node checkHasBall = new CheckHasBallNode(_blackboard);
         
-        // 目前我们没写复杂的带球/射门逻辑。
-        // 所以，如果有球，我们简单地让他停在原地 (或者你可以让他慢速盘带)
-        // 这里为了简单，如果 checkHasBall 成功，Sequence 就会结束并返回 Success。
-        // 这意味着：持球人会站着不动。
+        // 1. 思考节点：评估我是传还是带？
+        // 这个节点总是返回 SUCCESS，因为它只是计算并更新黑板
+        Node evaluateOptions = new TaskEvaluateOffensiveOptions(_blackboard);
+
+        // 2. 传球分支
+        // 条件：黑板里有传球目标吗？
+        Node checkPassTarget = new SimpleCondition(_blackboard, bb => bb.BestPassTarget != null);
+        Node passAction = new TaskPassBall(_blackboard);
+        SequenceNode passSequence = new SequenceNode(_blackboard, new List<Node> { checkPassTarget, passAction });
+
+        // 3. 盘带分支 (兜底)
+        // 条件：黑板里有移动目标吗？
+        Node checkDribbleTarget = new SimpleCondition(_blackboard, bb => bb.MoveTarget != Vector3.zero);
+        Node dribbleAction = new TaskMoveToPosition(_blackboard); // 复用之前的移动节点！
+        SequenceNode dribbleSequence = new SequenceNode(_blackboard, new List<Node> { checkDribbleTarget, dribbleAction });
+
+        // 4. 行动选择器：优先传球，不行就盘带
+        SelectorNode actionSelector = new SelectorNode(_blackboard, new List<Node> { passSequence, dribbleSequence });
+
+        // 5. 总序列：先思考，再行动
         SequenceNode hasBallSequence = new SequenceNode(_blackboard, new List<Node> 
         { 
-            checkHasBall 
-            // 可以在这里加一个 TaskStop(_blackboard) 
+            checkHasBall, // 确认有球
+            evaluateOptions,                   // 脑子：想
+            actionSelector                     // 身体：动
         });
 
 
@@ -80,15 +95,26 @@ public class PlayerAI : MonoBehaviour
     // 调试用：在 Scene 窗口画出他想去哪
     void OnDrawGizmos()
     {
-        if (_blackboard != null && _blackboard.MoveTarget != Vector3.zero)
+        if (_blackboard != null)
         {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(transform.position, _blackboard.MoveTarget);
-            Gizmos.DrawWireSphere(_blackboard.MoveTarget, 0.5f);
+            // 画出移动目标
+            if (_blackboard.MoveTarget != Vector3.zero)
+            {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawLine(transform.position, _blackboard.MoveTarget);
+                Gizmos.DrawWireSphere(_blackboard.MoveTarget, 0.3f);
+            }
+            // 画出传球目标连线
+            if (_blackboard.BestPassTarget != null)
+            {
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(transform.position, _blackboard.BestPassTarget.transform.position);
+                Gizmos.DrawIcon(transform.position + Vector3.up * 2, "Pass");
+            }
         }
     }
     // 这是一个工厂方法，负责组装具体的逻辑
-    private Node BuildTree(FootballBlackboard bb)
+    private Node BuildTestTree(FootballBlackboard bb)
     {
         // // 比如：创建 "持球判断" 节点，传入 bb
         // Node checkBall = new CheckHasBallNode(bb);

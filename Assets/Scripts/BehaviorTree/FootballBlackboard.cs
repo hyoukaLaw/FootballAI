@@ -15,5 +15,10 @@ namespace BehaviorTree
         // --- 2. 个人决策数据 (每个球员独有的状态) ---
         public Vector3 MoveTarget; // 当前准备跑向的目标点
         public GameObject PassTarget;      // 评估后选出的最佳传球目标
+        
+        // --- 新增：进攻决策数据 ---
+        public Vector3 EnemyGoalPosition; // 对方球门位置 (由 MatchManager 设置)
+        public GameObject BestPassTarget; // 计算出的最佳接球人
+        public bool CanShoot;             // 是否满足射门条件
     }
 }
