@@ -52,7 +52,7 @@ namespace BehaviorTree
                 Vector3 testPos = centerPos + testDir * _idealDistance;
 
                 // 5. 核心判断：这个点安全吗？(传球路线上有敌人吗？)
-                if (IsPassRouteSafe(centerPos, testPos))
+                if (FootballUtils.IsPassRouteSafe(centerPos, testPos, Blackboard.Opponents))
                 {
                     bestSpot = testPos;
                     foundSpot = true;
@@ -79,45 +79,6 @@ namespace BehaviorTree
                 return NodeState.SUCCESS; // 这种情况下通常返回 SUCCESS 让他至少动起来
             }
         }
-
-        // --- 辅助逻辑：简单的射线/几何检测 ---
-        private bool IsPassRouteSafe(Vector3 from, Vector3 to)
-        {
-            // 遍历黑板里的敌人列表
-            if (Blackboard.Opponents == null) return true;
-            // 简单的“管道检测”：
-            // 如果任何一个敌人距离“传球线段”太近，就认为是不安全的
-            foreach (var enemy in Blackboard.Opponents)
-            {
-                if (enemy == null) continue;
-                
-                // 计算点到线段的距离 (这是几何数学，网上有很多现成公式)
-                float distToLine = DistancePointToLineSegment(from, to, enemy.transform.position);
-                
-                // 如果敌人距离传球路线小于 1.5米，认为会被拦截
-                if (distToLine < 1.5f)
-                {
-                    return false; // 不安全
-                }
-            }
-            return true; // 安全
-        }
-
-        // 数学工具：计算点 P 到线段 AB 的最短距离
-        private float DistancePointToLineSegment(Vector3 a, Vector3 b, Vector3 p)
-        {
-            Vector3 ab = b - a;
-            Vector3 ap = p - a;
-            float magOfab2 = ab.sqrMagnitude;
-            if (magOfab2 == 0) return (p - a).magnitude;
-            float t = Vector3.Dot(ap, ab) / magOfab2;
-            // 限制 t 在线段范围内 [0, 1]
-            if (t < 0) 
-                return (p - a).magnitude;
-            else if (t > 1) 
-                return (p - b).magnitude;
-            Vector3 closestPoint = a + ab * t;
-            return (p - closestPoint).magnitude;
-        }
+        
     }
 }

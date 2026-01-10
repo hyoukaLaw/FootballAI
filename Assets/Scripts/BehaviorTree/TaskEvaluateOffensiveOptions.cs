@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace BehaviorTree
 {
@@ -8,6 +8,12 @@ namespace BehaviorTree
         private float _basePassScore = 50f;
         private float _forwardWeight = 2.0f; // 越靠前的队友分越高
         private float _distanceWeight = 1.0f; // 距离适中的队友分高
+
+        // 盘带配置
+        private float _dribbleDistance = 5.0f; // 盘带前进距离
+        private float _detectRange = 3.5f; // 前方检测距离
+        private float _detectAngle = 90f; // 检测角度（半角）
+        private float _sidestepDistance = 3.0f; // 侧移距离
 
         public TaskEvaluateOffensiveOptions(FootballBlackboard blackboard) : base(blackboard)
         {
@@ -51,14 +57,39 @@ namespace BehaviorTree
             }
 
             // --- 2. 评估盘带选项 (如果传球不好，计算向前带球点) ---
-            
-            // 简单逻辑：向球门方向计算一个 5米远 的点
-            Vector3 dribbleDirection = (goalPos - owner.transform.position).normalized;
-            Vector3 potentialDribblePos = owner.transform.position + dribbleDirection * 5.0f;
 
-            // 这里应该加一个射线检测：如果前方有人挡，就必须侧向盘带
-            // (为了简化，暂定前方无阻挡)
-            
+            Vector3 dribbleDirection = (goalPos - owner.transform.position).normalized;
+            dribbleDirection.y = 0;
+
+            // 检测前方扇形区域内是否有敌人
+            GameObject blockingEnemy = FindEnemyInFront(owner, dribbleDirection);
+
+            Vector3 potentialDribblePos;
+
+            if (blockingEnemy != null)
+            {
+                // 前方有阻挡，侧向移动绕过
+                Vector3 sidestepDir = Vector3.Cross(Vector3.up, dribbleDirection);
+
+                // 判断往左还是往右移：选择离球门更近的方向
+                Vector3 leftPos = owner.transform.position + sidestepDir * _sidestepDistance;
+                Vector3 rightPos = owner.transform.position - sidestepDir * _sidestepDistance;
+                float leftDistToGoal = Vector3.Distance(leftPos, goalPos);
+                float rightDistToGoal = Vector3.Distance(rightPos, goalPos);
+
+                Vector3 sidestepPos = leftDistToGoal < rightDistToGoal ? leftPos : rightPos;
+                potentialDribblePos = sidestepPos + dribbleDirection * _dribbleDistance;
+
+                Debug.DrawLine(owner.transform.position, potentialDribblePos, Color.yellow, 1.0f);
+                Debug.Log($"前方阻挡，侧向盘带: {blockingEnemy.name}");
+            }
+            else
+            {
+                // 前方无阻挡，直接带球
+                potentialDribblePos = owner.transform.position + dribbleDirection * _dribbleDistance;
+                Debug.DrawLine(owner.transform.position, potentialDribblePos, Color.green, 1.0f);
+            }
+
             Blackboard.MoveTarget = potentialDribblePos;
             Blackboard.BestPassTarget = null; // 明确表示不传球
 
@@ -101,7 +132,34 @@ namespace BehaviorTree
             // 这里复用你之前在 SupportSpot 里写的射线检测逻辑
             // 遍历 Blackboard.Opponents 检测是否在路径上
             // 为节省篇幅，这里假设总是安全的，实际你需要把之前的 IsPassRouteSafe 提炼成工具方法
-            return true; 
+            return FootballUtils.IsPassRouteSafe(start, end, Blackboard.Opponents);
+            return true;
+        }
+
+        private GameObject FindEnemyInFront(GameObject owner, Vector3 forwardDir)
+        {
+            if (Blackboard.Opponents == null) return null;
+
+            foreach (var enemy in Blackboard.Opponents)
+            {
+                if (enemy == null) continue;
+
+                Vector3 toEnemy = enemy.transform.position - owner.transform.position;
+                toEnemy.y = 0;
+                float distance = toEnemy.magnitude;
+
+                // 检查距离和角度
+                if (distance <= _detectRange)
+                {
+                    float angle = Vector3.Angle(forwardDir, toEnemy.normalized);
+                    if (angle <= _detectAngle)
+                    {
+                        return enemy;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }
