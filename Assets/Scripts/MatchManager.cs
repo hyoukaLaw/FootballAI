@@ -19,7 +19,11 @@ public class MatchManager : MonoBehaviour
 
     [Header("Game Settings")]
     // 距离球多少米以内算"持球"
-    public float PossessionThreshold = 0.8f; 
+    public float PossessionThreshold = 0.8f;
+
+    [Header("进球检测")]
+    public float GoalDistance = 1.0f; // 球门判定距离
+    public bool GamePaused = false; // 游戏是否暂停
 
     [Header("Debug Info (Read Only)")]
     // 当前持球者 (如果没有人持球则为 null)
@@ -39,13 +43,21 @@ public class MatchManager : MonoBehaviour
 
     private void Update()
     {
+        if (GamePaused)
+        {
+            return; // 游戏暂停，不执行任何逻辑
+        }
+
         // 1. 计算物理状态 (谁拿着球？)
         UpdatePossessionState();
 
         // 2. 清理过期的传球状态
         UpdatePassTargetState();
 
-        // 3. 同步数据 (把计算结果塞给所有人的黑板)
+        // 3. 检测进球
+        CheckGoal();
+
+        // 4. 同步数据 (把计算结果塞给所有人的黑板)
         SyncAllBlackboards();
     }
 
@@ -150,5 +162,69 @@ public class MatchManager : MonoBehaviour
                 // bb.DistanceToBall = Vector3.Distance(playerObj.transform.position, Ball.transform.position);
             }
         }
+    }
+
+    /// <summary>
+    /// 检测进球
+    /// 检查球是否到达任意球门位置
+    /// </summary>
+    private void CheckGoal()
+    {
+        if (Ball == null) return;
+
+        Vector3 ballPos = Ball.transform.position;
+
+        // 检测红方球门（蓝方进攻）
+        float distToRedGoal = Vector3.Distance(ballPos, RedGoal.position);
+        if (distToRedGoal < GoalDistance)
+        {
+            OnGoalScored("Blue"); // 蓝方进球
+            return;
+        }
+
+        // 检测蓝方球门（红方进攻）
+        float distToBlueGoal = Vector3.Distance(ballPos, BlueGoal.position);
+        if (distToBlueGoal < GoalDistance)
+        {
+            OnGoalScored("Red"); // 红方进球
+            return;
+        }
+    }
+
+    /// <summary>
+    /// 进球后的处理
+    /// 暂停所有AI逻辑
+    /// </summary>
+    private void OnGoalScored(string scoringTeam)
+    {
+        Debug.Log($"⚽ 进球！{scoringTeam} 队得分！");
+
+        // 暂停游戏
+        GamePaused = true;
+
+        // 可选：在这里重置球的位置、统计分数等
+        // ResetBall();
+    }
+
+    /// <summary>
+    /// 恢复游戏（供外部调用）
+    /// </summary>
+    public void ResumeGame()
+    {
+        Debug.Log("比赛继续！");
+        GamePaused = false;
+    }
+
+    /// <summary>
+    /// 重置球的位置（可选）
+    /// </summary>
+    private void ResetBall()
+    {
+        // 将球放回中心
+        Ball.transform.position = Vector3.zero;
+
+        // 重置球的速度
+        BallController ballCtrl = Ball.GetComponent<BallController>();
+        // 如果 BallController 有重置方法可以调用
     }
 }

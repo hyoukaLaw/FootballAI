@@ -15,6 +15,10 @@ namespace BehaviorTree
         private float _detectAngle = 90f; // 检测角度（半角）
         private float _sidestepDistance = 3.0f; // 侧移距离
 
+        // 射门配置
+        private float _shootDistance = 12f; // 射门距离
+        private float _shootAngleThreshold = 30f; // 射门角度阈值
+
         public TaskEvaluateOffensiveOptions(FootballBlackboard blackboard) : base(blackboard)
         {
         }
@@ -24,11 +28,22 @@ namespace BehaviorTree
             // 清理上一帧的数据
             Blackboard.BestPassTarget = null;
             Blackboard.MoveTarget = Vector3.zero;
+            Blackboard.CanShoot = false;
 
             GameObject owner = Blackboard.Owner;
             Vector3 goalPos = Blackboard.EnemyGoalPosition;
 
-            // --- 1. 评估传球选项 (寻找最佳队友) ---
+            // === 0. 评估射门条件 (最高优先级) ===
+            if (CanShoot(owner, goalPos))
+            {
+                Blackboard.CanShoot = true;
+                Blackboard.BestPassTarget = null; // 明确不传球
+                Blackboard.MoveTarget = Vector3.zero; // 明确不移动
+                Debug.Log($"{owner.name} 满足射门条件");
+                return NodeState.SUCCESS;
+            }
+
+            // === 1. 评估传球选项 (寻找最佳队友) ===
             GameObject bestMate = null;
             float highestScore = -1f;
 
@@ -37,7 +52,7 @@ namespace BehaviorTree
                 if (mate == owner) continue; // 排除自己
 
                 float score = CalculatePassScore(owner, mate, goalPos);
-                
+
                 if (score > highestScore)
                 {
                     highestScore = score;
@@ -52,11 +67,10 @@ namespace BehaviorTree
                 // 决策完成：建议传球
                 NodeState = NodeState.SUCCESS;
                 Debug.Log($"传球分 {highestScore}");
-                Debug.Log($"{owner.gameObject.name} forwardgain:>60 {owner.transform.position} {bestMate.transform.position} {goalPos}");
                 return NodeState;
             }
 
-            // --- 2. 评估盘带选项 (如果传球不好，计算向前带球点) ---
+            // === 2. 评估盘带选项 (如果传球不好，计算向前带球点) ===
 
             Vector3 dribbleDirection = (goalPos - owner.transform.position).normalized;
             dribbleDirection.y = 0;
@@ -98,7 +112,36 @@ namespace BehaviorTree
             return NodeState;
         }
 
-        // --- 辅助：给传球目标打分 ---
+        // === 辅助：判断是否可以射门 ===
+        private bool CanShoot(GameObject shooter, Vector3 goalPos)
+        {
+            // 1. 距离判断：必须在射门范围内
+            float distToGoal = Vector3.Distance(shooter.transform.position, goalPos);
+            if (distToGoal > _shootDistance)
+            {
+                return false;
+            }
+
+            // 2. 角度判断：必须大致面向球门
+            Vector3 toGoal = (goalPos - shooter.transform.position).normalized;
+            toGoal.y = 0;
+            float angle = Vector3.Angle(shooter.transform.forward, toGoal);
+
+            if (angle > _shootAngleThreshold)
+            {
+                return false;
+            }
+
+            // 3. 安全性判断：前方是否有阻挡
+            if (!IsPathClear(shooter.transform.position, goalPos))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        // === 辅助：给传球目标打分 ===
         private float CalculatePassScore(GameObject me, GameObject mate, Vector3 goal)
         {
             float score = _basePassScore;
@@ -109,14 +152,13 @@ namespace BehaviorTree
             if (distToMate > 10f) score -= 30f; // 太远
 
             // B. 进攻性评分：队友比我更接近球门吗？
-            // 计算 "球门距离差"
             float myDistToGoal = Vector3.Distance(me.transform.position, goal);
             float mateDistToGoal = Vector3.Distance(mate.transform.position, goal);
             float forwardGain = myDistToGoal - mateDistToGoal; // 正数表示队友更靠前
-            
+
             score += forwardGain * _forwardWeight;
 
-            // C. 安全性评分 (阻挡检测) - 复用之前的逻辑
+            // C. 安全性评分 (阻挡检测)
             if (!IsPathClear(me.transform.position, mate.transform.position))
             {
                 return -100f; // 被阻挡，直接废弃
@@ -125,15 +167,46 @@ namespace BehaviorTree
             return score;
         }
 
+        // === 辅助：检查路径是否安全 ===
         private bool IsPathClear(Vector3 start, Vector3 end)
         {
-            // 这里复用你之前在 SupportSpot 里写的射线检测逻辑
             // 遍历 Blackboard.Opponents 检测是否在路径上
-            // 为节省篇幅，这里假设总是安全的，实际你需要把之前的 IsPassRouteSafe 提炼成工具方法
-            return FootballUtils.IsPassRouteSafe(start, end, Blackboard.Opponents);
-            return true;
+            if (Blackboard.Opponents == null) return true;
+
+            foreach (var enemy in Blackboard.Opponents)
+            {
+                if (enemy == null) continue;
+
+                // 计算点到线段的距离
+                float distToLine = DistancePointToLineSegment(start, end, enemy.transform.position);
+
+                // 如果敌人距离传球路线小于 1.5米，认为会被阻挡
+                if (distToLine < 1.5f)
+                {
+                    return false; // 被阻挡
+                }
+            }
+
+            return true; // 安全
         }
 
+        // === 辅助：计算点到线段的距离 ===
+        private float DistancePointToLineSegment(Vector3 a, Vector3 b, Vector3 p)
+        {
+            Vector3 ab = b - a;
+            Vector3 ap = p - a;
+            float magOfab2 = ab.sqrMagnitude;
+            if (magOfab2 == 0) return (p - a).magnitude;
+            float t = Vector3.Dot(ap, ab) / magOfab2;
+            if (t < 0)
+                return (p - a).magnitude;
+            else if (t > 1)
+                return (p - b).magnitude;
+            Vector3 closestPoint = a + ab * t;
+            return (p - closestPoint).magnitude;
+        }
+
+        // === 辅助：查找前方阻挡的敌人 ===
         private GameObject FindEnemyInFront(GameObject owner, Vector3 forwardDir)
         {
             if (Blackboard.Opponents == null) return null;

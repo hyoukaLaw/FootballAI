@@ -16,7 +16,12 @@ public class PlayerStats
     public float PassingSpeed = 10f;
     [Range(0.5f, 1.0f)]
     public float PassingAccuracy = 0.9f;
-    
+
+    [Header("射门属性")]
+    public float ShootingPower = 20f;
+    [Range(0.3f, 1.0f)]
+    public float ShootingAccuracy = 0.7f;
+
     [Header("防守属性")]
     public float ReactionTime = 0.5f;
     public float DefensiveAwareness = 1.0f;
@@ -47,6 +52,8 @@ public class PlayerAI : MonoBehaviour
 
     void Update()
     {
+        if (MatchManager.Instance.GamePaused)
+            return;
         // 4. 每帧运行
         _tree.Tick();
     }
@@ -159,24 +166,34 @@ public class PlayerAI : MonoBehaviour
         // ---------------------------------------------
         Node checkHasBall = new CheckHasBallNode(_blackboard);
         
-        // 1. 思考节点：评估我是传还是带？
+        // 1. 思考节点：评估我是射门、传还是带？
         // 这个节点总是返回 SUCCESS，因为它只是计算并更新黑板
         Node evaluateOptions = new TaskEvaluateOffensiveOptions(_blackboard);
 
-        // 2. 传球分支
+        // 2. 射门分支 (最高优先级)
+        Node checkCanShoot = new SimpleCondition(_blackboard, bb => bb.CanShoot);
+        Node shootAction = new TaskShoot(_blackboard);
+        SequenceNode shootSequence = new SequenceNode(_blackboard, new List<Node> { checkCanShoot, shootAction });
+
+        // 3. 传球分支
         // 条件：黑板里有传球目标吗？
         Node checkPassTarget = new SimpleCondition(_blackboard, bb => bb.BestPassTarget != null);
         Node passAction = new TaskPassBall(_blackboard);
         SequenceNode passSequence = new SequenceNode(_blackboard, new List<Node> { checkPassTarget, passAction });
 
-        // 3. 盘带分支 (兜底)
+        // 4. 盘带分支 (兜底)
         // 条件：黑板里有移动目标吗？
         Node checkDribbleTarget = new SimpleCondition(_blackboard, bb => bb.MoveTarget != Vector3.zero);
         Node dribbleAction = new TaskMoveToPosition(_blackboard); // 复用之前的移动节点！
         SequenceNode dribbleSequence = new SequenceNode(_blackboard, new List<Node> { checkDribbleTarget, dribbleAction });
 
-        // 4. 行动选择器：优先传球，不行就盘带
-        SelectorNode actionSelector = new SelectorNode(_blackboard, new List<Node> { passSequence, dribbleSequence });
+        // 5. 行动选择器：优先射门 > 传球 > 盘带
+        SelectorNode actionSelector = new SelectorNode(_blackboard, new List<Node>
+        {
+            shootSequence,
+            passSequence,
+            dribbleSequence
+        });
 
         // 5. 总序列：先思考，再行动
         SequenceNode hasBallSequence = new SequenceNode(_blackboard, new List<Node> 
