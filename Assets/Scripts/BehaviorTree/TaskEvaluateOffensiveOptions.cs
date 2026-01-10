@@ -114,8 +114,6 @@ namespace BehaviorTree
             float mateDistToGoal = Vector3.Distance(mate.transform.position, goal);
             float forwardGain = myDistToGoal - mateDistToGoal; // 正数表示队友更靠前
             
-            
-            
             score += forwardGain * _forwardWeight;
 
             // C. 安全性评分 (阻挡检测) - 复用之前的逻辑

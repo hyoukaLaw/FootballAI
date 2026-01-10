@@ -54,6 +54,18 @@ public class PlayerAI : MonoBehaviour
     // === 新增：构建完整主树 ===
     private Node BuildMainTree()
     {
+        // === 最高优先级：我是传球目标 → 接球 ===
+        Node isPassTarget = new CheckIsPassTarget(_blackboard);
+        Node chaseBallForPass = new TaskChaseBall(_blackboard);
+        Node runToPass = new TaskMoveToPosition(_blackboard);
+        SequenceNode passReceiveSeq = new SequenceNode(_blackboard, new List<Node>
+        {
+            isPassTarget,
+            chaseBallForPass,
+            runToPass
+        });
+
+        // === 次要优先级：攻防逻辑 ===
         // 1. 构建 进攻子树 (你原来写的那个)
         Node offensiveTree = BuildOffensiveTree();
 
@@ -63,25 +75,27 @@ public class PlayerAI : MonoBehaviour
         // 3. 根选择器：决定是进攻还是防守
         // 逻辑：如果我们队拿球 -> 进攻；否则 -> 防守
         // 注意：这里需要一个条件节点来判断球权归属
-        
+
         Node isTeamInControl = new SimpleCondition(_blackboard, IsTeamControllingBall);
 
         // 如果条件满足(本队控球)，执行进攻树；否则执行防守树
         // 这种结构可以用 "If-Else" 风格的选择器，或者简单的 Selector 配合取反条件
         // 咱们用一个标准的 Selector 结构：
-        //   - 尝试执行“进攻分支” (前提是本队控球)
-        //   - 否则执行“防守分支”
-        
+        //   - 尝试执行"进攻分支" (前提是本队控球)
+        //   - 否则执行"防守分支"
+
         SequenceNode offensiveBranch = new SequenceNode(_blackboard, new List<Node>
         {
             isTeamInControl,
             offensiveTree
         });
 
+        // === 根节点：接球 > 进攻 > 防守 ===
         SelectorNode root = new SelectorNode(_blackboard, new List<Node>
         {
-            offensiveBranch, // 优先看是不是该进攻
-            defensiveTree    // 不是进攻就是防守 (也包含了无球争抢)
+            passReceiveSeq,      // 最高：我是传球目标
+            offensiveBranch,     // 次要：本队控球→进攻
+            defensiveTree        // 最后：防守
         });
 
         return root;
@@ -174,44 +188,57 @@ public class PlayerAI : MonoBehaviour
 
 
 // ==========================================
-        // 分支 B: 无球逻辑 (修正版)
+        // 分支 B: 无球逻辑
         // ==========================================
 
-        // --- 新增：子分支 B-1 (接球/抢球) ---
+        // --- 子分支 B-0 (接应传球) ---
+        // 如果我是传球目标，去接球（但在主树中已有更高优先级的处理）
+        Node isPassTargetOff = new CheckIsPassTarget(_blackboard);
+        Node chaseBallForPassOff = new TaskChaseBall(_blackboard);
+        Node runToPassOff = new TaskMoveToPosition(_blackboard);
+        SequenceNode passReceiveSeqOff = new SequenceNode(_blackboard, new List<Node>
+        {
+            isPassTargetOff,
+            chaseBallForPassOff,
+            runToPassOff
+        });
+
+        // --- 子分支 B-1 (抢无主球) ---
         // 逻辑：如果球是无主的，且我是最近的 -> 追球
         Node checkLoose = new CheckIsClosestToLooseBall(_blackboard);
         Node setBallTarget = new TaskChaseBall(_blackboard); // 把目标设为球
         Node runToBall = new TaskMoveToPosition(_blackboard); // 复用移动节点
 
-        SequenceNode interceptSeq = new SequenceNode(_blackboard, new List<Node> 
-        { 
-            checkLoose, 
-            setBallTarget, 
-            runToBall 
+        SequenceNode interceptSeq = new SequenceNode(_blackboard, new List<Node>
+        {
+            checkLoose,
+            setBallTarget,
+            runToBall
         });
 
 
-        // --- 原有：子分支 B-2 (战术跑位) ---
+        // --- 子分支 B-2 (战术跑位) ---
         Node calcSpot = new TaskCalculateSupportSpot(_blackboard);
         Node moveSpot = new TaskMoveToPosition(_blackboard);
         SequenceNode supportSeq = new SequenceNode(_blackboard, new List<Node> { calcSpot, moveSpot });
 
 
         // --- 分支 B 总选择器 ---
-        // 优先抢球，不需要抢球才去跑位
-        SelectorNode offBallSelector = new SelectorNode(_blackboard, new List<Node> 
-        { 
-            interceptSeq, 
-            supportSeq 
+        // 优先级：接球 > 抢球 > 跑位
+        SelectorNode offBallSelector = new SelectorNode(_blackboard, new List<Node>
+        {
+            passReceiveSeqOff, // 传球目标
+            interceptSeq,      // 抢球
+            supportSeq         // 跑位
         });
 
         // ==========================================
-        // 根节点
+        // 进攻树根节点
         // ==========================================
-        SelectorNode root = new SelectorNode(_blackboard, new List<Node> 
-        { 
-            hasBallSequence, 
-            offBallSelector // 这里替换原来的 supportSeq
+        SelectorNode root = new SelectorNode(_blackboard, new List<Node>
+        {
+            hasBallSequence,
+            offBallSelector
         });
 
 

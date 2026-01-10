@@ -27,5 +27,8 @@ namespace BehaviorTree
 
         // --- 3. 球员属性数据 (来自 PlayerAI) ---
         public PlayerStats Stats;
+
+        // --- 4. 传球状态 ---
+        public bool IsPassTarget; // 我是否是当前传球目标
     }
 }

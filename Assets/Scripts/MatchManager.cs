@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MatchManager : MonoBehaviour
@@ -25,6 +25,11 @@ public class MatchManager : MonoBehaviour
     // 当前持球者 (如果没有人持球则为 null)
     public GameObject CurrentBallHolder;
 
+    [Header("传球状态")]
+    public GameObject IncomingPassTarget; // 当前应该接球的队友
+    private float _passTimeout = 3.0f;    // 传球超时时间
+    private float _passTimer = 0f;        // 计时器
+
     private void Awake()
     {
         // 初始化单例
@@ -37,8 +42,30 @@ public class MatchManager : MonoBehaviour
         // 1. 计算物理状态 (谁拿着球？)
         UpdatePossessionState();
 
-        // 2. 同步数据 (把计算结果塞给所有人的黑板)
+        // 2. 清理过期的传球状态
+        UpdatePassTargetState();
+
+        // 3. 同步数据 (把计算结果塞给所有人的黑板)
         SyncAllBlackboards();
+    }
+
+    /// <summary>
+    /// 清理过期的传球状态
+    /// 当传球超时或球被拦截/接住时，清除传球目标锁定
+    /// </summary>
+    private void UpdatePassTargetState()
+    {
+        if (IncomingPassTarget != null)
+        {
+            _passTimer += Time.deltaTime;
+
+            // 超时或球已被接住，清除传球目标
+            if (_passTimer > _passTimeout || CurrentBallHolder != null)
+            {
+                IncomingPassTarget = null;
+                _passTimer = 0f;
+            }
+        }
     }
 
     /// <summary>
@@ -116,6 +143,9 @@ public class MatchManager : MonoBehaviour
                 bb.Opponents = enemies;            // 告诉他谁是敌人
 
                 bb.EnemyGoalPosition = enemyGoalPos;
+
+                // 同步传球目标状态
+                bb.IsPassTarget = (playerObj == IncomingPassTarget);
                 // 计算一些常用的个人数据，免得他在节点里重复算
                 // bb.DistanceToBall = Vector3.Distance(playerObj.transform.position, Ball.transform.position);
             }

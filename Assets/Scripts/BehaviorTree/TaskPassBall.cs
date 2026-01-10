@@ -16,7 +16,10 @@ namespace BehaviorTree
             if (target == null) return NodeState.FAILURE;
 
             BallController ballCtrl = ball.GetComponent<BallController>();
-            
+
+            // 设置传球目标锁定
+            MatchManager.Instance.IncomingPassTarget = target;
+
             // --- 核心修改：计算提前量 (Prediction) ---
 
             // 1. 计算当前的距离

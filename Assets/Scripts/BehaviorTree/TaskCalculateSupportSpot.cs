@@ -75,7 +75,7 @@ namespace BehaviorTree
             {
                 // 实在找不到空档（被包围了），就原地不动或者保持原定距离
                 Blackboard.MoveTarget = centerPos + directionToMe * _idealDistance;
-                NodeState = NodeState.FAILURE; // 或者 SUCCESS，取决于你希望树怎么处理
+                NodeState = NodeState.SUCCESS; // 或者 SUCCESS，取决于你希望树怎么处理
                 return NodeState.SUCCESS; // 这种情况下通常返回 SUCCESS 让他至少动起来
             }
         }
