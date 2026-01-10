@@ -1,11 +1,9 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace BehaviorTree
 {
     public class TaskMoveToPosition : Node
     {
-        // 移动速度，暂时硬编码，后期可以放进黑板的 stats 里
-        private float _speed = 5.0f;
         // 到达判定的误差范围
         private float _stoppingDistance = 0.1f;
         // --- 新增：带球参数 ---
@@ -41,7 +39,7 @@ namespace BehaviorTree
             Vector3 newPos = Vector3.MoveTowards(
                 owner.transform.position, 
                 targetPos, 
-                _speed * Time.deltaTime
+                Blackboard.Stats.MovementSpeed * Time.deltaTime
             );
             //
             // // 面朝移动方向（为了让圆柱体看起来自然点）

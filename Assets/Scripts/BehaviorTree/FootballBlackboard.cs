@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BehaviorTree
@@ -20,5 +20,12 @@ namespace BehaviorTree
         public Vector3 EnemyGoalPosition; // 对方球门位置 (由 MatchManager 设置)
         public GameObject BestPassTarget; // 计算出的最佳接球人
         public bool CanShoot;             // 是否满足射门条件
+
+        // --- 新增：防守决策数据 ---
+        public GameObject MarkedPlayer;   // 我当前负责盯防的敌人
+        public Vector3 DefensePosition;   // 计算出的防守站位点
+
+        // --- 3. 球员属性数据 (来自 PlayerAI) ---
+        public PlayerStats Stats;
     }
 }

@@ -1,9 +1,26 @@
-﻿// PlayerAI.cs (挂在圆柱体上)
+// PlayerAI.cs (挂在圆柱体上)
 
 using System.Collections.Generic;
 using UnityEngine;
 using BehaviorTree;
 using Unity.VisualScripting; // 引用命名空间
+
+[System.Serializable]
+public class PlayerStats
+{
+    [Header("移动属性")]
+    public float MovementSpeed = 2.0f;
+    public float SprintMultiplier = 1.2f;
+    
+    [Header("传球属性")]
+    public float PassingSpeed = 10f;
+    [Range(0.5f, 1.0f)]
+    public float PassingAccuracy = 0.9f;
+    
+    [Header("防守属性")]
+    public float ReactionTime = 0.5f;
+    public float DefensiveAwareness = 1.0f;
+}
 
 public class PlayerAI : MonoBehaviour
 {
@@ -11,17 +28,21 @@ public class PlayerAI : MonoBehaviour
     private BehaviorTree.BehaviorTree _tree; // 指明是由于我们自定义的类
     public Node CurrentNode;
 
+    [Header("球员属性配置")]
+    public PlayerStats Stats = new PlayerStats();
+
     void Awake()
     {
         // 1. 【源头】创建唯一的黑板实例
         _blackboard = new FootballBlackboard();
         _blackboard.Owner = this.gameObject; // 记录自己是谁
+        _blackboard.Stats = Stats; // 传入球员属性
 
         // 2. 创建树，把黑板传进去
         _tree = new BehaviorTree.BehaviorTree(_blackboard);
 
         // 3. 构建行为树结构 (这里是关键的引用传递！)
-        _tree.SetRoot(BuildOffensiveTree());
+        _tree.SetRoot(BuildMainTree());
     }
 
     void Update()
@@ -29,6 +50,93 @@ public class PlayerAI : MonoBehaviour
         // 4. 每帧运行
         _tree.Tick();
     }
+    
+    // === 新增：构建完整主树 ===
+    private Node BuildMainTree()
+    {
+        // 1. 构建 进攻子树 (你原来写的那个)
+        Node offensiveTree = BuildOffensiveTree();
+
+        // 2. 构建 防守子树 (新写的)
+        Node defensiveTree = BuildDefensiveTree();
+
+        // 3. 根选择器：决定是进攻还是防守
+        // 逻辑：如果我们队拿球 -> 进攻；否则 -> 防守
+        // 注意：这里需要一个条件节点来判断球权归属
+        
+        Node isTeamInControl = new SimpleCondition(_blackboard, IsTeamControllingBall);
+
+        // 如果条件满足(本队控球)，执行进攻树；否则执行防守树
+        // 这种结构可以用 "If-Else" 风格的选择器，或者简单的 Selector 配合取反条件
+        // 咱们用一个标准的 Selector 结构：
+        //   - 尝试执行“进攻分支” (前提是本队控球)
+        //   - 否则执行“防守分支”
+        
+        SequenceNode offensiveBranch = new SequenceNode(_blackboard, new List<Node>
+        {
+            isTeamInControl,
+            offensiveTree
+        });
+
+        SelectorNode root = new SelectorNode(_blackboard, new List<Node>
+        {
+            offensiveBranch, // 优先看是不是该进攻
+            defensiveTree    // 不是进攻就是防守 (也包含了无球争抢)
+        });
+
+        return root;
+    }
+    
+    // 辅助条件：我方是否控球？
+    private bool IsTeamControllingBall(FootballBlackboard bb)
+    {
+        // 如果球没人拿，或者球在队友脚下，或者是自己脚下
+        if (bb.BallHolder == null) return false; // 无主球不算控球，通常进入争抢逻辑(防守端处理)
+        
+        if (bb.BallHolder == bb.Owner) return true;
+        if (bb.Teammates.Contains(bb.BallHolder)) return true;
+        
+        return false;
+    }
+    
+    // === 新增：组装防守行为树 ===
+    private Node BuildDefensiveTree()
+    {
+        // 分支 A: 争抢无主球 (Loose Ball)
+        // 复用之前的逻辑：如果是无主球，且我最近 -> 追
+        Node checkLoose = new CheckIsClosestToLooseBall(_blackboard);
+        Node chaseBall = new TaskChaseBall(_blackboard);
+        Node moveAction = new TaskMoveToPosition(_blackboard);
+        
+        SequenceNode looseBallSeq = new SequenceNode(_blackboard, new List<Node>
+        {
+            checkLoose, chaseBall, moveAction
+        });
+
+        // 分支 B: 组织防守 (Organized Defense)
+        // 1. 思考：我是去抢持球人，还是盯人？
+        Node evalDefense = new TaskEvaluateDefensiveState(_blackboard);
+        
+        // 2. 行动：执行移动 (MoveTarget 已经在 Evaluate 里算好了)
+        // 注意：如果是抢球，Evaluate 会把 MoveTarget 设为球的位置
+        // 如果是盯人，Evaluate 会把 MoveTarget 设为阻截点
+        // 所以这里直接复用 MoveToPosition 即可！
+        Node executeMove = new TaskMoveToPosition(_blackboard);
+
+        SequenceNode organizedDefenseSeq = new SequenceNode(_blackboard, new List<Node>
+        {
+            evalDefense,
+            executeMove
+        });
+
+        // 防守根：优先抢无主球，否则进行组织防守
+        return new SelectorNode(_blackboard, new List<Node>
+        {
+            looseBallSeq,
+            organizedDefenseSeq
+        });
+    }
+
 // === 核心：组装进攻方行为树 ===
     private Node BuildOffensiveTree()
     {

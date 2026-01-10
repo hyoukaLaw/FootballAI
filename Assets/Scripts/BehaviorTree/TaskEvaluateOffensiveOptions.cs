@@ -106,7 +106,7 @@ namespace BehaviorTree
 
             // A. 距离评分：太远容易失误，太近没意义
             if (distToMate < 3f) score -= 40f; // 太近
-            if (distToMate > 20f) score -= 30f; // 太远
+            if (distToMate > 10f) score -= 30f; // 太远
 
             // B. 进攻性评分：队友比我更接近球门吗？
             // 计算 "球门距离差"
