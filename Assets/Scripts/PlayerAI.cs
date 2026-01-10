@@ -9,6 +9,7 @@ public class PlayerAI : MonoBehaviour
 {
     private FootballBlackboard _blackboard;
     private BehaviorTree.BehaviorTree _tree; // 指明是由于我们自定义的类
+    public Node CurrentNode;
 
     void Awake()
     {
@@ -64,18 +65,45 @@ public class PlayerAI : MonoBehaviour
         });
 
 
-        // ---------------------------------------------
-        // 分支 B: 如果我没球 (Support Logic)
-        // ---------------------------------------------
-        // 1. 计算最佳接应点 (大脑)
-        Node calcSupportSpot = new TaskCalculateSupportSpot(_blackboard);
-        // 2. 跑到那个点 (大腿)
-        Node moveToSpot = new TaskMoveToPosition(_blackboard);
+// ==========================================
+        // 分支 B: 无球逻辑 (修正版)
+        // ==========================================
 
-        SequenceNode supportSequence = new SequenceNode(_blackboard, new List<Node> 
+        // --- 新增：子分支 B-1 (接球/抢球) ---
+        // 逻辑：如果球是无主的，且我是最近的 -> 追球
+        Node checkLoose = new CheckIsClosestToLooseBall(_blackboard);
+        Node setBallTarget = new TaskChaseBall(_blackboard); // 把目标设为球
+        Node runToBall = new TaskMoveToPosition(_blackboard); // 复用移动节点
+
+        SequenceNode interceptSeq = new SequenceNode(_blackboard, new List<Node> 
         { 
-            calcSupportSpot, 
-            moveToSpot 
+            checkLoose, 
+            setBallTarget, 
+            runToBall 
+        });
+
+
+        // --- 原有：子分支 B-2 (战术跑位) ---
+        Node calcSpot = new TaskCalculateSupportSpot(_blackboard);
+        Node moveSpot = new TaskMoveToPosition(_blackboard);
+        SequenceNode supportSeq = new SequenceNode(_blackboard, new List<Node> { calcSpot, moveSpot });
+
+
+        // --- 分支 B 总选择器 ---
+        // 优先抢球，不需要抢球才去跑位
+        SelectorNode offBallSelector = new SelectorNode(_blackboard, new List<Node> 
+        { 
+            interceptSeq, 
+            supportSeq 
+        });
+
+        // ==========================================
+        // 根节点
+        // ==========================================
+        SelectorNode root = new SelectorNode(_blackboard, new List<Node> 
+        { 
+            hasBallSequence, 
+            offBallSelector // 这里替换原来的 supportSeq
         });
 
 
@@ -83,11 +111,6 @@ public class PlayerAI : MonoBehaviour
         // 根节点: 选择器 (Selector)
         // ---------------------------------------------
         // 逻辑：优先看是不是有球？ -> 是，执行A。 -> 否，执行B (跑位)。
-        SelectorNode root = new SelectorNode(_blackboard, new List<Node> 
-        { 
-            hasBallSequence, 
-            supportSequence 
-        });
 
         return root;
     }

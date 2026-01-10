@@ -7,7 +7,7 @@ namespace BehaviorTree
         // 假设队友的跑动速度 (需要和 TaskMoveToPosition 里的保持一致)
         private float _teammateSpeed = 5.0f;
         // 球的飞行速度 (需要和 BallController 里的保持一致)
-        private float _ballSpeed = 100.0f;
+        private float _ballSpeed = 30f;
 
         public TaskPassBall(FootballBlackboard blackboard) : base(blackboard)
         {

@@ -44,7 +44,9 @@ namespace BehaviorTree
             {
                 Blackboard.BestPassTarget = bestMate;
                 // 决策完成：建议传球
-                NodeState = NodeState.SUCCESS; 
+                NodeState = NodeState.SUCCESS;
+                Debug.Log($"传球分 {highestScore}");
+                Debug.Log($"{owner.gameObject.name} forwardgain:>60 {owner.transform.position} {bestMate.transform.position} {goalPos}");
                 return NodeState;
             }
 
@@ -80,6 +82,8 @@ namespace BehaviorTree
             float myDistToGoal = Vector3.Distance(me.transform.position, goal);
             float mateDistToGoal = Vector3.Distance(mate.transform.position, goal);
             float forwardGain = myDistToGoal - mateDistToGoal; // 正数表示队友更靠前
+            
+            
             
             score += forwardGain * _forwardWeight;
 
