@@ -23,7 +23,6 @@ public class PlayerStats
     public float ShootingAccuracy = 0.7f;
 
     [Header("防守属性")]
-    public float ReactionTime = 0.5f;
     public float DefensiveAwareness = 1.0f;
 }
 
@@ -305,31 +304,6 @@ public class PlayerAI : MonoBehaviour
                 Gizmos.DrawIcon(transform.position + Vector3.up * 2, "Pass");
             }
         }
-    }
-    // 这是一个工厂方法，负责组装具体的逻辑
-    private Node BuildTestTree(FootballBlackboard bb)
-    {
-        // // 比如：创建 "持球判断" 节点，传入 bb
-        // Node checkBall = new CheckHasBallNode(bb);
-        //
-        // // 比如：创建 "移动" 节点，传入 bb
-        // Node move = new TaskMoveToPosition(bb);
-        //
-        // // 组装成序列 (Sequence 也需要 bb，因为它也是 Node 的子类)
-        // Sequence attackSeq = new Sequence(bb, new List<Node>{ checkBall, move });
-        //
-        // return attackSeq;
-// --- 测试 Setup ---
-
-        // 强制把目标点设为 (10, 0, 10)，假装是某个智能节点计算出来的
-        bb.MoveTarget = new Vector3(10, 0, 10); 
-    
-        // --- 构建树 ---
-        // 只有这一个节点，意味着它会一直跑向 (10,0,10)
-        // 到了之后返回 SUCCESS，下一帧树重新 Tick，又发现到了，继续 SUCCESS
-        Node moveNode = new TaskMoveToPosition(bb);
-    
-        return moveNode;
     }
     
     // === 新增：给 MatchManager 用的接口 ===

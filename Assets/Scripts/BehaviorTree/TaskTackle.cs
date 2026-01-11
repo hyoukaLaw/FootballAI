@@ -60,7 +60,7 @@ namespace BehaviorTree
                 return 0.5f; // 默认50%成功率
             
             // 基于球员属性计算抢断成功率
-            float defensiveFactor = tacklerAI.Stats.DefensiveAwareness + tacklerAI.Stats.ReactionTime * 0.5f;
+            float defensiveFactor = tacklerAI.Stats.DefensiveAwareness;
             float distanceFactor = Mathf.Clamp01(2f - Vector3.Distance(tackler.transform.position, ballHolder.transform.position));
             
             // 基础抢断概率 + 防守属性加成 + 距离加成
@@ -74,7 +74,7 @@ namespace BehaviorTree
         {
             // 将球移动到抢断球员的位置
             Vector3 tacklerPosition = tackler.transform.position;
-            MatchManager.Instance.Ball.transform.position = tacklerPosition;//+ new Vector3(0, 0.1f, 0); // 稍微抬高一点，避免卡在地面
+            MatchManager.Instance.Ball.transform.position = tacklerPosition;
 
             // 将球权转移给抢断球员
             MatchManager.Instance.CurrentBallHolder = tackler;
