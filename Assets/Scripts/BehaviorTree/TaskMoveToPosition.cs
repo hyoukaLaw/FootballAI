@@ -65,14 +65,16 @@ namespace BehaviorTree
         private void DribbleBall(GameObject owner)
         {
             // 检查：我是持球人吗？
-            // 注意：这里必须用 Blackboard 里的 BallHolder 判断，因为 MatchManager 是权威
-            if (Blackboard.BallHolder == owner && Blackboard.Ball != null)
+            // 注意：这里必须用 Context 里的 BallHolder 判断，因为 Context 是权威
+            if (Blackboard.MatchContext != null &&
+                Blackboard.MatchContext.BallHolder == owner &&
+                Blackboard.MatchContext.Ball != null)
             {
                 // 计算球的理想位置：玩家正前方 + 偏移量
                 Vector3 ballPos = owner.transform.position + owner.transform.forward * _dribbleOffset;
-                ballPos.y = 0f; 
+                ballPos.y = 0f;
 
-                Blackboard.Ball.transform.position = ballPos;
+                Blackboard.MatchContext.Ball.transform.position = ballPos;
             }
         }
     }

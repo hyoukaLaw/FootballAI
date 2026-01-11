@@ -42,10 +42,20 @@ public class PlayerAI : MonoBehaviour
         _blackboard.Owner = this.gameObject; // 记录自己是谁
         _blackboard.Stats = Stats; // 传入球员属性
 
-        // 2. 创建树，把黑板传进去
+        // 2. 注入全局上下文
+        if (MatchManager.Instance != null && MatchManager.Instance.Context != null)
+        {
+            _blackboard.MatchContext = MatchManager.Instance.Context;
+        }
+        else
+        {
+            Debug.LogError("MatchManager.Instance or Context is null!");
+        }
+
+        // 3. 创建树，把黑板传进去
         _tree = new BehaviorTree.BehaviorTree(_blackboard);
 
-        // 3. 构建行为树结构 (这里是关键的引用传递！)
+        // 4. 构建行为树结构 (这里是关键的引用传递！)
         _tree.SetRoot(BuildMainTree());
     }
 
@@ -121,10 +131,10 @@ public class PlayerAI : MonoBehaviour
     private bool IsTeamControllingBall(FootballBlackboard bb)
     {
         // 如果球没人拿，或者球在队友脚下，或者是自己脚下
-        if (bb.BallHolder == null) return false; // 无主球不算控球，通常进入争抢逻辑(防守端处理)
+        if (bb.MatchContext.BallHolder == null) return false; // 无主球不算控球，通常进入争抢逻辑(防守端处理)
         
-        if (bb.BallHolder == bb.Owner) return true;
-        if (bb.Teammates.Contains(bb.BallHolder)) return true;
+        if (bb.MatchContext.BallHolder == bb.Owner) return true;
+        if (bb.MatchContext.GetTeammates(this.gameObject).Contains(bb.MatchContext.BallHolder)) return true;
         
         return false;
     }
@@ -150,8 +160,8 @@ public class PlayerAI : MonoBehaviour
         // 条件：是否在抢断范围内且有明确的目标
         Node checkCanTackle = new SimpleCondition(_blackboard, bb => 
         {
-            if (bb.BallHolder == null) return false;
-            float distance = Vector3.Distance(bb.Owner.transform.position, bb.BallHolder.transform.position);
+            if (bb.MatchContext.BallHolder == null) return false;
+            float distance = Vector3.Distance(bb.Owner.transform.position, bb.MatchContext.BallHolder.transform.position);
             return distance < 1.5f; // 抢断尝试范围
         });
         Node tackleAction = new TaskTackle(_blackboard);

@@ -15,27 +15,27 @@ namespace BehaviorTree
             }
 
             // 检查必要条件
-            if (Blackboard.BallHolder == null)
+            if (Blackboard.MatchContext == null || Blackboard.MatchContext.BallHolder == null)
                 return NodeState.FAILURE; // 没有持球人，无法抢断
-            
+
             GameObject owner = Blackboard.Owner;
-            GameObject ballHolder = Blackboard.BallHolder;
-            
+            GameObject ballHolder = Blackboard.MatchContext.BallHolder;
+
             // 检查是否在抢断范围内
             float tackleDistance = 1.6f; // 抢断有效距离
             float distanceToBallHolder = Vector3.Distance(owner.transform.position, ballHolder.transform.position);
-            
+
             if (distanceToBallHolder > tackleDistance)
             {
                 // 不在抢断范围内，继续移动接近
                 Blackboard.MoveTarget = ballHolder.transform.position;
                 return NodeState.RUNNING;
             }
-            
+
             // 尝试抢断
             float tackleChance = CalculateTackleChance(owner, ballHolder);
             float random = Random.Range(0f, 1f);
-            
+
             if (random <= tackleChance)
             {
                 // 抢断成功！
@@ -70,18 +70,20 @@ namespace BehaviorTree
         // 执行抢断动作
         private void StealBall(GameObject tackler)
         {
+            // 检查上下文
+            if (Blackboard.MatchContext == null || Blackboard.MatchContext.Ball == null)
+                return;
+
             // 将球移动到抢断球员的位置
             Vector3 tacklerPosition = tackler.transform.position;
-            MatchManager.Instance.Ball.transform.position = tacklerPosition;
+            Blackboard.MatchContext.Ball.transform.position = tacklerPosition;
 
             // 被抢断者（记录在抢断前）
-            GameObject ballHolder = Blackboard.BallHolder;
+            GameObject ballHolder = Blackboard.MatchContext.BallHolder;
 
-            // 将球权转移给抢断球员
-            MatchManager.Instance.CurrentBallHolder = tackler;
-
-            // 立即同步所有黑板数据，确保被抢断者下一帧能正确识别丢球状态
-            MatchManager.Instance.SyncAllBlackboards();
+            // 将球权转移给抢断球员（MatchManager 会同步到 Context）
+            if (Blackboard.MatchContext != null)
+                Blackboard.MatchContext.BallHolder = tackler;
 
             // 触发抢断保护期，防止立即被反抢
             MatchManager.Instance.TriggerStealCooldown();

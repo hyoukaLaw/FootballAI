@@ -8,16 +8,20 @@ namespace BehaviorTree
 
         public override NodeState Evaluate()
         {
+            // 防御性编程：检查上下文
+            if (Blackboard.MatchContext == null || Blackboard.MatchContext.Ball == null)
+                return NodeState.FAILURE;
+
             // 如果球是无主的（Loose Ball），防守逻辑暂时不处理，交给通用的抢球逻辑
-            if (Blackboard.BallHolder == null)
+            if (Blackboard.MatchContext.BallHolder == null)
             {
                 return NodeState.FAILURE;
             }
 
             GameObject owner = Blackboard.Owner;
-            GameObject ballHolder = Blackboard.BallHolder;
+            GameObject ballHolder = Blackboard.MatchContext.BallHolder;
 
-            // 1. 判断是否需要“施压” (Pressing)
+            // 1. 判断是否需要"施压" (Pressing)
             // 逻辑：如果我是离持球人最近的队友，我就负责去抢球
             if (IsClosestTeammateToTarget(ballHolder.transform.position))
             {
@@ -30,21 +34,21 @@ namespace BehaviorTree
                 return NodeState.SUCCESS;
             }
 
-            // 2. 如果不需要施压，则执行“盯人” (Marking)
+            // 2. 如果不需要施压，则执行"盯人" (Marking)
             // 逻辑：找到离我最近的无球敌人，作为我的盯防对象
             GameObject bestTarget = FindClosestEnemyToMark(owner, ballHolder);
-            
+
             if (bestTarget != null)
             {
                 Blackboard.MarkedPlayer = bestTarget;
 
-                // 计算盯防站位：站在“敌人”和“我方球门”之间
+                // 计算盯防站位：站在"敌人"和"我方球门"之间
                 Vector3 targetPos = bestTarget.transform.position;
-                Vector3 ballPos = Blackboard.Ball.transform.position;
-                
+                Vector3 ballPos = Blackboard.MatchContext.Ball.transform.position;
+
                 // 站位策略：站在敌人和球连线的 20% 处（靠近敌人，阻断接球）
-                Vector3 idealPos = targetPos + (ballPos - targetPos).normalized * 1.5f;
-                
+                Vector3 idealPos = targetPos + (ballPos - targetPos).normalized *1.5f;
+
                 Blackboard.MoveTarget = idealPos;
                 return NodeState.SUCCESS;
             }
@@ -52,11 +56,17 @@ namespace BehaviorTree
             return NodeState.FAILURE;
         }
 
+
         // 辅助：我是不是离目标点最近的队友？
         private bool IsClosestTeammateToTarget(Vector3 targetPos)
         {
+            if (Blackboard.MatchContext == null) return false;
+
             float myDist = Vector3.Distance(Blackboard.Owner.transform.position, targetPos);
-            foreach (var mate in Blackboard.Teammates)
+            var teammates = Blackboard.MatchContext.GetTeammates(Blackboard.Owner);
+            if (teammates == null) return false;
+
+            foreach (var mate in teammates)
             {
                 if (mate == Blackboard.Owner) continue;
                 if (Vector3.Distance(mate.transform.position, targetPos) < myDist - 0.5f) // 0.5f 容错
@@ -70,10 +80,15 @@ namespace BehaviorTree
         // 辅助：找个没人盯的或者离我最近的无球敌人
         private GameObject FindClosestEnemyToMark(GameObject me, GameObject ballHolder)
         {
+            if (Blackboard.MatchContext == null) return null;
+
             GameObject bestTarget = null;
             float closestDist = float.MaxValue;
 
-            foreach (var enemy in Blackboard.Opponents)
+            var opponents = Blackboard.MatchContext.GetOpponents(Blackboard.Owner);
+            if (opponents == null) return null;
+
+            foreach (var enemy in opponents)
             {
                 if (enemy == ballHolder) continue; // 不盯持球人，持球人由施压者负责
 

@@ -25,13 +25,17 @@ namespace BehaviorTree
 
         public override NodeState Evaluate()
         {
+            // 防御性编程：检查上下文
+            if (Blackboard.MatchContext == null)
+                return NodeState.FAILURE;
+
             // 清理上一帧的数据
             Blackboard.BestPassTarget = null;
             Blackboard.MoveTarget = Vector3.zero;
             Blackboard.CanShoot = false;
 
             GameObject owner = Blackboard.Owner;
-            Vector3 goalPos = Blackboard.EnemyGoalPosition;
+            Vector3 goalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
 
             // === 0. 评估射门条件 (最高优先级) ===
             if (CanShoot(owner, goalPos))
@@ -46,7 +50,10 @@ namespace BehaviorTree
             GameObject bestMate = null;
             float highestScore = -1f;
 
-            foreach (var mate in Blackboard.Teammates)
+            var teammates = Blackboard.MatchContext.GetTeammates(owner);
+            if (teammates == null) return NodeState.FAILURE;
+
+            foreach (var mate in teammates)
             {
                 if (mate == owner) continue; // 排除自己
 
@@ -167,10 +174,14 @@ namespace BehaviorTree
         // === 辅助：检查路径是否安全 ===
         private bool IsPathClear(Vector3 start, Vector3 end)
         {
-            // 遍历 Blackboard.Opponents 检测是否在路径上
-            if (Blackboard.Opponents == null) return true;
+            if (Blackboard.MatchContext == null) return true;
 
-            foreach (var enemy in Blackboard.Opponents)
+            // 遍历 Context.Opponents 检测是否在路径上
+            var owner = Blackboard.Owner;
+            var opponents = Blackboard.MatchContext.GetOpponents(owner);
+            if (opponents == null) return true;
+
+            foreach (var enemy in opponents)
             {
                 if (enemy == null) continue;
 
@@ -206,9 +217,12 @@ namespace BehaviorTree
         // === 辅助：查找前方阻挡的敌人 ===
         private GameObject FindEnemyInFront(GameObject owner, Vector3 forwardDir)
         {
-            if (Blackboard.Opponents == null) return null;
+            if (Blackboard.MatchContext == null) return null;
 
-            foreach (var enemy in Blackboard.Opponents)
+            var opponents = Blackboard.MatchContext.GetOpponents(owner);
+            if (opponents == null) return null;
+
+            foreach (var enemy in opponents)
             {
                 if (enemy == null) continue;
 

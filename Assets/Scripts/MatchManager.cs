@@ -7,12 +7,15 @@ public class MatchManager : MonoBehaviour
     // 方便任何地方都能访问 MatchManager.Instance
     public static MatchManager Instance { get; private set; }
 
+    // --- 全局上下文 ---
+    public BehaviorTree.MatchContext Context;  // 全局上下文实例
+
     [Header("Scene References")]
     public GameObject Ball;
     // --- 新增：球门引用 ---
     public Transform RedGoal;  // 红方防守的球门（蓝方攻击目标）
     public Transform BlueGoal; // 蓝方防守的球门（红方攻击目标）
-    
+
     // 在 Inspector 中把红队和蓝队的圆柱体分别拖进去
     public List<GameObject> TeamRedPlayers = new List<GameObject>();
     public List<GameObject> TeamBluePlayers = new List<GameObject>();
@@ -44,6 +47,14 @@ public class MatchManager : MonoBehaviour
         // 初始化单例
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        // 初始化全局上下文
+        Context = new BehaviorTree.MatchContext();
+        Context.Ball = Ball;
+        Context.TeamRedPlayers = TeamRedPlayers;
+        Context.TeamBluePlayers = TeamBluePlayers;
+        Context.RedGoal = RedGoal;
+        Context.BlueGoal = BlueGoal;
     }
 
     private void Update()
@@ -53,10 +64,14 @@ public class MatchManager : MonoBehaviour
             return; // 游戏暂停，不执行任何逻辑
         }
 
-        // 更新抢断保护期计时器
+        // 更新抢断保护期计时器并同步到上下文
         if (_stealCooldownTimer > 0f)
         {
             _stealCooldownTimer -= Time.deltaTime;
+            if (_stealCooldownTimer <= 0f && Context != null)
+            {
+                Context.IsInStealCooldown = false;
+            }
         }
 
         // 1. 计算物理状态 (谁拿着球？)
@@ -67,9 +82,6 @@ public class MatchManager : MonoBehaviour
 
         // 3. 检测进球
         CheckGoal();
-
-        // 4. 同步数据 (把计算结果塞给所有人的黑板)
-        SyncAllBlackboards();
     }
 
     /// <summary>
@@ -86,6 +98,8 @@ public class MatchManager : MonoBehaviour
             if (_passTimer > _passTimeout || CurrentBallHolder != null)
             {
                 IncomingPassTarget = null;
+                if (Context != null)
+                    Context.IncomingPassTarget = null;
                 _passTimer = 0f;
             }
         }
@@ -127,57 +141,14 @@ public class MatchManager : MonoBehaviour
         if (minDistance <= PossessionThreshold)
         {
             CurrentBallHolder = closestPlayer;
+            if (Context != null)
+                Context.BallHolder = closestPlayer;
         }
         else
         {
             CurrentBallHolder = null;
-        }
-    }
-
-    /// <summary>
-    /// 数据分发：将全局信息写入每个球员的 FootballBlackboard
-    /// </summary>
-    public void SyncAllBlackboards()
-    {
-        // 为红队同步 (队友是红队，敌人是蓝队)
-        SyncTeamData(TeamRedPlayers, TeamRedPlayers, TeamBluePlayers, BlueGoal.position);
-
-        // 为蓝队同步 (队友是蓝队，敌人是红队)
-        SyncTeamData(TeamBluePlayers, TeamBluePlayers, TeamRedPlayers, RedGoal.position);
-    }
-
-    /// <summary>
-    /// 通用同步方法
-    /// </summary>
-    private void SyncTeamData(List<GameObject> playersToSync,
-        List<GameObject> allies, List<GameObject> enemies,
-        Vector3 enemyGoalPos)
-    {
-        foreach (var playerObj in playersToSync)
-        {
-            if (playerObj == null) continue;
-
-            // 获取球员身上的 PlayerAI 组件 (我们之前定义的那个入口类)
-            var aiController = playerObj.GetComponent<PlayerAI>();
-            
-            // 防御性编程：确保该物体真的有 AI
-            if (aiController != null && aiController.GetBlackboard() != null)
-            {
-                var bb = aiController.GetBlackboard();
-
-                // --- 填充黑板数据 ---
-                bb.Ball = Ball;
-                bb.BallHolder = CurrentBallHolder; // 告诉他现在球在谁脚下
-                bb.Teammates = allies;             // 告诉他谁是队友
-                bb.Opponents = enemies;            // 告诉他谁是敌人
-
-                bb.EnemyGoalPosition = enemyGoalPos;
-
-                // 同步传球目标状态
-                bb.IsPassTarget = (playerObj == IncomingPassTarget);
-                // 计算一些常用的个人数据，免得他在节点里重复算
-                // bb.DistanceToBall = Vector3.Distance(playerObj.transform.position, Ball.transform.position);
-            }
+            if (Context != null)
+                Context.BallHolder = null;
         }
     }
 
@@ -248,5 +219,7 @@ public class MatchManager : MonoBehaviour
     public void TriggerStealCooldown()
     {
         _stealCooldownTimer = StealCooldownDuration;
+        if (Context != null)
+            Context.IsInStealCooldown = true;
     }
 }

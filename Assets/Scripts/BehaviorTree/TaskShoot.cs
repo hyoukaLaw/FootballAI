@@ -15,8 +15,11 @@ namespace BehaviorTree
 
         public override NodeState Evaluate()
         {
-            GameObject ball = Blackboard.Ball;
-            Vector3 goalPos = Blackboard.EnemyGoalPosition;
+            if (Blackboard.MatchContext == null || Blackboard.MatchContext.Ball == null)
+                return NodeState.FAILURE;
+
+            GameObject ball = Blackboard.MatchContext.Ball;
+            Vector3 goalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
 
             if (ball == null) return NodeState.FAILURE;
 

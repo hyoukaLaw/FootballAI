@@ -13,8 +13,9 @@ namespace BehaviorTree
 
         public override NodeState Evaluate()
         {
-            // 检查黑板上标记的传球目标状态
-            if (Blackboard.IsPassTarget)
+            // 检查上下文中的传球目标状态
+            if (Blackboard.MatchContext != null &&
+                Blackboard.MatchContext.IsPassTarget(Blackboard.Owner))
             {
                 return NodeState.SUCCESS;
             }

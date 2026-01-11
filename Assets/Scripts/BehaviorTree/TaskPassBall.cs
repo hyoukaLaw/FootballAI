@@ -10,15 +10,20 @@ namespace BehaviorTree
 
         public override NodeState Evaluate()
         {
+            if (Blackboard.MatchContext == null || Blackboard.MatchContext.Ball == null)
+                return NodeState.FAILURE;
+
             GameObject target = Blackboard.BestPassTarget;
-            GameObject ball = Blackboard.Ball;
+            GameObject ball = Blackboard.MatchContext.Ball;
 
             if (target == null) return NodeState.FAILURE;
 
             BallController ballCtrl = ball.GetComponent<BallController>();
 
-            // 设置传球目标锁定
+            // 设置传球目标锁定（同步到 MatchManager 和 Context）
             MatchManager.Instance.IncomingPassTarget = target;
+            if (Blackboard.MatchContext != null)
+                Blackboard.MatchContext.IncomingPassTarget = target;
 
             // --- 核心修改：计算提前量 (Prediction) ---
 
