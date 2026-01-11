@@ -41,9 +41,7 @@ namespace BehaviorTree
             // --- 5. 传球给预测点，而不是当前点 ---
             ballCtrl.KickTo(predictedPos, Blackboard.Stats.PassingSpeed);
 
-            // 画线调试：看看预测点准不准
             Debug.DrawLine(ball.transform.position, predictedPos, Color.red, 2.0f);
-            Debug.Log($"传球预测：目标{target.name}当前在 {target.transform.position}，预测会跑去 {predictedPos}");
 
             return NodeState.SUCCESS;
         }

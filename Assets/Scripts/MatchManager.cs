@@ -214,8 +214,6 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void OnGoalScored(string scoringTeam)
     {
-        Debug.Log($"⚽ 进球！{scoringTeam} 队得分！");
-
         // 暂停游戏
         GamePaused = true;
 
@@ -228,7 +226,6 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     public void ResumeGame()
     {
-        Debug.Log("比赛继续！");
         GamePaused = false;
     }
 

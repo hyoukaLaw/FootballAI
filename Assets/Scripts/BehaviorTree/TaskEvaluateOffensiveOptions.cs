@@ -39,7 +39,6 @@ namespace BehaviorTree
                 Blackboard.CanShoot = true;
                 Blackboard.BestPassTarget = null; // 明确不传球
                 Blackboard.MoveTarget = Vector3.zero; // 明确不移动
-                Debug.Log($"{owner.name} 满足射门条件");
                 return NodeState.SUCCESS;
             }
 
@@ -66,7 +65,6 @@ namespace BehaviorTree
                 Blackboard.BestPassTarget = bestMate;
                 // 决策完成：建议传球
                 NodeState = NodeState.SUCCESS;
-                Debug.Log($"传球分 {highestScore}");
                 return NodeState;
             }
 
@@ -95,7 +93,6 @@ namespace BehaviorTree
                 potentialDribblePos = sidestepPos + dribbleDirection * _dribbleDistance;
 
                 Debug.DrawLine(owner.transform.position, potentialDribblePos, Color.yellow, 1.0f);
-                Debug.Log($"前方阻挡，侧向盘带: {blockingEnemy.name}");
             }
             else
             {

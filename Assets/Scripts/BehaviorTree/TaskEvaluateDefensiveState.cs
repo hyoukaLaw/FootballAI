@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace BehaviorTree
 {
@@ -25,9 +25,8 @@ namespace BehaviorTree
                 // 将移动目标设为持球人位置
                 Blackboard.MoveTarget = ballHolder.transform.position;
                 Blackboard.MarkedPlayer = null; // 不需要盯无球人
-                
+
                 // 返回 SUCCESS 表示我们做出了决策：去施压
-                Debug.Log($"{Blackboard.Owner.name} 抢球");
                 return NodeState.SUCCESS;
             }
 
