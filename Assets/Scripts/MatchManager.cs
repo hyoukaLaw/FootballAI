@@ -28,10 +28,6 @@ public class MatchManager : MonoBehaviour
     public float GoalDistance = 1.0f; // 球门判定距离
     public bool GamePaused = false; // 游戏是否暂停
 
-    [Header("Debug Info (Read Only)")]
-    // 当前持球者 (如果没有人持球则为 null)
-    public GameObject CurrentBallHolder;
-
     [Header("传球状态")]
     public GameObject IncomingPassTarget; // 当前应该接球的队友
     private float _passTimeout = 3.0f;    // 传球超时时间
@@ -95,11 +91,10 @@ public class MatchManager : MonoBehaviour
             _passTimer += Time.deltaTime;
 
             // 超时或球已被接住，清除传球目标
-            if (_passTimer > _passTimeout || CurrentBallHolder != null)
+            if (Context != null && (_passTimer > _passTimeout || Context.BallHolder != null))
             {
                 IncomingPassTarget = null;
-                if (Context != null)
-                    Context.IncomingPassTarget = null;
+                Context.IncomingPassTarget = null;
                 _passTimer = 0f;
             }
         }
@@ -140,13 +135,11 @@ public class MatchManager : MonoBehaviour
         // 否则球处于"无人控制"状态 (Loose Ball)
         if (minDistance <= PossessionThreshold)
         {
-            CurrentBallHolder = closestPlayer;
             if (Context != null)
                 Context.BallHolder = closestPlayer;
         }
         else
         {
-            CurrentBallHolder = null;
             if (Context != null)
                 Context.BallHolder = null;
         }

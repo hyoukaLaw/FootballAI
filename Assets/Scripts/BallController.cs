@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class BallController : MonoBehaviour
 {
@@ -29,7 +29,9 @@ public class BallController : MonoBehaviour
             return; 
         }
         // 保护期过后，才允许被拦截
-        if (MatchManager.Instance.CurrentBallHolder != null)
+        if (MatchManager.Instance != null &&
+            MatchManager.Instance.Context != null &&
+            MatchManager.Instance.Context.BallHolder != null)
         {
             _isMoving = false;
             return;
