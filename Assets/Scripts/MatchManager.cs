@@ -29,14 +29,10 @@ public class MatchManager : MonoBehaviour
     public bool GamePaused = false; // 游戏是否暂停
 
     [Header("传球状态")]
-    public GameObject IncomingPassTarget; // 当前应该接球的队友
     private float _passTimeout = 3.0f;    // 传球超时时间
-    private float _passTimer = 0f;        // 计时器
 
     [Header("抢断保护")]
-    private float _stealCooldownTimer = 0f; // 抢断保护期计时器
     public float StealCooldownDuration = 3f; // 抢断保护期时长（秒）
-    public bool IsInStealCooldown { get { return _stealCooldownTimer > 0f; } } // 是否在保护期内
 
     private void Awake()
     {
@@ -60,14 +56,10 @@ public class MatchManager : MonoBehaviour
             return; // 游戏暂停，不执行任何逻辑
         }
 
-        // 更新抢断保护期计时器并同步到上下文
-        if (_stealCooldownTimer > 0f)
+        // 更新抢断保护期计时器
+        if (Context != null)
         {
-            _stealCooldownTimer -= Time.deltaTime;
-            if (_stealCooldownTimer <= 0f && Context != null)
-            {
-                Context.IsInStealCooldown = false;
-            }
+            Context.UpdateStealCooldown(Time.deltaTime);
         }
 
         // 1. 计算物理状态 (谁拿着球？)
@@ -86,17 +78,9 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void UpdatePassTargetState()
     {
-        if (IncomingPassTarget != null)
+        if (Context != null)
         {
-            _passTimer += Time.deltaTime;
-
-            // 超时或球已被接住，清除传球目标
-            if (Context != null && (_passTimer > _passTimeout || Context.BallHolder != null))
-            {
-                IncomingPassTarget = null;
-                Context.IncomingPassTarget = null;
-                _passTimer = 0f;
-            }
+            Context.UpdatePassTarget(_passTimeout, Context.BallHolder);
         }
     }
 
@@ -106,7 +90,7 @@ public class MatchManager : MonoBehaviour
     private void UpdatePossessionState()
     {
         // 如果在抢断保护期内，跳过重新计算球权
-        if (_stealCooldownTimer > 0f)
+        if (Context != null && Context.IsInStealCooldown)
         {
             return;
         }
@@ -211,8 +195,9 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     public void TriggerStealCooldown()
     {
-        _stealCooldownTimer = StealCooldownDuration;
         if (Context != null)
-            Context.IsInStealCooldown = true;
+        {
+            Context.SetStealCooldown(StealCooldownDuration);
+        }
     }
 }

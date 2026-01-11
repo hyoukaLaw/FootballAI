@@ -166,9 +166,7 @@ MonoBehaviour:
   PossessionThreshold: 0.8
   GoalDistance: 1
   GamePaused: 0
-  CurrentBallHolder: {fileID: 0}
-  IncomingPassTarget: {fileID: 0}
-  StealCooldownDuration: 0.5
+  StealCooldownDuration: 2
 --- !u!4 &378023241
 Transform:
   m_ObjectHideFlags: 0

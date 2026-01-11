@@ -9,7 +9,7 @@ namespace BehaviorTree
         public override NodeState Evaluate()
         {
             // 检查抢断保护期：如果在保护期内，不允许任何抢断
-            if (MatchManager.Instance != null && MatchManager.Instance.IsInStealCooldown)
+            if (Blackboard.MatchContext != null && Blackboard.MatchContext.IsInStealCooldown)
             {
                 return NodeState.FAILURE; // 保护期内不允许抢断
             }

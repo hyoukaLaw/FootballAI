@@ -13,7 +13,47 @@ namespace BehaviorTree
         public Transform RedGoal;
         public Transform BlueGoal;
         public GameObject IncomingPassTarget;
-        public bool IsInStealCooldown;
+
+        // --- 传球状态管理 ---
+        private float _passTimer = 0f; // 传球计时器
+
+        // --- 抢断保护期状态 ---
+        private float _stealCooldownTimer = 0f; // 抢断保护期计时器
+        public bool IsInStealCooldown { get { return _stealCooldownTimer > 0f; } }
+
+        // --- 内部方法：用于 MatchManager 更新保护期 ---
+        public void SetStealCooldown(float duration)
+        {
+            _stealCooldownTimer = duration;
+        }
+
+        public void UpdateStealCooldown(float deltaTime)
+        {
+            if (_stealCooldownTimer > 0f)
+                _stealCooldownTimer -= deltaTime;
+        }
+
+        // --- 内部方法：用于 MatchManager 更新传球状态 ---
+        public void SetPassTarget(GameObject target)
+        {
+            IncomingPassTarget = target;
+            _passTimer = 0f; // 重置计时器
+        }
+
+        public void UpdatePassTarget(float passTimeout, GameObject ballHolder)
+        {
+            if (IncomingPassTarget != null)
+            {
+                _passTimer += Time.deltaTime;
+
+                // 超时或球已被接住，清除传球目标
+                if (_passTimer > passTimeout || ballHolder != null)
+                {
+                    IncomingPassTarget = null;
+                    _passTimer = 0f;
+                }
+            }
+        }
 
         // --- 辅助方法：根据球员身份获取上下文数据 ---
         public List<GameObject> GetTeammates(GameObject player)

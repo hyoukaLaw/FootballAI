@@ -20,10 +20,11 @@ namespace BehaviorTree
 
             BallController ballCtrl = ball.GetComponent<BallController>();
 
-            // 设置传球目标锁定（同步到 MatchManager 和 Context）
-            MatchManager.Instance.IncomingPassTarget = target;
+            // 设置传球目标锁定（通过 Context）
             if (Blackboard.MatchContext != null)
-                Blackboard.MatchContext.IncomingPassTarget = target;
+            {
+                Blackboard.MatchContext.SetPassTarget(target);
+            }
 
             // --- 核心修改：计算提前量 (Prediction) ---
 
