@@ -31,8 +31,6 @@ namespace BehaviorTree
             // 踢球
             ballCtrl.KickTo(shootTarget, _shootPower);
 
-            Debug.DrawLine(ball.transform.position, shootTarget, Color.red, 2.0f);
-
             return NodeState.SUCCESS;
         }
 

@@ -98,14 +98,11 @@ namespace BehaviorTree
 
                 Vector3 sidestepPos = leftDistToGoal < rightDistToGoal ? leftPos : rightPos;
                 potentialDribblePos = sidestepPos + dribbleDirection * _dribbleDistance;
-
-                Debug.DrawLine(owner.transform.position, potentialDribblePos, Color.yellow, 1.0f);
             }
             else
             {
                 // 前方无阻挡，直接带球
                 potentialDribblePos = owner.transform.position + dribbleDirection * _dribbleDistance;
-                Debug.DrawLine(owner.transform.position, potentialDribblePos, Color.green, 1.0f);
             }
 
             Blackboard.MoveTarget = potentialDribblePos;

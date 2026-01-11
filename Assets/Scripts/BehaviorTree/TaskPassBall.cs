@@ -47,8 +47,6 @@ namespace BehaviorTree
             // --- 5. 传球给预测点，而不是当前点 ---
             ballCtrl.KickTo(predictedPos, Blackboard.Stats.PassingSpeed);
 
-            Debug.DrawLine(ball.transform.position, predictedPos, Color.red, 2.0f);
-
             return NodeState.SUCCESS;
         }
     }

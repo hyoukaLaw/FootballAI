@@ -70,10 +70,6 @@ namespace BehaviorTree
             if (foundSpot)
             {
                 Blackboard.MoveTarget = bestSpot;
-
-                // 可选：在这里可以画线调试，方便你看 AI 想去哪
-                Debug.DrawLine(centerPos, bestSpot, Color.green);
-
                 NodeState = NodeState.SUCCESS;
                 return NodeState;
             }
