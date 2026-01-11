@@ -30,5 +30,10 @@ namespace BehaviorTree
 
         // --- 4. 传球状态 ---
         public bool IsPassTarget; // 我是否是当前传球目标
+
+        // --- 5. 状态效果 ---
+        public bool IsStunned;        // 是否处于眩晕/停顿状态
+        public float StunTimer = 0f;  // 停顿计时器
+        public float StunDuration = 0.5f; // 停顿时长（秒）
     }
 }

@@ -53,14 +53,23 @@ public class PlayerAI : MonoBehaviour
     {
         if (MatchManager.Instance.GamePaused)
             return;
-        // 4. 每帧运行
+        // 每帧运行行为树
         _tree.Tick();
     }
     
     // === 新增：构建完整主树 ===
     private Node BuildMainTree()
     {
-        // === 最高优先级：我是传球目标 → 接球 ===
+        // === 最高优先级：眩晕状态检查 ===
+        Node checkStunned = new CheckIsStunned(_blackboard);
+        Node stunWait = new TaskStunWait(_blackboard);
+        SequenceNode stunnedSeq = new SequenceNode(_blackboard, new List<Node>
+        {
+            checkStunned,
+            stunWait
+        });
+
+        // === 次高优先级：我是传球目标 → 接球 ===
         Node isPassTarget = new CheckIsPassTarget(_blackboard);
         Node chaseBallForPass = new TaskChaseBall(_blackboard);
         Node runToPass = new TaskMoveToPosition(_blackboard);
@@ -96,10 +105,11 @@ public class PlayerAI : MonoBehaviour
             offensiveTree
         });
 
-        // === 根节点：接球 > 进攻 > 防守 ===
+        // === 根节点：眩晕 > 接球 > 进攻 > 防守 ===
         SelectorNode root = new SelectorNode(_blackboard, new List<Node>
         {
-            passReceiveSeq,      // 最高：我是传球目标
+            stunnedSeq,          // 最高：处于眩晕状态
+            passReceiveSeq,      // 次高：我是传球目标
             offensiveBranch,     // 次要：本队控球→进攻
             defensiveTree        // 最后：防守
         });

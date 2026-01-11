@@ -29,7 +29,6 @@ namespace BehaviorTree
             {
                 // 不在抢断范围内，继续移动接近
                 Blackboard.MoveTarget = ballHolder.transform.position;
-                Debug.Log($"抢球接近");
                 return NodeState.RUNNING;
             }
             
@@ -65,7 +64,6 @@ namespace BehaviorTree
             
             // 基础抢断概率 + 防守属性加成 + 距离加成
             float tackleChance = 0.3f + defensiveFactor * 0.2f + distanceFactor * 0.3f;
-            Debug.Log($"抢断机率 {tackleChance}");
             return Mathf.Clamp01(tackleChance); // 确保在0-1范围内
         }
         
@@ -76,6 +74,9 @@ namespace BehaviorTree
             Vector3 tacklerPosition = tackler.transform.position;
             MatchManager.Instance.Ball.transform.position = tacklerPosition;
 
+            // 被抢断者（记录在抢断前）
+            GameObject ballHolder = Blackboard.BallHolder;
+
             // 将球权转移给抢断球员
             MatchManager.Instance.CurrentBallHolder = tackler;
 
@@ -85,7 +86,17 @@ namespace BehaviorTree
             // 触发抢断保护期，防止立即被反抢
             MatchManager.Instance.TriggerStealCooldown();
 
-            Debug.Log($"{tackler.name} 抢断成功！获得球权！");
+            // 让被抢断者停顿一下（符合现实，避免反复互相抢断）
+            if (ballHolder != null)
+            {
+                var ballHolderAI = ballHolder.GetComponent<PlayerAI>();
+                if (ballHolderAI != null && ballHolderAI.GetBlackboard() != null)
+                {
+                    var bb = ballHolderAI.GetBlackboard();
+                    bb.IsStunned = true;
+                    bb.StunTimer = bb.StunDuration; // 使用配置的停顿时长
+                }
+            }
         }
     }
 }
