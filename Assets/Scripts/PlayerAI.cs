@@ -124,7 +124,6 @@ public class PlayerAI : MonoBehaviour
     private Node BuildDefensiveTree()
     {
         // 分支 A: 争抢无主球 (Loose Ball)
-        // 复用之前的逻辑：如果是无主球，且我最近 -> 追
         Node checkLoose = new CheckIsClosestToLooseBall(_blackboard);
         Node chaseBall = new TaskChaseBall(_blackboard);
         Node moveAction = new TaskMoveToPosition(_blackboard);
@@ -133,23 +132,42 @@ public class PlayerAI : MonoBehaviour
         {
             checkLoose, chaseBall, moveAction
         });
-
+    
         // 分支 B: 组织防守 (Organized Defense)
-        // 1. 思考：我是去抢持球人，还是盯人？
+        // 1. 思考节点：评估我是去抢持球人还是盯人
         Node evalDefense = new TaskEvaluateDefensiveState(_blackboard);
-        
-        // 2. 行动：执行移动 (MoveTarget 已经在 Evaluate 里算好了)
-        // 注意：如果是抢球，Evaluate 会把 MoveTarget 设为球的位置
-        // 如果是盯人，Evaluate 会把 MoveTarget 设为阻截点
-        // 所以这里直接复用 MoveToPosition 即可！
-        Node executeMove = new TaskMoveToPosition(_blackboard);
-
+    
+        // 2. 抢断分支
+        // 条件：是否在抢断范围内且有明确的目标
+        Node checkCanTackle = new SimpleCondition(_blackboard, bb => 
+        {
+            if (bb.BallHolder == null) return false;
+            float distance = Vector3.Distance(bb.Owner.transform.position, bb.BallHolder.transform.position);
+            return distance < 1.5f; // 抢断尝试范围
+        });
+        Node tackleAction = new TaskTackle(_blackboard);
+        SequenceNode tackleSeq = new SequenceNode(_blackboard, new List<Node>
+        {
+            checkCanTackle, tackleAction
+        });
+    
+        // 3. 移动分支：如果不能抢断，就移动接近
+        Node moveToPosition = new TaskMoveToPosition(_blackboard);
+    
+        // 4. 防守行动选择器：优先尝试抢断，否则移动
+        SelectorNode defenseActionSelector = new SelectorNode(_blackboard, new List<Node>
+        {
+            tackleSeq,
+            moveToPosition
+        });
+    
+        // 5. 防守序列：先评估防守状态，再执行行动
         SequenceNode organizedDefenseSeq = new SequenceNode(_blackboard, new List<Node>
         {
             evalDefense,
-            executeMove
+            defenseActionSelector
         });
-
+    
         // 防守根：优先抢无主球，否则进行组织防守
         return new SelectorNode(_blackboard, new List<Node>
         {

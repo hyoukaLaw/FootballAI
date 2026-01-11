@@ -9,9 +9,9 @@ namespace BehaviorTree
         public override NodeState Evaluate()
         {
             // 如果球是无主的（Loose Ball），防守逻辑暂时不处理，交给通用的抢球逻辑
-            if (Blackboard.BallHolder == null) 
+            if (Blackboard.BallHolder == null)
             {
-                return NodeState.FAILURE; 
+                return NodeState.FAILURE;
             }
 
             GameObject owner = Blackboard.Owner;
@@ -40,11 +40,6 @@ namespace BehaviorTree
                 Blackboard.MarkedPlayer = bestTarget;
 
                 // 计算盯防站位：站在“敌人”和“我方球门”之间
-                // 这里的 EnemyGoalPosition 其实是“对方球门”，我们需要算出“我方球门”
-                // 既然 MatchManager 传进来的 EnemyGoalPosition 是我们要攻的门，那反方向大概就是我们要守的门
-                // 更严谨的做法是在 MatchManager 同步时把 OwnGoal 也传进来，这里简化处理：
-                // 假设：我方要守的门，就是对方想攻的门。这里我们暂时用简单的“位于敌人和球之间”的策略。
-                
                 Vector3 targetPos = bestTarget.transform.position;
                 Vector3 ballPos = Blackboard.Ball.transform.position;
                 
@@ -73,10 +68,10 @@ namespace BehaviorTree
             return true;
         }
 
-        // 辅助：找个没人盯的或者离我近的敌人
+        // 辅助：找个没人盯的或者离我最近的无球敌人
         private GameObject FindClosestEnemyToMark(GameObject me, GameObject ballHolder)
         {
-            GameObject best = null;
+            GameObject bestTarget = null;
             float closestDist = float.MaxValue;
 
             foreach (var enemy in Blackboard.Opponents)
@@ -87,10 +82,10 @@ namespace BehaviorTree
                 if (d < closestDist)
                 {
                     closestDist = d;
-                    best = enemy;
+                    bestTarget = enemy;
                 }
             }
-            return best;
+            return bestTarget;
         }
     }
 }

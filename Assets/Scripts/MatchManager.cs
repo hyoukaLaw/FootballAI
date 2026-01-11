@@ -34,6 +34,11 @@ public class MatchManager : MonoBehaviour
     private float _passTimeout = 3.0f;    // 传球超时时间
     private float _passTimer = 0f;        // 计时器
 
+    [Header("抢断保护")]
+    private float _stealCooldownTimer = 0f; // 抢断保护期计时器
+    public float StealCooldownDuration = 3f; // 抢断保护期时长（秒）
+    public bool IsInStealCooldown { get { return _stealCooldownTimer > 0f; } } // 是否在保护期内
+
     private void Awake()
     {
         // 初始化单例
@@ -46,6 +51,12 @@ public class MatchManager : MonoBehaviour
         if (GamePaused)
         {
             return; // 游戏暂停，不执行任何逻辑
+        }
+
+        // 更新抢断保护期计时器
+        if (_stealCooldownTimer > 0f)
+        {
+            _stealCooldownTimer -= Time.deltaTime;
         }
 
         // 1. 计算物理状态 (谁拿着球？)
@@ -85,6 +96,12 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void UpdatePossessionState()
     {
+        // 如果在抢断保护期内，跳过重新计算球权
+        if (_stealCooldownTimer > 0f)
+        {
+            return;
+        }
+
         GameObject closestPlayer = null;
         float minDistance = float.MaxValue;
 
@@ -120,7 +137,7 @@ public class MatchManager : MonoBehaviour
     /// <summary>
     /// 数据分发：将全局信息写入每个球员的 FootballBlackboard
     /// </summary>
-    private void SyncAllBlackboards()
+    public void SyncAllBlackboards()
     {
         // 为红队同步 (队友是红队，敌人是蓝队)
         SyncTeamData(TeamRedPlayers, TeamRedPlayers, TeamBluePlayers, BlueGoal.position);
@@ -226,5 +243,13 @@ public class MatchManager : MonoBehaviour
         // 重置球的速度
         BallController ballCtrl = Ball.GetComponent<BallController>();
         // 如果 BallController 有重置方法可以调用
+    }
+
+    /// <summary>
+    /// 触发抢断保护期，防止抢断后立即被反抢
+    /// </summary>
+    public void TriggerStealCooldown()
+    {
+        _stealCooldownTimer = StealCooldownDuration;
     }
 }
