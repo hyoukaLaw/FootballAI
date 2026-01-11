@@ -22,7 +22,7 @@ namespace BehaviorTree
             GameObject ballHolder = Blackboard.MatchContext.BallHolder;
 
             // 检查是否在抢断范围内
-            float tackleDistance = 1.6f; // 抢断有效距离
+            float tackleDistance =  ballHolder.GetComponent<PlayerAI>().Stats.TackledDistance; // 抢断有效距离
             float distanceToBallHolder = Vector3.Distance(owner.transform.position, ballHolder.transform.position);
 
             if (distanceToBallHolder > tackleDistance)

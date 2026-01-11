@@ -11,6 +11,8 @@ public class PlayerStats
     [Header("移动属性")]
     public float MovementSpeed = 2.0f;
     public float SprintMultiplier = 1.2f;
+    [Header("带球属性")]
+    public float TackledDistance = 1.6f;
     
     [Header("传球属性")]
     public float PassingSpeed = 10f;
@@ -31,6 +33,10 @@ public class PlayerAI : MonoBehaviour
     private FootballBlackboard _blackboard;
     private BehaviorTree.BehaviorTree _tree; // 指明是由于我们自定义的类
     public Node CurrentNode;
+
+    [Header("调试信息")]
+    [TextArea(3, 10)]
+    public string ExecutionPath = "None"; // 当前执行路径（返回 SUCCESS 或 RUNNING 的所有节点）
 
     [Header("球员属性配置")]
     public PlayerStats Stats = new PlayerStats();
@@ -65,6 +71,9 @@ public class PlayerAI : MonoBehaviour
             return;
         // 每帧运行行为树
         _tree.Tick();
+
+        // 更新执行路径（用于调试）
+        ExecutionPath = _tree.ExecutionPath;
     }
     
     // === 新增：构建完整主树 ===
@@ -78,6 +87,7 @@ public class PlayerAI : MonoBehaviour
             checkStunned,
             stunWait
         });
+        stunnedSeq.Name = "stunnedSeq";
 
         // === 次高优先级：我是传球目标 → 接球 ===
         Node isPassTarget = new CheckIsPassTarget(_blackboard);
@@ -89,6 +99,7 @@ public class PlayerAI : MonoBehaviour
             chaseBallForPass,
             runToPass
         });
+        passReceiveSeq.Name = "passReceiveSeq";
 
         // === 次要优先级：攻防逻辑 ===
         // 1. 构建 进攻子树 (你原来写的那个)
@@ -114,6 +125,7 @@ public class PlayerAI : MonoBehaviour
             isTeamInControl,
             offensiveTree
         });
+        offensiveBranch.Name = "offensiveBranch";
 
         // === 根节点：眩晕 > 接球 > 进攻 > 防守 ===
         SelectorNode root = new SelectorNode(_blackboard, new List<Node>
@@ -123,6 +135,7 @@ public class PlayerAI : MonoBehaviour
             offensiveBranch,     // 次要：本队控球→进攻
             defensiveTree        // 最后：防守
         });
+        root.Name = "root";
 
         return root;
     }
@@ -151,6 +164,7 @@ public class PlayerAI : MonoBehaviour
         {
             checkLoose, chaseBall, moveAction
         });
+        looseBallSeq.Name = "looseBallSeq";
     
         // 分支 B: 组织防守 (Organized Defense)
         // 1. 思考节点：评估我是去抢持球人还是盯人
@@ -169,6 +183,7 @@ public class PlayerAI : MonoBehaviour
         {
             checkCanTackle, tackleAction
         });
+        tackleSeq.Name = "tackleSeq";
     
         // 3. 移动分支：如果不能抢断，就移动接近
         Node moveToPosition = new TaskMoveToPosition(_blackboard);
@@ -179,6 +194,7 @@ public class PlayerAI : MonoBehaviour
             tackleSeq,
             moveToPosition
         });
+        defenseActionSelector.Name = "defenseActionSelector";
     
         // 5. 防守序列：先评估防守状态，再执行行动
         SequenceNode organizedDefenseSeq = new SequenceNode(_blackboard, new List<Node>
@@ -186,13 +202,16 @@ public class PlayerAI : MonoBehaviour
             evalDefense,
             defenseActionSelector
         });
+        organizedDefenseSeq.Name = "organizedDefenseSeq";
     
         // 防守根：优先抢无主球，否则进行组织防守
-        return new SelectorNode(_blackboard, new List<Node>
+        SelectorNode defensiveRoot = new SelectorNode(_blackboard, new List<Node>
         {
             looseBallSeq,
             organizedDefenseSeq
         });
+        defensiveRoot.Name = "defensiveRoot";
+        return defensiveRoot;
     }
 
 // === 核心：组装进攻方行为树 ===
@@ -211,18 +230,21 @@ public class PlayerAI : MonoBehaviour
         Node checkCanShoot = new SimpleCondition(_blackboard, bb => bb.CanShoot);
         Node shootAction = new TaskShoot(_blackboard);
         SequenceNode shootSequence = new SequenceNode(_blackboard, new List<Node> { checkCanShoot, shootAction });
+        shootSequence.Name = "shootSequence";
 
         // 3. 传球分支
         // 条件：黑板里有传球目标吗？
         Node checkPassTarget = new SimpleCondition(_blackboard, bb => bb.BestPassTarget != null);
         Node passAction = new TaskPassBall(_blackboard);
         SequenceNode passSequence = new SequenceNode(_blackboard, new List<Node> { checkPassTarget, passAction });
+        passSequence.Name = "passSequence";
 
         // 4. 盘带分支 (兜底)
         // 条件：黑板里有移动目标吗？
         Node checkDribbleTarget = new SimpleCondition(_blackboard, bb => bb.MoveTarget != Vector3.zero);
         Node dribbleAction = new TaskMoveToPosition(_blackboard); // 复用之前的移动节点！
         SequenceNode dribbleSequence = new SequenceNode(_blackboard, new List<Node> { checkDribbleTarget, dribbleAction });
+        dribbleSequence.Name = "dribbleSequence";
 
         // 5. 行动选择器：优先射门 > 传球 > 盘带
         SelectorNode actionSelector = new SelectorNode(_blackboard, new List<Node>
@@ -231,6 +253,7 @@ public class PlayerAI : MonoBehaviour
             passSequence,
             dribbleSequence
         });
+        actionSelector.Name = "actionSelector";
 
         // 5. 总序列：先思考，再行动
         SequenceNode hasBallSequence = new SequenceNode(_blackboard, new List<Node> 
@@ -239,6 +262,7 @@ public class PlayerAI : MonoBehaviour
             evaluateOptions,                   // 脑子：想
             actionSelector                     // 身体：动
         });
+        hasBallSequence.Name = "hasBallSequence";
 
 
 // ==========================================
@@ -256,6 +280,7 @@ public class PlayerAI : MonoBehaviour
             chaseBallForPassOff,
             runToPassOff
         });
+        passReceiveSeqOff.Name = "passReceiveSeqOff";
 
         // --- 子分支 B-1 (抢无主球) ---
         // 逻辑：如果球是无主的，且我是最近的 -> 追球
@@ -269,12 +294,14 @@ public class PlayerAI : MonoBehaviour
             setBallTarget,
             runToBall
         });
+        interceptSeq.Name = "interceptSeq";
 
 
         // --- 子分支 B-2 (战术跑位) ---
         Node calcSpot = new TaskCalculateSupportSpot(_blackboard);
         Node moveSpot = new TaskMoveToPosition(_blackboard);
         SequenceNode supportSeq = new SequenceNode(_blackboard, new List<Node> { calcSpot, moveSpot });
+        supportSeq.Name = "supportSeq";
 
 
         // --- 分支 B 总选择器 ---
@@ -285,23 +312,18 @@ public class PlayerAI : MonoBehaviour
             interceptSeq,      // 抢球
             supportSeq         // 跑位
         });
+        offBallSelector.Name = "offBallSelector";
 
         // ==========================================
         // 进攻树根节点
         // ==========================================
-        SelectorNode root = new SelectorNode(_blackboard, new List<Node>
+        SelectorNode offensiveRoot = new SelectorNode(_blackboard, new List<Node>
         {
             hasBallSequence,
             offBallSelector
         });
-
-
-        // ---------------------------------------------
-        // 根节点: 选择器 (Selector)
-        // ---------------------------------------------
-        // 逻辑：优先看是不是有球？ -> 是，执行A。 -> 否，执行B (跑位)。
-
-        return root;
+        offensiveRoot.Name = "offensiveRoot";
+        return offensiveRoot;
     }
     
     // 调试用：在 Scene 窗口画出他想去哪
@@ -309,6 +331,19 @@ public class PlayerAI : MonoBehaviour
     {
         if (_blackboard != null)
         {
+            // === 持球范围可视化 ===
+            if (_blackboard.MatchContext != null && 
+                _blackboard.MatchContext.BallHolder == _blackboard.Owner)
+            {
+                // 持球范围（淡黄色，1.0m）
+                Gizmos.color = new Color(1f, 1f, 0.5f, 0.5f);
+                Gizmos.DrawWireSphere(transform.position, 1.0f);
+
+                // 抢断范围（红色，1.6m）
+                Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.5f);
+                Gizmos.DrawWireSphere(transform.position, Stats.TackledDistance);
+            }
+
             // 画出移动目标
             if (_blackboard.MoveTarget != Vector3.zero)
             {
