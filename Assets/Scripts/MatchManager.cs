@@ -157,37 +157,65 @@ public class MatchManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 进球后的处理
+    /// 恢复游戏（供外部调用）
+    /// </summary>
+    public void ResumeGame()
+    {
+        // 1. 归位所有红队球员
+        foreach (var player in TeamRedPlayers)
+        {
+            if (player != null)
+            {
+                var playerAI = player.GetComponent<PlayerAI>();
+                if (playerAI != null)
+                {
+                    playerAI.ResetPosition();
+                }
+            }
+        }
+
+        // 2. 归位所有蓝队球员
+        foreach (var player in TeamBluePlayers)
+        {
+            if (player != null)
+            {
+                var playerAI = player.GetComponent<PlayerAI>();
+                if (playerAI != null)
+                {
+                    playerAI.ResetPosition();
+                }
+            }
+        }
+
+        // 3. 重置球和球权
+        ResetBall();
+
+        // 4. 恢复游戏
+        GamePaused = false;
+
+        Debug.Log("比赛恢复！所有球员归位，球放回中心。");
+    }
+
+    /// <summary>
     /// 暂停所有AI逻辑
     /// </summary>
     private void OnGoalScored(string scoringTeam)
     {
         // 暂停游戏
         GamePaused = true;
+        
+        
+        if (Context != null)
+        {
+            Context.IncomingPassTarget = null;
+            Context.SetPassTarget(null);
+        }
 
-        // 可选：在这里重置球的位置、统计分数等
-        // ResetBall();
-    }
-
-    /// <summary>
-    /// 恢复游戏（供外部调用）
-    /// </summary>
-    public void ResumeGame()
-    {
-        GamePaused = false;
-    }
-
-    /// <summary>
-    /// 重置球的位置（可选）
-    /// </summary>
-    private void ResetBall()
-    {
-        // 将球放回中心
-        Ball.transform.position = Vector3.zero;
-
-        // 重置球的速度
-        BallController ballCtrl = Ball.GetComponent<BallController>();
-        // 如果 BallController 有重置方法可以调用
+        // 5. 清除抢断保护期
+        if (Context != null)
+        {
+            Context.SetStealCooldown(0f);
+        }
     }
 
     /// <summary>
@@ -199,5 +227,10 @@ public class MatchManager : MonoBehaviour
         {
             Context.SetStealCooldown(StealCooldownDuration);
         }
+    }
+    
+    public void ResetBall()
+    {
+        Ball.transform.position = Vector3.zero;
     }
 }

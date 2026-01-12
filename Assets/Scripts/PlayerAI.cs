@@ -1,5 +1,6 @@
 // PlayerAI.cs (挂在圆柱体上)
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using BehaviorTree;
@@ -38,8 +39,16 @@ public class PlayerAI : MonoBehaviour
     [TextArea(3, 10)]
     public string ExecutionPath = "None"; // 当前执行路径（返回 SUCCESS 或 RUNNING 的所有节点）
 
+    [Header("初始位置")]
+    public Vector3 InitialPosition; // 初始位置
+
     [Header("球员属性配置")]
     public PlayerStats Stats = new PlayerStats();
+
+    private void OnValidate()
+    {
+        InitialPosition = transform.position;
+    }
 
     void Awake()
     {
@@ -47,6 +56,9 @@ public class PlayerAI : MonoBehaviour
         _blackboard = new FootballBlackboard();
         _blackboard.Owner = this.gameObject; // 记录自己是谁
         _blackboard.Stats = Stats; // 传入球员属性
+
+        // 记录初始位置
+        InitialPosition = transform.position;
 
         // 2. 注入全局上下文
         if (MatchManager.Instance != null && MatchManager.Instance.Context != null)
@@ -359,6 +371,12 @@ public class PlayerAI : MonoBehaviour
                 Gizmos.DrawIcon(transform.position + Vector3.up * 2, "Pass");
             }
         }
+     }
+     
+    // === 新增：归位方法 ===
+    public void ResetPosition()
+    {
+        transform.position = InitialPosition;
     }
     
     // === 新增：给 MatchManager 用的接口 ===

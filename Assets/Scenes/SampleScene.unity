@@ -450,7 +450,7 @@ GameObject:
   - component: {fileID: 866144400}
   - component: {fileID: 866144399}
   m_Layer: 5
-  m_Name: Button
+  m_Name: ContinueButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1069,8 +1069,20 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+      propertyPath: InitialPosition.x
+      value: 14.14
+      objectReference: {fileID: 0}
+    - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+      propertyPath: InitialPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+      propertyPath: InitialPosition.z
+      value: 1.68
+      objectReference: {fileID: 0}
+    - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: Stats.MovementSpeed
-      value: 12
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1138,8 +1150,20 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+      propertyPath: InitialPosition.x
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+      propertyPath: InitialPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+      propertyPath: InitialPosition.z
+      value: 6.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: Stats.MovementSpeed
-      value: 6
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1359,6 +1383,7 @@ GameObject:
   - component: {fileID: 1819540577}
   - component: {fileID: 1819540576}
   - component: {fileID: 1819540575}
+  - component: {fileID: 1819540579}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -1449,6 +1474,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1819540579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1819540574}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5bb0c49a136d10468d336c8448696a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ResumeButton: {fileID: 866144399}
 --- !u!1001 &2090009416
 PrefabInstance:
   m_ObjectHideFlags: 0
