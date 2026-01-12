@@ -9,7 +9,6 @@ namespace BehaviorTree
     public class TaskShoot : Node
     {
         private float _shootPower = 20f; // 射门力度
-        private float _shootAngle = 15f; // 射门角度（地面球或半高球）
 
         public TaskShoot(FootballBlackboard bb) : base(bb) { }
 
@@ -17,7 +16,6 @@ namespace BehaviorTree
         {
             if (Blackboard.MatchContext == null || Blackboard.MatchContext.Ball == null)
                 return NodeState.FAILURE;
-
             GameObject ball = Blackboard.MatchContext.Ball;
             Vector3 goalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
 

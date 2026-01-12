@@ -89,10 +89,9 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void UpdatePossessionState()
     {
-        // 如果在抢断保护期内，跳过重新计算球权
-        if (Context != null && Context.IsInStealCooldown)
+        if (Ball.GetComponent<BallController>().IsInFlyTimer())
         {
-            return;
+            Context.BallHolder=null;
         }
 
         GameObject closestPlayer = null;

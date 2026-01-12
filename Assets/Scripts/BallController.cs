@@ -14,7 +14,7 @@ public class BallController : MonoBehaviour
         _targetPos = target;
         _speed = speed;
         _isMoving = true;
-        _flyTimer = 0.2f; // 给0.2秒的"飞行保护期"
+        _flyTimer = 0.5f; // 给0.2秒的"飞行保护期"
     }
 
     void Update()
@@ -45,5 +45,10 @@ public class BallController : MonoBehaviour
         {
             _isMoving = false;
         }
+    }
+
+    public bool IsInFlyTimer()
+    {
+        return _flyTimer > 0;
     }
 }
