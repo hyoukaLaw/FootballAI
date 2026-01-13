@@ -10,7 +10,7 @@ namespace BehaviorTree
         private float _distanceWeight = 1.0f; // 距离适中的队友分高
 
         // 盘带配置
-        private float _dribbleDistance = 5.0f; // 盘带前进距离
+        private float _dribbleDistance = 0.1f; // 盘带前进距离
         private float _detectRange = 3.5f; // 前方检测距离
         private float _detectAngle = 90f; // 检测角度（半角）
         private float _sidestepDistance = 3.0f; // 侧移距离
@@ -97,12 +97,17 @@ namespace BehaviorTree
                 float rightDistToGoal = Vector3.Distance(rightPos, goalPos);
 
                 Vector3 sidestepPos = leftDistToGoal < rightDistToGoal ? leftPos : rightPos;
-                potentialDribblePos = sidestepPos + dribbleDirection * _dribbleDistance;
+                potentialDribblePos = sidestepPos + dribbleDirection;
+
+                potentialDribblePos = owner.transform.position +
+                                      (potentialDribblePos - owner.transform.position).normalized *
+                                      MatchContext.MoveSplit;
+                Debug.Log($"dribble: {(potentialDribblePos - owner.transform.position).normalized} {owner.transform.position} {potentialDribblePos}");
             }
             else
             {
                 // 前方无阻挡，直接带球
-                potentialDribblePos = owner.transform.position + dribbleDirection * _dribbleDistance;
+                potentialDribblePos = owner.transform.position + dribbleDirection * MatchContext.MoveSplit;
             }
 
             Blackboard.MoveTarget = potentialDribblePos;

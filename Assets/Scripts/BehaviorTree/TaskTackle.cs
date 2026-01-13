@@ -30,7 +30,7 @@ namespace BehaviorTree
             float tackleChance = CalculateTackleChance(owner, ballHolder);
             float random = Random.Range(0f, 1f);
 
-            if (random <= tackleChance)
+            if(random <= tackleChance)
             {
                 // 抢断成功！
                 StealBall(owner);

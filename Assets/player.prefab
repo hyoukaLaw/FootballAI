@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 337658414358645802}
   - component: {fileID: 6394118364697134700}
   - component: {fileID: 833343252519197057}
-  - component: {fileID: 7287159286380817005}
   - component: {fileID: 35738991383565811}
   m_Layer: 0
   m_Name: player
@@ -85,29 +84,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &7287159286380817005
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5718606146349957468}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!114 &35738991383565811
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -120,3 +96,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ec49f7b94d3486cbd76511084136ca4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ExecutionPath: None
+  InitialPosition: {x: -6.242962, y: 8.335007, z: 2.3126488}
+  Stats:
+    MovementSpeed: 2
+    SprintMultiplier: 1.2
+    TackledDistance: 1.6
+    PassingSpeed: 10
+    PassingAccuracy: 0.9
+    ShootingPower: 20
+    ShootingAccuracy: 0.7
+    DefensiveAwareness: 1

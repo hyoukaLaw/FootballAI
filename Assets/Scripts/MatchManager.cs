@@ -157,7 +157,7 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     public void ResumeGame()
     {
-        // 1. 归位所有红队球员
+        //1. 归位所有红队球员
         foreach (var player in TeamRedPlayers)
         {
             if (player != null)
@@ -166,11 +166,13 @@ public class MatchManager : MonoBehaviour
                 if (playerAI != null)
                 {
                     playerAI.ResetPosition();
+                    playerAI.ResetBlackboard();
+                    playerAI.ResetBehaviorTree(); // 重置行为树所有节点状态
                 }
             }
         }
 
-        // 2. 归位所有蓝队球员
+        //2. 归位所有蓝队球员
         foreach (var player in TeamBluePlayers)
         {
             if (player != null)
@@ -179,17 +181,19 @@ public class MatchManager : MonoBehaviour
                 if (playerAI != null)
                 {
                     playerAI.ResetPosition();
+                    playerAI.ResetBlackboard();
+                    playerAI.ResetBehaviorTree(); // 重置行为树所有节点状态
                 }
             }
         }
 
-        // 3. 重置球和球权
+        //3. 重置球和球权
         ResetBall();
 
-        // 4. 恢复游戏
+        //4. 恢复游戏
         GamePaused = false;
 
-        Debug.Log("比赛恢复！所有球员归位，球放回中心。");
+        Debug.Log("比赛恢复！所有球员归位，球放回中心，行为树状态已重置。");
     }
 
     /// <summary>

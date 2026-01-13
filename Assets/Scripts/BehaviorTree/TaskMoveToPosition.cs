@@ -5,7 +5,7 @@ namespace BehaviorTree
     public class TaskMoveToPosition : Node
     {
         // 到达判定的误差范围
-        private float _stoppingDistance = 0.1f;
+        private float _stoppingDistance = 0.02f;
         // --- 新增：带球参数 ---
         // 球在脚下的偏移量 (圆柱体前方 0.5米)
         private float _dribbleOffset = 0f;
@@ -57,7 +57,7 @@ namespace BehaviorTree
             // 2. --- 新增：带球逻辑 (Dribble Logic) ---
             DribbleBall(owner);
             // 5. 还在路上，返回 RUNNING
-            NodeState = NodeState.SUCCESS;
+            NodeState = NodeState.RUNNING;
             return NodeState;
         }
         
@@ -75,6 +75,7 @@ namespace BehaviorTree
                 ballPos.y = 0f;
 
                 Blackboard.MatchContext.Ball.transform.position = ballPos;
+                Debug.Log($"{Blackboard.Owner.name}Dribble ball to {ballPos}");
             }
         }
     }

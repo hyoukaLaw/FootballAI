@@ -86,5 +86,15 @@ namespace BehaviorTree
         {
             return IncomingPassTarget == player;
         }
+
+        public void Reset()
+        {
+            IncomingPassTarget = null;
+            _stealCooldownTimer = 0f;
+            BallHolder = null;
+            _passTimer = 0f;
+        }
+        
+        public static float MoveSplit = 0.1f;
     }
 }

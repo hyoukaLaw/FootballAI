@@ -22,6 +22,12 @@ namespace BehaviorTree
             _rootNode = root;
         }
 
+        // 获取根节点（用于重置状态）
+        public Node GetRootNode()
+        {
+            return _rootNode;
+        }
+
         // 每帧由外部控制器调用
         public void Tick()
         {
@@ -35,7 +41,7 @@ namespace BehaviorTree
             }
         }
 
-        // 查找执行路径（收集所有返回 SUCCESS 或 RUNNING 的节点）
+        // 查找执行路径（追踪当前执行的节点）
         private void FindExecutionPath(Node node, System.Collections.Generic.List<string> path)
         {
             // 如果是叶子节点
@@ -43,7 +49,7 @@ namespace BehaviorTree
             {
                 if (node.GetNodeState() != NodeState.NOT_EVALUATED)
                 {
-                    path.Add(node.GetNodeTypeName()+" "+node.GetNodeState().ToString());
+                    path.Add(node.GetNodeTypeName() + " " + node.GetNodeState().ToString());
                 }
                 return;
             }
@@ -51,53 +57,50 @@ namespace BehaviorTree
             // 如果是组合节点，根据类型不同处理
             var composite = node as CompositeNode;
 
+            // 组合节点本身也要显示状态
+            if (composite.GetNodeState() != NodeState.NOT_EVALUATED)
+            {
+                path.Add(composite.GetNodeTypeName() + " " + composite.GetNodeState().ToString());
+            }
+            else
+            {
+                return;
+            }
+
+            // SelectorNode：只遍历到第一个 SUCCESS/RUNNING 的子节点
             if (composite is SelectorNode)
             {
-                if (node.GetNodeState() != NodeState.NOT_EVALUATED)
-                {
-                    path.Add(node.GetNodeTypeName()+" "+node.GetNodeState().ToString());
-                }
-                else
-                {
-                    return;
-                }
-                // SelectorNode：只找到第一个 SUCCESS/RUNNING 子节点
                 foreach (var child in composite.ChildrenNodes)
                 {
                     var childPath = new System.Collections.Generic.List<string>();
                     FindExecutionPath(child, childPath);
 
-                    if (childPath.Count > 0)
+                    if (child.GetNodeState() == NodeState.RUNNING || child.GetNodeState() == NodeState.SUCCESS)
                     {
                         path.AddRange(childPath);
+                        break; // Selector 只选择第一个成功分支
                     }
                 }
             }
+            // SequenceNode：遍历所有子节点，直到遇到 FAILURE
             else if (composite is SequenceNode)
             {
-                if (node.GetNodeState() != NodeState.NOT_EVALUATED)
-                {
-                    path.Add(node.GetNodeTypeName()+" "+node.GetNodeState().ToString());
-                }
-                else
-                {
-                    return;
-                }
                 foreach (var child in composite.ChildrenNodes)
                 {
                     var childPath = new System.Collections.Generic.List<string>();
                     FindExecutionPath(child, childPath);
 
-                    if (childPath.Count > 0)
+                    // 如果子节点被评估过（NOT_EVALUATED 除外），就加入路径
+                    if (child.GetNodeState() != NodeState.NOT_EVALUATED)
                     {
                         path.AddRange(childPath);
-                    }
 
-                    // // 如果这个子节点返回 FAILURE，SequenceNode 会停止
-                    // if (child.GetNodeState() == NodeState.FAILURE)
-                    // {
-                    //     break;
-                    // }
+                        // 如果遇到 FAILURE，停止遍历后续子节点
+                        if (child.GetNodeState() == NodeState.FAILURE)
+                        {
+                            break;
+                        }
+                    }
                 }
             }
         }

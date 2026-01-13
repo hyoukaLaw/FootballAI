@@ -198,13 +198,20 @@ public class PlayerAI : MonoBehaviour
         tackleSeq.Name = "tackleSeq";
     
         // 3. 移动分支：如果不能抢断，就移动接近
+        Node chaseBallForDefense = new TaskChaseBall(_blackboard);
         Node moveToPosition = new TaskMoveToPosition(_blackboard);
+        SequenceNode chaseBallDefenseSeq = new SequenceNode(_blackboard, new List<Node>
+        {
+            chaseBallForDefense,
+            moveToPosition
+        });
+        chaseBallDefenseSeq.Name = "chaseBallDefenseSeq";
     
         // 4. 防守行动选择器：优先尝试抢断，否则移动
         SelectorNode defenseActionSelector = new SelectorNode(_blackboard, new List<Node>
         {
             tackleSeq,
-            moveToPosition
+            chaseBallDefenseSeq
         });
         defenseActionSelector.Name = "defenseActionSelector";
     
@@ -377,6 +384,47 @@ public class PlayerAI : MonoBehaviour
     public void ResetPosition()
     {
         transform.position = InitialPosition;
+    }
+
+    public void ResetBlackboard()
+    {
+        if (_blackboard == null) return;
+
+        // --- 重置个人决策数据 ---
+        _blackboard.MoveTarget = Vector3.zero;
+        _blackboard.PassTarget = null;
+
+        // --- 重置进攻决策数据 ---
+        _blackboard.BestPassTarget = null;
+        _blackboard.CanShoot = false;
+
+        // --- 重置防守决策数据 ---
+        _blackboard.MarkedPlayer = null;
+        _blackboard.DefensePosition = Vector3.zero;
+
+        // --- 重置状态效果 ---
+        _blackboard.IsStunned = false;
+        _blackboard.StunTimer = 0f;
+
+        // 注意：不重置以下字段
+        // - _blackboard.Owner (球员引用)
+        // - _blackboard.MatchContext (全局上下文)
+        // - _blackboard.Stats (球员属性)
+    }
+
+    public void ResetBehaviorTree()
+    {
+        if (_tree == null) return;
+
+        // 获取根节点并重置所有节点状态
+        Node root = _tree.GetRootNode();
+        if (root != null)
+        {
+            root.Reset();
+        }
+
+        // 清空执行路径
+        ExecutionPath = "None";
     }
     
     // === 新增：给 MatchManager 用的接口 ===
