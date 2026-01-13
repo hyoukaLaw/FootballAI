@@ -25,10 +25,9 @@ namespace BehaviorTree
         // 每帧由外部控制器调用
         public void Tick()
         {
-            _rootNode.Reset();
             if (_rootNode != null)
             {
-                _rootNode.Evaluate();
+                _rootNode.Execute();
                 // 更新执行路径
                 var pathList = new System.Collections.Generic.List<string>();
                 FindExecutionPath(_rootNode, pathList);

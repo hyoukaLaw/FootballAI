@@ -57,7 +57,7 @@ namespace BehaviorTree
             // 2. --- 新增：带球逻辑 (Dribble Logic) ---
             DribbleBall(owner);
             // 5. 还在路上，返回 RUNNING
-            NodeState = NodeState.RUNNING;
+            NodeState = NodeState.SUCCESS;
             return NodeState;
         }
         

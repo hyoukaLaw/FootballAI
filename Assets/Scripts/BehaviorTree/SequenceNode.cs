@@ -1,39 +1,57 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace BehaviorTree
 {
     public class SequenceNode : CompositeNode
     {
+        private int _currentIndex = 0; // 记忆执行到第几个子节点
+
         public SequenceNode(FootballBlackboard blackboard,List<Node> children) : base(blackboard)
         {
             ChildrenNodes = children;
         }
 
+        public override NodeState Execute()
+        {
+            for (int i = _currentIndex; i < ChildrenNodes.Count; i++)
+            {
+                var status = ChildrenNodes[i].Execute();
+
+                if (status == NodeState.RUNNING)
+                {
+                    _currentIndex = i; // 记住当前执行位置
+                    NodeState = NodeState.RUNNING;
+                    return NodeState.RUNNING;
+                }
+                if (status == NodeState.FAILURE)
+                {
+                    _currentIndex = 0; // 失败，重置
+                    NodeState = NodeState.FAILURE;
+                    return NodeState.FAILURE;
+                }
+                // SUCCESS 则继续下一个
+            }
+
+            _currentIndex = 0; // 全部成功，重置
+            NodeState = NodeState.SUCCESS;
+            return NodeState.SUCCESS;
+        }
+
         public override NodeState Evaluate()
         {
-            bool isAnyChildRunning = false;
-
-            foreach (var node in ChildrenNodes)
-            {
-                switch (node.Evaluate())
-                {
-                    case NodeState.FAILURE:
-                        NodeState = NodeState.FAILURE;
-                        return NodeState; // 有一步卡住了，整个序列失败
-                    case NodeState.SUCCESS:
-                        continue; // 这一步成了，继续下一步
-                    case NodeState.RUNNING:
-                        isAnyChildRunning = true;
-                        continue; // 继续维持运行状态
-                    default:
-                        NodeState = NodeState.SUCCESS;
-                        return NodeState;
-                }
-            }
-            // 如果有节点还在Running，那我也Running，否则就是全Success
-            NodeState = isAnyChildRunning ? NodeState.RUNNING : NodeState.SUCCESS;
-            return NodeState;
+            return Execute();
         }
-        
+
+        public override void Reset()
+        {
+            base.Reset();
+            _currentIndex = 0;
+        }
+
+        public override void OnEnd()
+        {
+            base.OnEnd();
+            _currentIndex = 0; // 序列结束时重置索引
+        }
     }
 }

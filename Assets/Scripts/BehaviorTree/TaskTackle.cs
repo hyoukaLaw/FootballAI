@@ -8,6 +8,7 @@ namespace BehaviorTree
 
         public override NodeState Evaluate()
         {
+            Debug.Log($"Tackle {Time.realtimeSinceStartup} {Time.frameCount} {Blackboard.Owner.name}");
             // 检查抢断保护期：如果在保护期内，不允许任何抢断
             if (Blackboard.MatchContext != null && Blackboard.MatchContext.IsInStealCooldown)
             {
@@ -24,13 +25,6 @@ namespace BehaviorTree
             // 检查是否在抢断范围内
             float tackleDistance =  ballHolder.GetComponent<PlayerAI>().Stats.TackledDistance; // 抢断有效距离
             float distanceToBallHolder = Vector3.Distance(owner.transform.position, ballHolder.transform.position);
-
-            if (distanceToBallHolder > tackleDistance)
-            {
-                // 不在抢断范围内，继续移动接近
-                Blackboard.MoveTarget = ballHolder.transform.position;
-                return NodeState.RUNNING;
-            }
 
             // 尝试抢断
             float tackleChance = CalculateTackleChance(owner, ballHolder);

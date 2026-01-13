@@ -1,33 +1,56 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 namespace BehaviorTree
 {
     public class SelectorNode : CompositeNode
     {
+        private int _currentIndex = 0; // 记忆执行到第几个子节点
+
         public SelectorNode(FootballBlackboard blackboard, List<Node> children) : base(blackboard)
         {
             ChildrenNodes = children;
         }
 
+        public override NodeState Execute()
+        {
+            for (int i = _currentIndex; i < ChildrenNodes.Count; i++)
+            {
+                var status = ChildrenNodes[i].Execute();
+
+                if (status == NodeState.RUNNING)
+                {
+                    _currentIndex = i; // 记住当前执行位置
+                    NodeState = NodeState.RUNNING;
+                    return NodeState.RUNNING;
+                }
+                if (status == NodeState.SUCCESS)
+                {
+                    _currentIndex = 0; // 成功，重置
+                    NodeState = NodeState.SUCCESS;
+                    return NodeState.SUCCESS;
+                }
+                // FAILURE 则继续下一个
+            }
+
+            _currentIndex = 0; // 全部失败，重置
+            NodeState = NodeState.FAILURE;
+            return NodeState.FAILURE;
+        }
+
         public override NodeState Evaluate()
         {
-            foreach (var node in ChildrenNodes)
-            {
-                switch (node.Evaluate())
-                {
-                    case NodeState.RUNNING:
-                        NodeState = NodeState.RUNNING;
-                        return NodeState;
-                    case NodeState.SUCCESS:
-                        NodeState = NodeState.SUCCESS;
-                        return NodeState;
-                    case NodeState.FAILURE:
-                        continue; // 这个失败了？试下一个！
-                    default:
-                        continue;
-                }
-            }
-            NodeState = NodeState.FAILURE;
-            return NodeState;
+            return Execute();
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+            _currentIndex = 0;
+        }
+
+        public override void OnEnd()
+        {
+            base.OnEnd();
+            _currentIndex = 0; // 选择器结束时重置索引
         }
     }
 }
