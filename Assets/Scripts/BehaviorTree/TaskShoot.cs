@@ -16,6 +16,7 @@ namespace BehaviorTree
         {
             if (Blackboard.MatchContext == null || Blackboard.MatchContext.Ball == null)
                 return NodeState.FAILURE;
+            Debug.Log($"Shoot {Time.realtimeSinceStartup} {Time.frameCount} {Blackboard.Owner.name}");
             GameObject ball = Blackboard.MatchContext.Ball;
             Vector3 goalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
 
@@ -28,7 +29,8 @@ namespace BehaviorTree
 
             // 踢球
             ballCtrl.KickTo(shootTarget, _shootPower);
-
+            Blackboard.IsStunned = true;
+            Blackboard.StunTimer = Blackboard.StunDuration;
             return NodeState.SUCCESS;
         }
 

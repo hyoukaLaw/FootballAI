@@ -26,6 +26,6 @@ namespace BehaviorTree
         // --- 状态效果 ---
         public bool IsStunned;        // 是否处于眩晕/停顿状态
         public float StunTimer = 0f;  // 停顿计时器
-        public float StunDuration = 0.5f; // 停顿时长（秒）
+        public float StunDuration = 1f; // 停顿时长（秒）
     }
 }

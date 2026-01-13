@@ -12,7 +12,7 @@ namespace BehaviorTree
         {
             if (Blackboard.MatchContext == null || Blackboard.MatchContext.Ball == null)
                 return NodeState.FAILURE;
-
+            Debug.Log($"Pass {Time.realtimeSinceStartup} {Time.frameCount} {Blackboard.Owner.name}");
             GameObject target = Blackboard.BestPassTarget;
             GameObject ball = Blackboard.MatchContext.Ball;
 
@@ -46,6 +46,8 @@ namespace BehaviorTree
 
             // --- 5. 传球给预测点，而不是当前点 ---
             ballCtrl.KickTo(predictedPos, Blackboard.Stats.PassingSpeed);
+            Blackboard.IsStunned = true;
+            Blackboard.StunTimer = Blackboard.StunDuration;
 
             return NodeState.SUCCESS;
         }

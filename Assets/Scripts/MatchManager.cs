@@ -89,10 +89,6 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void UpdatePossessionState()
     {
-        if (Ball.GetComponent<BallController>().IsInFlyTimer())
-        {
-            Context.BallHolder=null;
-        }
 
         GameObject closestPlayer = null;
         float minDistance = float.MaxValue;
@@ -118,6 +114,7 @@ public class MatchManager : MonoBehaviour
         // 否则球处于"无人控制"状态 (Loose Ball)
         if (minDistance <= PossessionThreshold)
         {
+            if(closestPlayer != Context.BallHolder) Debug.Log($"possession {Context.BallHolder?.name}->{closestPlayer?.name}");
             if (Context != null)
                 Context.BallHolder = closestPlayer;
         }
