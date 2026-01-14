@@ -82,6 +82,14 @@ namespace BehaviorTree
                 return RedGoal.position;
         }
 
+        public Vector3 GetMyGoalPosition(GameObject player)
+        {
+            if (TeamRedPlayers.Contains(player))
+                return RedGoal.position;
+            else
+                return BlueGoal.position;
+        }
+
         public bool IsPassTarget(GameObject player)
         {
             return IncomingPassTarget == player;

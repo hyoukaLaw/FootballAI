@@ -23,7 +23,7 @@ namespace BehaviorTree
 
             // 1. 判断是否需要"施压" (Pressing)
             // 逻辑：如果我是离持球人最近的队友，我就负责去抢球
-            if (IsClosestTeammateToTarget(ballHolder.transform.position))
+            if (IsClosestTeammateToTarget(ballHolder.transform.position) || IsLastDefensePlayer())
             {
                 // 决策：去抢球！
                 // 将移动目标设为持球人位置
@@ -43,7 +43,8 @@ namespace BehaviorTree
                     );
                 }
 
-                Blackboard.MoveTarget = tackleTarget;
+                Blackboard.MoveTarget = Blackboard.Owner.transform.position + (tackleTarget - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
+                ;
                 Blackboard.MarkedPlayer = null; // 不需要盯无球人
 
                 // 返回 SUCCESS 表示我们做出了决策：去施压
@@ -79,7 +80,8 @@ namespace BehaviorTree
                     );
                 }
 
-                Blackboard.MoveTarget = idealPos;
+                Blackboard.MoveTarget = Blackboard.Owner.transform.position + (idealPos - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
+                ;
                 ;
                 return NodeState.SUCCESS;
             }
@@ -106,6 +108,26 @@ namespace BehaviorTree
                 }
             }
             return true;
+        }
+
+        // 是防线上的最后一人，也应该上前拦截
+        private bool IsLastDefensePlayer()
+        {
+            if (Blackboard.MatchContext == null) return false;
+            bool isLastDefense = true;
+            var teammates = Blackboard.MatchContext.GetTeammates(Blackboard.Owner);
+            float goalPosY = Blackboard.MatchContext.GetMyGoalPosition(Blackboard.Owner).y;
+            foreach (var mate in teammates)
+            {
+                if (mate == Blackboard.Owner) continue;
+                if (Mathf.Abs(mate.transform.position.y - goalPosY) < 
+                    Mathf.Abs(Blackboard.Owner.transform.position.y - goalPosY))
+                {
+                    isLastDefense = false;
+                    break;
+                }
+            }
+            return isLastDefense ;
         }
 
         // 辅助：找个没人盯的或者离我最近的无球敌人

@@ -58,6 +58,7 @@ namespace BehaviorTree
             DribbleBall(owner);
             // 5. 还在路上，返回 RUNNING
             NodeState = NodeState.RUNNING;
+            Debug.Log($"{Blackboard.Owner.name} Move to {targetPos}");
             return NodeState;
         }
         

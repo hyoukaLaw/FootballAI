@@ -84,7 +84,8 @@ namespace BehaviorTree
                     );
                 }
 
-                Blackboard.MoveTarget = finalSpot;
+                Blackboard.MoveTarget = Blackboard.Owner.transform.position + (finalSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
+                ;
                 NodeState = NodeState.SUCCESS;
                 return NodeState;
             }
@@ -107,7 +108,8 @@ namespace BehaviorTree
                     );
                 }
 
-                Blackboard.MoveTarget = fallbackSpot;
+                Blackboard.MoveTarget = Blackboard.Owner.transform.position + (fallbackSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
+                ;
                 NodeState = NodeState.SUCCESS;
                 return NodeState;
             }
