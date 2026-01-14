@@ -69,16 +69,47 @@ namespace BehaviorTree
             //6. 决策写入黑板
             if (foundSpot)
             {
-                Blackboard.MoveTarget = bestSpot;
+                Vector3 finalSpot = bestSpot;
+                finalSpot = Blackboard.Owner.transform.position + (finalSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
+                // === 新增：确保目标位置不与队友重叠 ===
+                if (Blackboard.MatchContext != null)
+                {
+                    var teammates = Blackboard.MatchContext.GetTeammates(owner);
+                    finalSpot = TeamPositionUtils.FindUnoccupiedPosition(
+                        owner,
+                        bestSpot,
+                        teammates,
+                        searchRadius: 3f,
+                        minDistance: 1.5f
+                    );
+                }
+
+                Blackboard.MoveTarget = finalSpot;
                 NodeState = NodeState.SUCCESS;
                 return NodeState;
             }
             else
             {
                 // 实在找不到空档（被包围了），就原地不动或者保持原定距离
-                Blackboard.MoveTarget = centerPos + directionToMe * _idealDistance;
-                NodeState = NodeState.SUCCESS; // 或者 SUCCESS，取决于你希望树怎么处理
-                return NodeState; // 这种情况下通常返回 SUCCESS 让他至少动起来
+                Vector3 fallbackSpot = centerPos + directionToMe * _idealDistance;
+                fallbackSpot = Blackboard.Owner.transform.position + (fallbackSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
+
+                // === 新增：即使备用位置也要避免重叠 ===
+                if (Blackboard.MatchContext != null)
+                {
+                    var teammates = Blackboard.MatchContext.GetTeammates(owner);
+                    fallbackSpot = TeamPositionUtils.FindUnoccupiedPosition(
+                        owner,
+                        fallbackSpot,
+                        teammates,
+                        searchRadius: 2f,
+                        minDistance: 1.5f
+                    );
+                }
+
+                Blackboard.MoveTarget = fallbackSpot;
+                NodeState = NodeState.SUCCESS;
+                return NodeState;
             }
         }
     }

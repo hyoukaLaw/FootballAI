@@ -350,25 +350,26 @@ public class PlayerAI : MonoBehaviour
     {
         if (_blackboard != null)
         {
-            // === 持球范围可视化 ===
-            if (_blackboard.MatchContext != null && 
-                _blackboard.MatchContext.BallHolder == _blackboard.Owner)
-            {
-                // 持球范围（淡黄色，1.0m）
-                Gizmos.color = new Color(1f, 1f, 0.5f, 0.5f);
-                Gizmos.DrawWireSphere(transform.position, 1.0f);
-
-                // 抢断范围（红色，1.6m）
-                Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.5f);
-                Gizmos.DrawWireSphere(transform.position, Stats.TackledDistance);
-            }
+            // // === 持球范围可视化 ===
+            // if (_blackboard.MatchContext != null && 
+            //     _blackboard.MatchContext.BallHolder == _blackboard.Owner)
+            // {
+            //     // 持球范围（淡黄色，1.0m）
+            //     Gizmos.color = new Color(1f, 1f, 0.5f, 0.5f);
+            //     Gizmos.DrawWireSphere(transform.position, 1.0f);
+            //
+            //     // 抢断范围（红色，1.6m）
+            //     Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.5f);
+            //     Gizmos.DrawWireSphere(transform.position, Stats.TackledDistance);
+            // }
 
             // 画出移动目标
             if (_blackboard.MoveTarget != Vector3.zero)
             {
                 Gizmos.color = Color.yellow;
-                Gizmos.DrawLine(transform.position, _blackboard.MoveTarget);
-                Gizmos.DrawWireSphere(_blackboard.MoveTarget, 0.3f);
+                Gizmos.DrawLine(transform.position,
+                    transform.position + (_blackboard.MoveTarget - transform.position).normalized);
+                Gizmos.DrawWireSphere(transform.position + (_blackboard.MoveTarget - transform.position).normalized, 0.3f);
             }
             // 画出传球目标连线
             if (_blackboard.BestPassTarget != null)
