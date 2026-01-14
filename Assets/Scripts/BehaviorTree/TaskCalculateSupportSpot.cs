@@ -17,16 +17,9 @@ namespace BehaviorTree
 
         public override NodeState Evaluate()
         {
-            if (Blackboard.MatchContext == null || Blackboard.MatchContext.Ball == null)
-                return NodeState.FAILURE;
 
             GameObject ball = Blackboard.MatchContext.Ball;
             GameObject owner = Blackboard.Owner;
-            if (ball == null || owner == null)
-            {
-                NodeState = NodeState.FAILURE;
-                return NodeState;
-            }
             //2. 确定圆心：接应是围绕着"球"或"持球人"进行的
             // 这里简单起见，直接围绕球
             Vector3 centerPos = ball.transform.position;
@@ -71,19 +64,6 @@ namespace BehaviorTree
             {
                 Vector3 finalSpot = bestSpot;
                 finalSpot = Blackboard.Owner.transform.position + (finalSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
-                // === 新增：确保目标位置不与队友重叠 ===
-                if (Blackboard.MatchContext != null)
-                {
-                    var teammates = Blackboard.MatchContext.GetTeammates(owner);
-                    finalSpot = TeamPositionUtils.FindUnoccupiedPosition(
-                        owner,
-                        bestSpot,
-                        teammates,
-                        searchRadius: 3f,
-                        minDistance: 1.5f
-                    );
-                }
-
                 Blackboard.MoveTarget = Blackboard.Owner.transform.position + (finalSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
                 ;
                 NodeState = NodeState.SUCCESS;
@@ -93,23 +73,7 @@ namespace BehaviorTree
             {
                 // 实在找不到空档（被包围了），就原地不动或者保持原定距离
                 Vector3 fallbackSpot = centerPos + directionToMe * _idealDistance;
-                fallbackSpot = Blackboard.Owner.transform.position + (fallbackSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
-
-                // === 新增：即使备用位置也要避免重叠 ===
-                if (Blackboard.MatchContext != null)
-                {
-                    var teammates = Blackboard.MatchContext.GetTeammates(owner);
-                    fallbackSpot = TeamPositionUtils.FindUnoccupiedPosition(
-                        owner,
-                        fallbackSpot,
-                        teammates,
-                        searchRadius: 2f,
-                        minDistance: 1.5f
-                    );
-                }
-
                 Blackboard.MoveTarget = Blackboard.Owner.transform.position + (fallbackSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
-                ;
                 NodeState = NodeState.SUCCESS;
                 return NodeState;
             }

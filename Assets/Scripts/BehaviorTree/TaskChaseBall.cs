@@ -11,14 +11,6 @@ namespace BehaviorTree
             if (Blackboard.MatchContext == null || Blackboard.MatchContext.Ball == null)
                 return NodeState.FAILURE;
             Vector3 ballPos = Blackboard.MatchContext.Ball.transform.position;
-            var teammates = Blackboard.MatchContext.GetTeammates(Blackboard.Owner);
-            ballPos = TeamPositionUtils.FindUnoccupiedPosition(
-                Blackboard.Owner,
-                ballPos,
-                teammates,
-                searchRadius: 2f,
-                minDistance: 1.5f
-            );
             // 核心逻辑：把要去的地方，设为球当前的位置
             // 这样 TaskMoveToPosition 就会让你直接跑向球
             Blackboard.MoveTarget = Blackboard.Owner.transform.position +

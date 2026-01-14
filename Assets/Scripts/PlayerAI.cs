@@ -83,6 +83,8 @@ public class PlayerAI : MonoBehaviour
             return;
         // 每帧运行行为树
         _tree.Tick();
+        if(_tree.GetRootNode().GetNodeState()!=NodeState.RUNNING)
+            _tree.GetRootNode().Reset();
 
         // 更新执行路径（用于调试）
         ExecutionPath = _tree.ExecutionPath;
@@ -112,7 +114,8 @@ public class PlayerAI : MonoBehaviour
             runToPass
         });
         passReceiveSeq.Name = "passReceiveSeq";
-
+        
+        
         // === 次要优先级：攻防逻辑 ===
         // 1. 构建 进攻子树 (你原来写的那个)
         Node offensiveTree = BuildOffensiveTree();
@@ -138,14 +141,26 @@ public class PlayerAI : MonoBehaviour
             offensiveTree
         });
         offensiveBranch.Name = "offensiveBranch";
+        
+        // 兜底：往球的方向跑总没错
+        Node setBallTarget = new TaskChaseBall(_blackboard); // 把目标设为球
+        Node runToBall = new TaskMoveToPosition(_blackboard); // 复用移动节点
 
+        SequenceNode interceptSeq = new SequenceNode(_blackboard, new List<Node>
+        {
+            setBallTarget,
+            runToBall
+        });
+        interceptSeq.Name = "interceptSeq";
+        
         // === 根节点：眩晕 > 接球 > 进攻 > 防守 ===
         SelectorNode root = new SelectorNode(_blackboard, new List<Node>
         {
             stunnedSeq,          // 最高：处于眩晕状态
             passReceiveSeq,      // 次高：我是传球目标
             offensiveBranch,     // 次要：本队控球→进攻
-            defensiveTree        // 最后：防守
+            defensiveTree,        // 最后：防守
+            interceptSeq,        // 兜底：往球的方向跑
         });
         root.Name = "root";
 
@@ -206,12 +221,16 @@ public class PlayerAI : MonoBehaviour
             moveToPosition
         });
         chaseBallDefenseSeq.Name = "chaseBallDefenseSeq";
+        
+        // 3.5 盯人分支：如果不能抢断，就盯人
+        Node moveToPositionForMarked = new TaskMoveToPosition(_blackboard);
     
-        // 4. 防守行动选择器：优先尝试抢断，否则移动
+        // 4. 防守行动选择器：优先尝试抢断，否则向球移动，最后考虑盯人
         SelectorNode defenseActionSelector = new SelectorNode(_blackboard, new List<Node>
         {
             tackleSeq,
-            chaseBallDefenseSeq
+            chaseBallDefenseSeq,
+            moveToPositionForMarked
         });
         defenseActionSelector.Name = "defenseActionSelector";
     
@@ -301,19 +320,7 @@ public class PlayerAI : MonoBehaviour
         });
         passReceiveSeqOff.Name = "passReceiveSeqOff";
 
-        // --- 子分支 B-1 (抢无主球) ---
-        // 逻辑：如果球是无主的，且我是最近的 -> 追球
-        Node checkLoose = new CheckIsClosestToLooseBall(_blackboard);
-        Node setBallTarget = new TaskChaseBall(_blackboard); // 把目标设为球
-        Node runToBall = new TaskMoveToPosition(_blackboard); // 复用移动节点
 
-        SequenceNode interceptSeq = new SequenceNode(_blackboard, new List<Node>
-        {
-            checkLoose,
-            setBallTarget,
-            runToBall
-        });
-        interceptSeq.Name = "interceptSeq";
 
 
         // --- 子分支 B-2 (战术跑位) ---
@@ -328,7 +335,7 @@ public class PlayerAI : MonoBehaviour
         SelectorNode offBallSelector = new SelectorNode(_blackboard, new List<Node>
         {
             passReceiveSeqOff, // 传球目标
-            interceptSeq,      // 抢球
+
             supportSeq         // 跑位
         });
         offBallSelector.Name = "offBallSelector";

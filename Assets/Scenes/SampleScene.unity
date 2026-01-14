@@ -1456,7 +1456,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.5
+      value: -2.69
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1464,7 +1464,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 6.7
+      value: 11.1
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1886,11 +1886,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: Stats.MovementSpeed
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.74
+      value: 3.77
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.y

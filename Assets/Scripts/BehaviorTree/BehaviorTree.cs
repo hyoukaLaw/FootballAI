@@ -74,10 +74,9 @@ namespace BehaviorTree
                 {
                     var childPath = new System.Collections.Generic.List<string>();
                     FindExecutionPath(child, childPath);
-
+                    path.AddRange(childPath);
                     if (child.GetNodeState() == NodeState.RUNNING || child.GetNodeState() == NodeState.SUCCESS)
                     {
-                        path.AddRange(childPath);
                         break; // Selector 只选择第一个成功分支
                     }
                 }
@@ -96,7 +95,7 @@ namespace BehaviorTree
                         path.AddRange(childPath);
 
                         // 如果遇到 FAILURE，停止遍历后续子节点
-                        if (child.GetNodeState() == NodeState.FAILURE)
+                        if (child.GetNodeState() == NodeState.FAILURE || child.GetNodeState() == NodeState.RUNNING)
                         {
                             break;
                         }

@@ -28,23 +28,7 @@ namespace BehaviorTree
                 // 决策：去抢球！
                 // 将移动目标设为持球人位置
                 Vector3 tackleTarget = ballHolder.transform.position;
-                tackleTarget = Blackboard.Owner.transform.position + (tackleTarget - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
-                
-                // === 新增：避免多个防守队员冲向同一位置 ===
-                if (Blackboard.MatchContext != null)
-                {
-                    var teammates = Blackboard.MatchContext.GetTeammates(owner);
-                    tackleTarget = TeamPositionUtils.FindUnoccupiedPosition(
-                        owner,
-                        tackleTarget,
-                        teammates,
-                        searchRadius: 2f,
-                        minDistance: 1.5f
-                    );
-                }
-
                 Blackboard.MoveTarget = Blackboard.Owner.transform.position + (tackleTarget - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
-                ;
                 Blackboard.MarkedPlayer = null; // 不需要盯无球人
 
                 // 返回 SUCCESS 表示我们做出了决策：去施压
@@ -65,27 +49,10 @@ namespace BehaviorTree
 
                 // 站位策略：站在敌人和球连线的 20% 处（靠近敌人，阻断接球）
                 Vector3 idealPos = targetPos + (ballPos - targetPos).normalized *1.5f;
-                idealPos = Blackboard.Owner.transform.position + (idealPos - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
-
-                // === 新增：避免多个防守队员盯防同一位置 ===
-                if (Blackboard.MatchContext != null)
-                {
-                    var teammates = Blackboard.MatchContext.GetTeammates(owner);
-                    idealPos = TeamPositionUtils.FindUnoccupiedPosition(
-                        owner,
-                        idealPos,
-                        teammates,
-                        searchRadius: 2f,
-                        minDistance: 1.5f
-                    );
-                }
-
                 Blackboard.MoveTarget = Blackboard.Owner.transform.position + (idealPos - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
-                ;
-                ;
                 return NodeState.SUCCESS;
             }
-
+            Debug.Log($"{Blackboard.Owner.name} TaskEvaluateDefensiveState: Failure");
             return NodeState.FAILURE;
         }
 
