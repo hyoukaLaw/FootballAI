@@ -203,7 +203,7 @@ public class PlayerAI : MonoBehaviour
         {
             if (bb.MatchContext.BallHolder == null) return false;
             float distance = Vector3.Distance(bb.Owner.transform.position, bb.MatchContext.BallHolder.transform.position);
-            return distance < 1.5f; // 抢断尝试范围
+            return distance < FootballConstants.TryTackleDistance; // 抢断尝试范围
         });
         Node tackleAction = new TaskTackle(_blackboard);
         SequenceNode tackleSeq = new SequenceNode(_blackboard, new List<Node>

@@ -8,7 +8,7 @@ namespace BehaviorTree
     /// </summary>
     public class TaskShoot : Node
     {
-        private float _shootPower = 20f; // 射门力度
+        private float _shootPower = FootballConstants.ShootForce; // 射门力度
 
         public TaskShoot(FootballBlackboard bb) : base(bb) { }
 
@@ -47,8 +47,8 @@ namespace BehaviorTree
             float accuracy = Blackboard.Stats.ShootingAccuracy;
 
             // 偏移范围（球门假设为3x2米的范围）
-            float xOffset = (1.0f - accuracy) * Random.Range(-1.5f, 1.5f);
-            float yOffset = (1.0f - accuracy) * Random.Range(-1.0f, 1.0f);
+            float xOffset = (FootballConstants.ShootAccuracyBase - accuracy) * Random.Range(-FootballConstants.ShootXOffsetRange, FootballConstants.ShootXOffsetRange);
+            float yOffset = (FootballConstants.ShootAccuracyBase - accuracy) * Random.Range(-FootballConstants.ShootYOffsetRange, FootballConstants.ShootYOffsetRange);
 
             target.x += xOffset;
             target.y += yOffset;

@@ -50,14 +50,16 @@ namespace BehaviorTree
             PlayerAI ballHolderAI = ballHolder.GetComponent<PlayerAI>();
             
             if (tacklerAI == null || ballHolderAI == null)
-                return 0.5f; // 默认50%成功率
+                return FootballConstants.DefaultTackleSuccessRate; // 默认50%成功率
             
             // 基于球员属性计算抢断成功率
             float defensiveFactor = tacklerAI.Stats.DefensiveAwareness;
-            float distanceFactor = Mathf.Clamp01(2f - Vector3.Distance(tackler.transform.position, ballHolder.transform.position));
+            float distanceFactor = Mathf.Clamp01(FootballConstants.TackleDistanceFactorBase - Vector3.Distance(tackler.transform.position, ballHolder.transform.position));
             
             // 基础抢断概率 + 防守属性加成 + 距离加成
-            float tackleChance = 0.3f + defensiveFactor * 0.2f + distanceFactor * 0.3f;
+            float tackleChance = FootballConstants.BaseTackleProbability + 
+                                 defensiveFactor * FootballConstants.DefensiveAttributeBonus + 
+                                 distanceFactor * FootballConstants.DistanceBonusCoefficient;
             return Mathf.Clamp01(tackleChance); // 确保在0-1范围内
         }
         

@@ -5,19 +5,19 @@ namespace BehaviorTree
     public class TaskEvaluateOffensiveOptions : Node
     {
         // 评分权重配置
-        private float _basePassScore = 50f;
-        private float _forwardWeight = 2.0f; // 越靠前的队友分越高
-        private float _distanceWeight = 1.0f; // 距离适中的队友分高
+        private float _basePassScore = FootballConstants.BasePassScore;
+        private float _forwardWeight = FootballConstants.ForwardWeight; // 越靠前的队友分越高
+        private float _distanceWeight = FootballConstants.DistanceWeight; // 距离适中的队友分高
 
         // 盘带配置
-        private float _dribbleDistance = 0.1f; // 盘带前进距离
-        private float _detectRange = 3.5f; // 前方检测距离
-        private float _detectAngle = 90f; // 检测角度（半角）
-        private float _sidestepDistance = 3.0f; // 侧移距离
+        private float _dribbleDistance = FootballConstants.DribbleForwardDistance; // 盘带前进距离
+        private float _detectRange = FootballConstants.ForwardDetectionDistance; // 前方检测距离
+        private float _detectAngle = FootballConstants.DetectionAngleHalf; // 检测角度（半角）
+        private float _sidestepDistance = FootballConstants.SidestepDistance; // 侧移距离
 
         // 射门配置
-        private float _shootDistance = 12f; // 射门距离
-        private float _shootAngleThreshold = 30f; // 射门角度阈值
+        private float _shootDistance = FootballConstants.ShootDistance; // 射门距离
+        private float _shootAngleThreshold = FootballConstants.ShootAngleThreshold; // 射门角度阈值
 
         public TaskEvaluateOffensiveOptions(FootballBlackboard blackboard) : base(blackboard)
         {
@@ -66,8 +66,8 @@ namespace BehaviorTree
                 }
             }
 
-            // 设定传球阈值：如果最高分都低于 60 分，说明没有好机会，不如自己带球
-            if (highestScore > 60f)
+            // 设定传球阈值：如果最高分都低于传球阈值，说明没有好机会，不如自己带球
+            if (highestScore > FootballConstants.PassThreshold)
             {
                 Blackboard.BestPassTarget = bestMate;
                 // 决策完成：建议传球
@@ -154,8 +154,8 @@ namespace BehaviorTree
             float distToMate = Vector3.Distance(me.transform.position, mate.transform.position);
 
             // A. 距离评分：太远容易失误，太近没意义
-            if (distToMate < 3f) score -= 40f; // 太近
-            if (distToMate > 10f) score -= 30f; // 太远
+            if (distToMate < FootballConstants.TooClosePassDistance) score -= 40f; // 太近
+            if (distToMate > FootballConstants.TooFarPassDistance) score -= 30f; // 太远
 
             // B. 进攻性评分：队友比我更接近球门吗？
             float myDistToGoal = Vector3.Distance(me.transform.position, goal);
@@ -190,8 +190,8 @@ namespace BehaviorTree
                 // 计算点到线段的距离
                 float distToLine = DistancePointToLineSegment(start, end, enemy.transform.position);
 
-                // 如果敌人距离传球路线小于 1.5米，认为会被阻挡
-                if (distToLine < 1.5f)
+                // 如果敌人距离传球路线小于敌人阻挡距离阈值，认为会被阻挡
+                if (distToLine < FootballConstants.EnemyBlockDistanceThreshold)
                 {
                     return false; // 被阻挡
                 }

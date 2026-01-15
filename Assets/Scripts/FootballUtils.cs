@@ -4,7 +4,8 @@ using UnityEngine;
 
     public static class FootballUtils
     {
-        public static bool IsPassRouteSafe(Vector3 from, Vector3 to, List<GameObject> enemies, float minDist = 3f)
+        public static bool IsPassRouteSafe(Vector3 from, Vector3 to, List<GameObject> enemies, 
+            float minDist = FootballConstants.DefaultPassRouteSafeDistance)
         {
             // 遍历黑板里的敌人列表
             if (enemies == null) return true;

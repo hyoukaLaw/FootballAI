@@ -34,7 +34,7 @@ namespace BehaviorTree
                 float mateDist = Vector3.Distance(mate.transform.position, ball.transform.position);
 
                 // 如果有个队友比我还近 (加个 0.5m 的容错，防止抖动)
-                if (mateDist < myDist - 0.5f)
+                if (mateDist < myDist - FootballConstants.ClosestPlayerTolerance)
                 {
                     amIClosest = false;
                     break;
