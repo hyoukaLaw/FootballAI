@@ -26,6 +26,8 @@ namespace BehaviorTree
             if (IsClosestTeammateToTarget(ballHolder.transform.position) || IsLastDefensePlayer())
             {
                 // 决策：去抢球！
+                Debug.Log($"{Blackboard.Owner.name} 防守选择：施压 IsClosestTeammateToTarget: " +
+                          $"{IsClosestTeammateToTarget(ballHolder.transform.position)}, IsLastDefensePlayer: {IsLastDefensePlayer()}");
                 // 将移动目标设为持球人位置
                 Vector3 tackleTarget = ballHolder.transform.position;
                 Blackboard.MoveTarget = Blackboard.Owner.transform.position + (tackleTarget - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSegment;
@@ -41,7 +43,9 @@ namespace BehaviorTree
 
             if (bestTarget != null)
             {
+                Debug.Log($"{Blackboard.Owner.name} 防守选择：盯人");
                 Blackboard.MarkedPlayer = bestTarget;
+                
 
                 // 计算盯防站位：站在"敌人"和"我方球门"之间
                 Vector3 targetPos = bestTarget.transform.position;
@@ -83,12 +87,12 @@ namespace BehaviorTree
             if (Blackboard.MatchContext == null) return false;
             bool isLastDefense = true;
             var teammates = Blackboard.MatchContext.GetTeammates(Blackboard.Owner);
-            float goalPosY = Blackboard.MatchContext.GetMyGoalPosition(Blackboard.Owner).y;
+            float goalPosX = Blackboard.MatchContext.GetMyGoalPosition(Blackboard.Owner).x;
             foreach (var mate in teammates)
             {
                 if (mate == Blackboard.Owner) continue;
-                if (Mathf.Abs(mate.transform.position.y - goalPosY) < 
-                    Mathf.Abs(Blackboard.Owner.transform.position.y - goalPosY))
+                if (Mathf.Abs(mate.transform.position.x - goalPosX) < 
+                    Mathf.Abs(Blackboard.Owner.transform.position.x - goalPosX))
                 {
                     isLastDefense = false;
                     break;

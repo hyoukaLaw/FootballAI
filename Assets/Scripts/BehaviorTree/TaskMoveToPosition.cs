@@ -40,8 +40,8 @@ namespace BehaviorTree
                     Blackboard.MatchContext.GetOpponents(owner));
             // 4. 如果没到，执行移动逻辑 (简单的匀速移动)
             // 注意：这里直接修改 Transform，不依赖 NavMesh，符合你的白盒测试需求
-            Vector3 newPos = Vector3.MoveTowards(owner.transform.position, targetPos, Blackboard.Stats.MovementSpeed * Time.deltaTime);
-            //
+            Vector3 newPos = Vector3.MoveTowards(owner.transform.position, targetPos,
+                Blackboard.Stats.MovementSpeed * Time.deltaTime);
 
             // // 面朝移动方向（为了让圆柱体看起来自然点）
             if (targetPos != owner.transform.position)
