@@ -213,11 +213,11 @@ public class PlayerAI : MonoBehaviour
         tackleSeq.Name = "tackleSeq";
     
         // 3. 移动分支：如果不能抢断，就移动接近
-        //Node chaseBallForDefense = new TaskChaseBall(_blackboard); // 之前已经计算过了ChaseBall
+        Node chaseBallForDefense = new SimpleCondition(_blackboard, bb => bb.MarkedPlayer == null); // 之前已经计算过了ChaseBall
         Node moveToPosition = new TaskMoveToPosition(_blackboard);
         SequenceNode chaseBallDefenseSeq = new SequenceNode(_blackboard, new List<Node>
         {
-            // chaseBallForDefense,
+            chaseBallForDefense,
             moveToPosition
         });
         chaseBallDefenseSeq.Name = "chaseBallDefenseSeq";

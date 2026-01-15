@@ -43,7 +43,7 @@ namespace BehaviorTree
 
             if (bestTarget != null)
             {
-                Debug.Log($"{Blackboard.Owner.name} 防守选择：盯人");
+                Debug.Log($"{Blackboard.Owner.name} 防守选择：盯人 {bestTarget.name}");
                 Blackboard.MarkedPlayer = bestTarget;
                 
 
