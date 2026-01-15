@@ -13,6 +13,7 @@ namespace BehaviorTree
         public Transform RedGoal;
         public Transform BlueGoal;
         public GameObject IncomingPassTarget;
+        public GameObject Field;
 
         // --- 传球状态管理 ---
         private float _passTimer = 0f; // 传球计时器
@@ -101,6 +102,26 @@ namespace BehaviorTree
             _stealCooldownTimer = 0f;
             BallHolder = null;
             _passTimer = 0f;
+        }
+
+        public float GetLeftBorder()
+        {
+            return Field.transform.position.x - 10f / 2 * Field.transform.lossyScale.x; // 10f plane默认宽度
+        }
+        
+        public float GetRightBorder()
+        {
+            return Field.transform.position.x + 10f / 2 * Field.transform.lossyScale.x; // 10f plane默认宽度
+        }
+        
+        public float GetForwardBorder()
+        {
+            return Field.transform.position.z + 10f / 2 * Field.transform.lossyScale.z; // 10f plane默认高度
+        }
+        
+        public float GetBackwardBorder()
+        {
+            return Field.transform.position.z - 10f / 2 * Field.transform.lossyScale.z; // 10f plane默认高度
         }
         
         public static float MoveSegment = 0.1f;

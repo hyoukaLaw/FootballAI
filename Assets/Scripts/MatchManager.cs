@@ -19,6 +19,7 @@ public class MatchManager : MonoBehaviour
     // 在 Inspector 中把红队和蓝队的圆柱体分别拖进去
     public List<GameObject> TeamRedPlayers = new List<GameObject>();
     public List<GameObject> TeamBluePlayers = new List<GameObject>();
+    public GameObject Field; // 球场模型
 
     [Header("Game Settings")]
     // 距离球多少米以内算"持球"
@@ -47,6 +48,7 @@ public class MatchManager : MonoBehaviour
         Context.TeamBluePlayers = TeamBluePlayers;
         Context.RedGoal = RedGoal;
         Context.BlueGoal = BlueGoal;
+        Context.Field = Field;
     }
 
     private void Update()

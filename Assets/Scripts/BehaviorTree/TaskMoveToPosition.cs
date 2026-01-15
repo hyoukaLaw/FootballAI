@@ -18,7 +18,7 @@ namespace BehaviorTree
         {
             // 1. 获取主角和目标
             GameObject owner = Blackboard.Owner;
-            Vector3 targetPos = Blackboard.MoveTarget; // 从黑板读取“要去哪”
+            Vector3 targetPos = Blackboard.MoveTarget; // 从黑板读取"要去哪"
             // 防御性检查
             if (owner == null)
             {
@@ -54,6 +54,9 @@ namespace BehaviorTree
                     owner.transform.forward = direction;
                 }
             }
+            
+            newPos = LimitPosToField(newPos);
+            
             owner.transform.position = newPos;
             // 2. --- 新增：带球逻辑 (Dribble Logic) ---
             DribbleBall(owner);
@@ -75,10 +78,25 @@ namespace BehaviorTree
                 // 计算球的理想位置：玩家正前方 + 偏移量
                 Vector3 ballPos = owner.transform.position + owner.transform.forward * _dribbleOffset;
                 ballPos.y = 0f;
+                
+                // 同时限制球的位置在边界内
+                ballPos = LimitPosToField(ballPos);
 
                 Blackboard.MatchContext.Ball.transform.position = ballPos;
                 Debug.Log($"{Blackboard.Owner.name}Dribble ball to {ballPos}");
             }
+        }
+
+        private Vector3 LimitPosToField(Vector3 pos)
+        {
+            float leftBorder = Blackboard.MatchContext.GetLeftBorder();
+            float rightBorder = Blackboard.MatchContext.GetRightBorder();
+            float forwardBorder = Blackboard.MatchContext.GetForwardBorder();
+            float backwardBorder = Blackboard.MatchContext.GetBackwardBorder();
+                
+            pos.x = Mathf.Clamp(pos.x, leftBorder, rightBorder);
+            pos.z = Mathf.Clamp(pos.z, backwardBorder, forwardBorder);
+            return pos;
         }
     }
 }
