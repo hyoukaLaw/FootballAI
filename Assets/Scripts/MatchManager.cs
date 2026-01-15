@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor; // 添加UnityEditor命名空间引用
 
 public class MatchManager : MonoBehaviour
 {
@@ -234,5 +235,32 @@ public class MatchManager : MonoBehaviour
     public void ResetBall()
     {
         Ball.transform.position = Vector3.zero;
+    }
+
+    /// <summary>
+    /// 在Scene视图中显示全局信息
+    /// </summary>
+    void OnGUI()
+    {
+        // 检查是否在Scene视图中
+        if (Event.current.type == EventType.Repaint && Camera.current != null && Camera.current.orthographic)
+        {
+            // 设置文本样式
+            GUIStyle style = new GUIStyle();
+            style.normal.textColor = Color.white;
+            style.fontSize = 14;
+            style.fontStyle = FontStyle.Bold;
+            style.alignment = TextAnchor.UpperRight;
+            style.padding = new RectOffset(10, 10, 10, 10);
+
+            // 计算右上角位置
+            float width = 200f;
+            float height = 30f;
+            Rect rect = new Rect(Screen.width - width - 20, 20, width, height);
+
+            // 显示Player当前直径
+            string diameterText = "Player当前直径: 1.0";
+            GUI.Label(rect, diameterText, style);
+        }
     }
 }
