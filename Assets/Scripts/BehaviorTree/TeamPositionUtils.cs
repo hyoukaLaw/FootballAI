@@ -6,11 +6,8 @@ namespace BehaviorTree
     public static class TeamPositionUtils
     {
         // 检查目标位置是否被队友占据
-        public static bool IsPositionOccupiedByTeammate(
-            GameObject owner,
-            Vector3 targetPos,
-            List<GameObject> teammates,
-            float minDistance = 3f)
+        public static bool IsPositionOccupied(GameObject owner, Vector3 targetPos,  List<GameObject> teammates, 
+            List<GameObject> enemies, float minDistance = 1f)
         {
             foreach (var teammate in teammates)
             {
@@ -25,47 +22,15 @@ namespace BehaviorTree
             return false;
         }
 
-        // 检查目标位置是否与队友的目标冲突
-        public static bool IsTargetPositionConflicted(
-            GameObject owner,
-            Vector3 targetPos,
-            List<GameObject> teammates,
-            float minDistance =3f)
-        {
-            foreach (var teammate in teammates)
-            {
-                if (teammate == owner) continue;
-
-                var teammateAI = teammate.GetComponent<PlayerAI>();
-                if (teammateAI != null && teammateAI.GetBlackboard() != null)
-                {
-                    Vector3 teammateTarget = teammateAI.GetBlackboard().MoveTarget;
-                    if (teammateTarget != Vector3.zero)
-                    {
-                        float dist = Vector3.Distance(teammateTarget, targetPos);
-                        if (dist < minDistance)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
         // 找到不重叠的最佳位置
-        public static Vector3 FindUnoccupiedPosition(
-            GameObject owner,
-            Vector3 desiredPosition,
-            List<GameObject> teammates,
-            float searchRadius = 3f,
-            float minDistance = 1.5f)
+        public static Vector3 FindUnoccupiedPosition(GameObject owner, Vector3 desiredPosition,
+            List<GameObject> teammates, List<GameObject> enemies, float minDistance = 1f)
         {
+            var searchRadius = 1.5f;
             // 1. 先检查理想位置是否可用
-            bool occupiedByTeammate = IsPositionOccupiedByTeammate(owner, desiredPosition, teammates, minDistance);
-            bool conflictedWithTarget = IsTargetPositionConflicted(owner, desiredPosition, teammates, minDistance);
+            bool occupied = IsPositionOccupied(owner, desiredPosition, teammates, enemies,  minDistance);
 
-            if (!occupiedByTeammate && !conflictedWithTarget)
+            if (!occupied)
             {
                 return desiredPosition;
             }
@@ -82,13 +47,7 @@ namespace BehaviorTree
                 Vector3 testPos = desiredPosition + searchDir * searchRadius;
 
                 // 评估这个位置
-                float score = EvaluatePosition(
-                    owner,
-                    testPos,
-                    desiredPosition,
-                    teammates,
-                    minDistance
-                );
+                float score = EvaluatePosition(owner, testPos, desiredPosition, teammates, enemies, minDistance);
 
                 if (score > bestScore)
                 {
@@ -96,17 +55,13 @@ namespace BehaviorTree
                     bestPosition = testPos;
                 }
             }
-
+            Debug.Log($"desiredPosition: {desiredPosition}, bestPosition: {bestPosition}, bestScore: {bestScore}");
             return bestPosition;
         }
 
         // 评估位置得分
-        private static float EvaluatePosition(
-            GameObject owner,
-            Vector3 testPos,
-            Vector3 desiredPosition,
-            List<GameObject> teammates,
-            float minDistance)
+        private static float EvaluatePosition(GameObject owner, Vector3 testPos, Vector3 desiredPosition,
+            List<GameObject> teammates, List<GameObject> enemies, float minDistance)
         {
             
             // 因素1：与理想位置的接近程度（越近越好）
@@ -124,25 +79,6 @@ namespace BehaviorTree
                 if (dist < minDistance)
                 {
                     overlapPenalty += (minDistance - dist) * 100f;
-                }
-            }
-
-            // 检查是否与队友的目标冲突
-            foreach (var teammate in teammates)
-            {
-                if (teammate == owner) continue;
-                var teammateAI = teammate.GetComponent<PlayerAI>();
-                if (teammateAI != null && teammateAI.GetBlackboard() != null)
-                {
-                    Vector3 teammateTarget = teammateAI.GetBlackboard().MoveTarget;
-                    if (teammateTarget != Vector3.zero)
-                    {
-                        float dist = Vector3.Distance(teammateTarget, testPos);
-                        if (dist < minDistance)
-                        {
-                            overlapPenalty += (minDistance - dist) * 50f;
-                        }
-                    }
                 }
             }
             

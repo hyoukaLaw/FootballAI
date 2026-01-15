@@ -103,6 +103,6 @@ namespace BehaviorTree
             _passTimer = 0f;
         }
         
-        public static float MoveSplit = 0.1f;
+        public static float MoveSegment = 0.1f;
     }
 }

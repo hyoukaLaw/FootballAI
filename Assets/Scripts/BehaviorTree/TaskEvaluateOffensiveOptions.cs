@@ -101,13 +101,13 @@ namespace BehaviorTree
 
                 potentialDribblePos = owner.transform.position +
                                       (potentialDribblePos - owner.transform.position).normalized *
-                                      MatchContext.MoveSplit;
+                                      MatchContext.MoveSegment;
                 Debug.Log($"dribble: {(potentialDribblePos - owner.transform.position).normalized} {owner.transform.position} {potentialDribblePos}");
             }
             else
             {
                 // 前方无阻挡，直接带球
-                potentialDribblePos = owner.transform.position + dribbleDirection * MatchContext.MoveSplit;
+                potentialDribblePos = owner.transform.position + dribbleDirection * MatchContext.MoveSegment;
             }
 
             Blackboard.MoveTarget = potentialDribblePos;

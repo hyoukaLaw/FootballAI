@@ -63,8 +63,8 @@ namespace BehaviorTree
             if (foundSpot)
             {
                 Vector3 finalSpot = bestSpot;
-                finalSpot = Blackboard.Owner.transform.position + (finalSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
-                Blackboard.MoveTarget = Blackboard.Owner.transform.position + (finalSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
+                finalSpot = Blackboard.Owner.transform.position + (finalSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSegment;
+                Blackboard.MoveTarget = Blackboard.Owner.transform.position + (finalSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSegment;
                 ;
                 NodeState = NodeState.SUCCESS;
                 return NodeState;
@@ -73,7 +73,7 @@ namespace BehaviorTree
             {
                 // 实在找不到空档（被包围了），就原地不动或者保持原定距离
                 Vector3 fallbackSpot = centerPos + directionToMe * _idealDistance;
-                Blackboard.MoveTarget = Blackboard.Owner.transform.position + (fallbackSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
+                Blackboard.MoveTarget = Blackboard.Owner.transform.position + (fallbackSpot - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSegment;
                 NodeState = NodeState.SUCCESS;
                 return NodeState;
             }

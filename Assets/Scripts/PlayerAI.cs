@@ -213,11 +213,11 @@ public class PlayerAI : MonoBehaviour
         tackleSeq.Name = "tackleSeq";
     
         // 3. 移动分支：如果不能抢断，就移动接近
-        Node chaseBallForDefense = new TaskChaseBall(_blackboard);
+        //Node chaseBallForDefense = new TaskChaseBall(_blackboard); // 之前已经计算过了ChaseBall
         Node moveToPosition = new TaskMoveToPosition(_blackboard);
         SequenceNode chaseBallDefenseSeq = new SequenceNode(_blackboard, new List<Node>
         {
-            chaseBallForDefense,
+            // chaseBallForDefense,
             moveToPosition
         });
         chaseBallDefenseSeq.Name = "chaseBallDefenseSeq";
@@ -309,16 +309,16 @@ public class PlayerAI : MonoBehaviour
 
         // --- 子分支 B-0 (接应传球) ---
         // 如果我是传球目标，去接球（但在主树中已有更高优先级的处理）
-        Node isPassTargetOff = new CheckIsPassTarget(_blackboard);
-        Node chaseBallForPassOff = new TaskChaseBall(_blackboard);
-        Node runToPassOff = new TaskMoveToPosition(_blackboard);
-        SequenceNode passReceiveSeqOff = new SequenceNode(_blackboard, new List<Node>
-        {
-            isPassTargetOff,
-            chaseBallForPassOff,
-            runToPassOff
-        });
-        passReceiveSeqOff.Name = "passReceiveSeqOff";
+        // Node isPassTargetOff = new CheckIsPassTarget(_blackboard);
+        // Node chaseBallForPassOff = new TaskChaseBall(_blackboard);
+        // Node runToPassOff = new TaskMoveToPosition(_blackboard);
+        // SequenceNode passReceiveSeqOff = new SequenceNode(_blackboard, new List<Node>
+        // {
+        //     isPassTargetOff,
+        //     chaseBallForPassOff,
+        //     runToPassOff
+        // });
+        // passReceiveSeqOff.Name = "passReceiveSeqOff";
 
 
 
@@ -334,7 +334,7 @@ public class PlayerAI : MonoBehaviour
         // 优先级：接球 > 抢球 > 跑位
         SelectorNode offBallSelector = new SelectorNode(_blackboard, new List<Node>
         {
-            passReceiveSeqOff, // 传球目标
+            //passReceiveSeqOff, // 传球目标
 
             supportSeq         // 跑位
         });

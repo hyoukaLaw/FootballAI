@@ -28,7 +28,7 @@ namespace BehaviorTree
                 // 决策：去抢球！
                 // 将移动目标设为持球人位置
                 Vector3 tackleTarget = ballHolder.transform.position;
-                Blackboard.MoveTarget = Blackboard.Owner.transform.position + (tackleTarget - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
+                Blackboard.MoveTarget = Blackboard.Owner.transform.position + (tackleTarget - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSegment;
                 Blackboard.MarkedPlayer = null; // 不需要盯无球人
 
                 // 返回 SUCCESS 表示我们做出了决策：去施压
@@ -49,7 +49,7 @@ namespace BehaviorTree
 
                 // 站位策略：站在敌人和球连线的 20% 处（靠近敌人，阻断接球）
                 Vector3 idealPos = targetPos + (ballPos - targetPos).normalized *1.5f;
-                Blackboard.MoveTarget = Blackboard.Owner.transform.position + (idealPos - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSplit;
+                Blackboard.MoveTarget = Blackboard.Owner.transform.position + (idealPos - Blackboard.Owner.transform.position).normalized * MatchContext.MoveSegment;
                 return NodeState.SUCCESS;
             }
             Debug.Log($"{Blackboard.Owner.name} TaskEvaluateDefensiveState: Failure");
