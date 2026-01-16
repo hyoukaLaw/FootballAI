@@ -34,7 +34,7 @@ namespace BehaviorTree
                 NodeState = NodeState.SUCCESS;
                 return NodeState;
             }
-            if(TeamPositionUtils.IsPositionOccupied(owner, targetPos, Blackboard.MatchContext.GetTeammates(owner), 
+            if(TeamPositionUtils.IsPositionOccupiedByTeammates(owner, targetPos, Blackboard.MatchContext.GetTeammates(owner), 
                    Blackboard.MatchContext.GetOpponents(owner)))
                 targetPos = TeamPositionUtils.FindUnoccupiedPosition(owner, targetPos, Blackboard.MatchContext.GetTeammates(owner), 
                     Blackboard.MatchContext.GetOpponents(owner));

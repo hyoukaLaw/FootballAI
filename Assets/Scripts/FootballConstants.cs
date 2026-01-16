@@ -3,7 +3,7 @@
 public static class FootballConstants
 {
     // PlayerAI Constants
-    public static float TryTackleDistance = 1.5f;         // 抢断尝试范围
+    public static float TryTackleDistance = 1f;         // 抢断尝试范围，也就是1.5m以内才有可能抢断成功
     
     // FootballUtils Constants
     public const float DefaultPassRouteSafeDistance = 3f; // 传球路线最小安全距离默认值

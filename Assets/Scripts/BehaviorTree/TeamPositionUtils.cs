@@ -6,7 +6,7 @@ namespace BehaviorTree
     public static class TeamPositionUtils
     {
         // 检查目标位置是否被队友占据
-        public static bool IsPositionOccupied(GameObject owner, Vector3 targetPos,  List<GameObject> teammates, 
+        public static bool IsPositionOccupiedByTeammates(GameObject owner, Vector3 targetPos,  List<GameObject> teammates, 
             List<GameObject> enemies, float minDistance = 1f)
         {
             foreach (var teammate in teammates)
@@ -19,6 +19,22 @@ namespace BehaviorTree
                     return true;
                 }
             }
+
+            return false;
+        }
+
+        public static bool IsPositionOccupiedByEnemy(GameObject owner, Vector3 targetPos,
+            List<GameObject> enemies, float minDistance = 0.5f)
+        {
+            foreach(var enemy in enemies)
+            {
+                float dist = Vector3.Distance(enemy.transform.position, targetPos);
+                if (dist < minDistance)
+                {
+                    return true;
+                }
+            }
+            
             return false;
         }
 
@@ -28,7 +44,8 @@ namespace BehaviorTree
         {
             var searchRadius = 1.5f;
             // 1. 先检查理想位置是否可用
-            bool occupied = IsPositionOccupied(owner, desiredPosition, teammates, enemies,  minDistance);
+            bool occupied = IsPositionOccupiedByTeammates(owner, desiredPosition, teammates, enemies,  minDistance) || 
+                            IsPositionOccupiedByEnemy(owner, desiredPosition, enemies, minDistance);
 
             if (!occupied)
             {
@@ -79,6 +96,16 @@ namespace BehaviorTree
                 if (dist < minDistance)
                 {
                     overlapPenalty += (minDistance - dist) * 100f;
+                }
+            }
+            
+            // 检查是否被敌人占据，但惩罚要轻一些（支持和敌人卡位）
+            foreach (var enemy in enemies)
+            {
+                float dist = Vector3.Distance(enemy.transform.position, testPos);
+                if (dist < minDistance)
+                {
+                    overlapPenalty += (minDistance - dist) * 50f;
                 }
             }
             
