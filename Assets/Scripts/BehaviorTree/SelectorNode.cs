@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-namespace BehaviorTree
+namespace BehaviorTree.Runtime
 {
     public class SelectorNode : CompositeNode
     {

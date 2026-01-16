@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace BehaviorTree
+namespace BehaviorTree.Runtime
 {
     public class TaskMoveToPosition : Node
     {

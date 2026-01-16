@@ -1,6 +1,6 @@
 using UnityEngine; // 为了使用 GameObject 比较
 
-namespace BehaviorTree
+namespace BehaviorTree.Runtime
 {
     public class CheckHasBallNode : Node
     {

@@ -9,7 +9,7 @@ public class MatchManager : MonoBehaviour
     public static MatchManager Instance { get; private set; }
 
     // --- 全局上下文 ---
-    public BehaviorTree.MatchContext Context;  // 全局上下文实例
+    public BehaviorTree.Runtime.MatchContext Context;  // 全局上下文实例
 
     [Header("Scene References")]
     public GameObject Ball;
@@ -43,7 +43,7 @@ public class MatchManager : MonoBehaviour
         else Destroy(gameObject);
 
         // 初始化全局上下文
-        Context = new BehaviorTree.MatchContext();
+        Context = new BehaviorTree.Runtime.MatchContext();
         Context.Ball = Ball;
         Context.TeamRedPlayers = TeamRedPlayers;
         Context.TeamBluePlayers = TeamBluePlayers;

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace BehaviorTree
+namespace BehaviorTree.Runtime
 {
     /// <summary>
     /// 检查当前球员是否是传球目标

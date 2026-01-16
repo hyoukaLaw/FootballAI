@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using BehaviorTree;
+using BehaviorTree.Runtime;
 using Unity.VisualScripting; // 引用命名空间
 
 [System.Serializable]
@@ -31,8 +31,9 @@ public class PlayerStats
 
 public class PlayerAI : MonoBehaviour
 {
+    
     private FootballBlackboard _blackboard;
-    private BehaviorTree.BehaviorTree _tree; // 指明是由于我们自定义的类
+    private BehaviorTree.Runtime.BehaviorTree _tree; // 指明是由于我们自定义的类
     public Node CurrentNode;
 
     [Header("调试信息")]
@@ -71,7 +72,7 @@ public class PlayerAI : MonoBehaviour
         }
 
         // 3. 创建树，把黑板传进去
-        _tree = new BehaviorTree.BehaviorTree(_blackboard);
+        _tree = new BehaviorTree.Runtime.BehaviorTree(_blackboard);
 
         // 4. 构建行为树结构 (这里是关键的引用传递！)
         _tree.SetRoot(BuildMainTree());

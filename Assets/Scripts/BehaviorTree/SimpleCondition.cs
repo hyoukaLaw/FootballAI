@@ -1,4 +1,4 @@
-﻿namespace BehaviorTree
+﻿namespace BehaviorTree.Runtime
 {
     public class SimpleCondition : Node {
         System.Func<FootballBlackboard, bool> _check;

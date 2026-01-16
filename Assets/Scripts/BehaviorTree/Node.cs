@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace BehaviorTree
+namespace BehaviorTree.Runtime
 {
     public enum NodeState
     {

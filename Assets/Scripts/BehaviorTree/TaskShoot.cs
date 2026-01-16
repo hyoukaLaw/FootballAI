@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace BehaviorTree
+namespace BehaviorTree.Runtime
 {
     /// <summary>
     /// 射门动作节点

@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace BehaviorTree
+namespace BehaviorTree.Runtime
 {
     public static class TeamPositionUtils
     {
