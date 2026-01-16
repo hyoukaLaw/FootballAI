@@ -2,9 +2,9 @@
 
 namespace BehaviorTree.Runtime
 {
-    public class TestTaskSetTarget:Node
+    public class TaskTestSetTarget: Node
     {
-        public TestTaskSetTarget(FootballBlackboard blackboard) : base(blackboard)
+        public TaskTestSetTarget(FootballBlackboard blackboard) : base(blackboard)
         {
         }
 

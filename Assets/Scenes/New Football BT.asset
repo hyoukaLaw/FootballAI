@@ -1,6 +1,48 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-571765664577895649
+--- !u!114 &-2447802744034884704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ed7e90d9f9c7044caf49ff0a2feb82b, type: 3}
+  m_Name: Task Test Set Target Graph
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -40, y: -104}
+  ports:
+    keys:
+    - Entry
+    - Exit
+    values:
+    - _fieldName: Entry
+      _node: {fileID: -2447802744034884704}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Exit
+        node: {fileID: -170031127272952785}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Exit
+      _node: {fileID: -2447802744034884704}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  Entry: 0
+  Exit: 0
+--- !u!114 &-170031127272952785
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10,32 +52,35 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
-  m_Name: Test Task Set Target Graph
-  m_EditorClassIdentifier: Assembly-CSharp:BehaviorTree.Graph:TestTaskSetTargetGraphNode
+  m_Name: Sequence Node Graph
+  m_EditorClassIdentifier: Assembly-CSharp:BehaviorTree.Graph:SequenceNodeGraphNode
   graph: {fileID: 11400000}
-  position: {x: -72, y: -248}
+  position: {x: -392, y: 8}
   ports:
     keys:
     - Entry
     - Exit
     values:
     - _fieldName: Entry
-      _node: {fileID: -571765664577895649}
+      _node: {fileID: -170031127272952785}
       _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: Exit
-        node: {fileID: 7356220917799076202}
-        reroutePoints: []
+      connections: []
       _direction: 0
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
     - _fieldName: Exit
-      _node: {fileID: -571765664577895649}
+      _node: {fileID: -170031127272952785}
       _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
-      connections: []
+      connections:
+      - fieldName: Entry
+        node: {fileID: 5736532022078149946}
+        reroutePoints: []
+      - fieldName: Entry
+        node: {fileID: -2447802744034884704}
+        reroutePoints: []
       _direction: 1
       _connectionType: 0
       _typeConstraint: 0
@@ -55,10 +100,10 @@ MonoBehaviour:
   m_Name: New Football BT
   m_EditorClassIdentifier: 
   nodes:
-  - {fileID: 7356220917799076202}
-  - {fileID: -571765664577895649}
-  - {fileID: 3953204037821763259}
---- !u!114 &3953204037821763259
+  - {fileID: -170031127272952785}
+  - {fileID: 5736532022078149946}
+  - {fileID: -2447802744034884704}
+--- !u!114 &5736532022078149946
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -71,74 +116,29 @@ MonoBehaviour:
   m_Name: Task Move To Position Graph
   m_EditorClassIdentifier: Assembly-CSharp:BehaviorTree.Graph:TaskMoveToPositionGraphNode
   graph: {fileID: 11400000}
-  position: {x: -72, y: 56}
+  position: {x: -120, y: 168}
   ports:
     keys:
     - Entry
     - Exit
     values:
     - _fieldName: Entry
-      _node: {fileID: 3953204037821763259}
+      _node: {fileID: 5736532022078149946}
       _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
       connections:
       - fieldName: Exit
-        node: {fileID: 7356220917799076202}
+        node: {fileID: -170031127272952785}
         reroutePoints: []
       _direction: 0
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
     - _fieldName: Exit
-      _node: {fileID: 3953204037821763259}
+      _node: {fileID: 5736532022078149946}
       _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
       connections: []
-      _direction: 1
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-  Entry: 0
-  Exit: 0
---- !u!114 &7356220917799076202
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: Sequence Graph
-  m_EditorClassIdentifier: Assembly-CSharp:BehaviorTree.Graph:SequenceGraphNode
-  graph: {fileID: 11400000}
-  position: {x: -424, y: -40}
-  ports:
-    keys:
-    - Entry
-    - Exit
-    values:
-    - _fieldName: Entry
-      _node: {fileID: 7356220917799076202}
-      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections: []
-      _direction: 0
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-    - _fieldName: Exit
-      _node: {fileID: 7356220917799076202}
-      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: Entry
-        node: {fileID: -571765664577895649}
-        reroutePoints: []
-      - fieldName: Entry
-        node: {fileID: 3953204037821763259}
-        reroutePoints: []
       _direction: 1
       _connectionType: 0
       _typeConstraint: 0
