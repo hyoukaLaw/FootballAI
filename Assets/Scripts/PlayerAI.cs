@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using BehaviorTree.Graph;
 using UnityEngine;
 using BehaviorTree.Runtime;
 using Unity.VisualScripting; // 引用命名空间
@@ -31,7 +32,8 @@ public class PlayerStats
 
 public class PlayerAI : MonoBehaviour
 {
-    
+    [Header("AI Configuration")]
+    public BTGraph AIBehaviorGraph; // 拖入 xNode 图表资源
     private FootballBlackboard _blackboard;
     private BehaviorTree.Runtime.BehaviorTree _tree; // 指明是由于我们自定义的类
     public Node CurrentNode;
@@ -70,22 +72,53 @@ public class PlayerAI : MonoBehaviour
         {
             Debug.LogError("MatchManager.Instance or Context is null!");
         }
+        
+        if (AIBehaviorGraph != null)
+        {
+            // 1. 找到图表里的根节点 (Root)
+            // 你可以写个简单的逻辑：没有 Input 连接的节点就是 Root
+            BTGraphNode rootGraphNode = FindRootNode(AIBehaviorGraph);
+
+            if (rootGraphNode != null)
+            {
+                // 2. 【关键时刻】启动工厂模式
+                // 这一行代码执行完，一棵纯净的、独立的 C# 行为树就被创建出来了
+                var runtimeRoot = rootGraphNode.CreateRuntimeNode(_blackboard);
+
+                _tree = new BehaviorTree.Runtime.BehaviorTree(_blackboard);
+                _tree.SetRoot(runtimeRoot);
+            }
+        }
 
         // 3. 创建树，把黑板传进去
-        _tree = new BehaviorTree.Runtime.BehaviorTree(_blackboard);
+        //_tree = new BehaviorTree.Runtime.BehaviorTree(_blackboard);
 
         // 4. 构建行为树结构 (这里是关键的引用传递！)
-        _tree.SetRoot(BuildMainTree());
+        //_tree.SetRoot(BuildMainTree());
     }
-
+    // 简单的找根节点工具方法
+    private BTGraphNode FindRootNode(BTGraph graph)
+    {
+        foreach (var node in graph.nodes)
+        {
+            var btNode = node as BTGraphNode;
+            // 如果 Entry 端口没连线，它就是根
+            if (btNode != null && !btNode.GetInputPort("Entry").IsConnected)
+                return btNode;
+        }
+        return null;
+    }
     void Update()
     {
         if (MatchManager.Instance.GamePaused)
             return;
         // 每帧运行行为树
         _tree.Tick();
-        if(_tree.GetRootNode().GetNodeState()!=NodeState.RUNNING)
+        if (_tree.GetRootNode().GetNodeState() != NodeState.RUNNING)
+        {
+            ResetBlackboard();
             _tree.GetRootNode().Reset();
+        }
 
         // 更新执行路径（用于调试）
         ExecutionPath = _tree.ExecutionPath;

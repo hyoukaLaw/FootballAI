@@ -123,16 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &167381877 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
-  m_PrefabInstance: {fileID: 1637958900}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &262763056 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
-  m_PrefabInstance: {fileID: 1135069983}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &293104642
 GameObject:
   m_ObjectHideFlags: 0
@@ -272,14 +262,8 @@ MonoBehaviour:
   BlueGoal: {fileID: 876482589}
   TeamRedPlayers:
   - {fileID: 1911970295465355901}
-  - {fileID: 1322439012}
-  - {fileID: 262763056}
-  - {fileID: 167381877}
   TeamBluePlayers:
   - {fileID: 2090009418}
-  - {fileID: 839189660}
-  - {fileID: 952825517}
-  - {fileID: 2122253639}
   Field: {fileID: 619943738}
   PossessionThreshold: 0.8
   GoalDistance: 1
@@ -314,7 +298,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.x
-      value: 14.14
+      value: 7.3
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.y
@@ -322,7 +306,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.z
-      value: 5.27
+      value: -9.9
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: Stats.MovementSpeed
@@ -378,7 +362,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -804,11 +788,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!1 &839189660 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
-  m_PrefabInstance: {fileID: 1549442100}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &839189665 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
@@ -1011,7 +990,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.x
-      value: -16.91
+      value: -11
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.y
@@ -1068,6 +1047,10 @@ PrefabInstance:
     - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_Name
       value: redp2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1213,11 +1196,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 951537909}
   m_CullTransparentMesh: 1
---- !u!1 &952825517 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
-  m_PrefabInstance: {fileID: 1428402840}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &959516400
 GameObject:
   m_ObjectHideFlags: 0
@@ -1393,7 +1371,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.x
-      value: -6.7
+      value: 9.7
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.y
@@ -1401,7 +1379,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.z
-      value: -8.2
+      value: 8.8
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: Stats.MovementSpeed
@@ -1453,7 +1431,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 7287159286380817005, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
@@ -1461,11 +1439,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
---- !u!1 &1322439012 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
-  m_PrefabInstance: {fileID: 886606279}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1428402840
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1480,7 +1453,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.x
-      value: 14.14
+      value: -11.6
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.y
@@ -1488,7 +1461,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.z
-      value: 1.68
+      value: -4.9
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: Stats.MovementSpeed
@@ -1544,7 +1517,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1565,7 +1538,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.x
-      value: 2.5
+      value: -2.69
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.y
@@ -1573,7 +1546,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.z
-      value: 6.7
+      value: -10.5
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: Stats.MovementSpeed
@@ -1626,6 +1599,10 @@ PrefabInstance:
     - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_Name
       value: bluep2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1857,7 +1834,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1998,8 +1975,12 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+      propertyPath: AIBehaviorGraph
+      value: 
+      objectReference: {fileID: 11400000, guid: 7a0f95366ea078c49ab0bc10e9604056, type: 2}
+    - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.x
-      value: 6.74
+      value: 3.77
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.y
@@ -2007,7 +1988,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.z
-      value: 0.56
+      value: -7.7
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: Stats.MovementSpeed
@@ -2076,11 +2057,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
   m_PrefabInstance: {fileID: 2090009416}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &2122253639 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
-  m_PrefabInstance: {fileID: 456303881}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2145055449 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
@@ -2094,6 +2070,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 607433365}
     m_Modifications:
+    - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+      propertyPath: AIBehaviorGraph
+      value: 
+      objectReference: {fileID: 11400000, guid: 7a0f95366ea078c49ab0bc10e9604056, type: 2}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.x
       value: 0

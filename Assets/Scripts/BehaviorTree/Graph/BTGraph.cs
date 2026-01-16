@@ -76,8 +76,6 @@ namespace BehaviorTree.Graph
     [CreateNodeMenu("Actions/TaskPassBall")]
     public class TaskPassBallGraphNode : BTGraphNode
     {
-        // --- 这里是给策划填的参数 ---
-        public float BallSpeed = 15.0f;
 
         public override BehaviorTree.Runtime.Node CreateRuntimeNode(FootballBlackboard blackboard)
         {
@@ -85,6 +83,24 @@ namespace BehaviorTree.Graph
             // 每次运行到这里，都会 new 一个全新的 TaskPassBall
             // 所以运行时节点可以尽情地存状态，互不干扰！
             return new BehaviorTree.Runtime.TaskPassBall(blackboard);
+        }
+    }
+    
+    [CreateNodeMenu("Actions/TestTaskSetTarget")]
+    public class TestTaskSetTargetGraphNode : BTGraphNode
+    {
+        public override BehaviorTree.Runtime.Node CreateRuntimeNode(FootballBlackboard blackboard)
+        {
+            return new BehaviorTree.Runtime.TestTaskSetTarget(blackboard);
+        }
+    }
+    
+    [CreateNodeMenu("Actions/TaskMoveToPosition")]
+    public class TaskMoveToPositionGraphNode : BTGraphNode
+    {
+        public override BehaviorTree.Runtime.Node CreateRuntimeNode(FootballBlackboard blackboard)
+        {
+            return new BehaviorTree.Runtime.TaskMoveToPosition(blackboard);
         }
     }
 }
