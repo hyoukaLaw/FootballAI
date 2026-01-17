@@ -96,6 +96,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ec49f7b94d3486cbd76511084136ca4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AIBehaviorGraph: {fileID: 11400000, guid: 7a0f95366ea078c49ab0bc10e9604056, type: 2}
   ExecutionPath: None
   InitialPosition: {x: -6.242962, y: 8.335007, z: 2.3126488}
   Stats:

@@ -20,8 +20,8 @@ public static class FootballConstants
     public static float DistanceBonusCoefficient = 0.3f;  // 距离加成系数
     
     // TaskEvaluateOffensiveOptions Constants
-    public static float BasePassScore = 50f;              // 基础传球评分
-    public static float ForwardWeight = 2.0f;             // 前方权重
+    public static float BasePassScore = 30f;              // 基础传球评分
+    public static float ForwardWeight = 1.0f;             // 前方权重
     public static float DistanceWeight = 1.0f;            // 距离权重
     public static float DribbleForwardDistance = 0.1f;    // 盘带前进距离
     public static float ForwardDetectionDistance = 3.5f;  // 前方检测距离
