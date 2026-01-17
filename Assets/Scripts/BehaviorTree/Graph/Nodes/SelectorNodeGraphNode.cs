@@ -23,9 +23,11 @@ namespace BehaviorTree.Graph
                     runtimeChildren.Add(childGraphNode.CreateRuntimeNode(blackboard));
                 }
             }
+            SelectorNode selectorNode = new SelectorNode(blackboard, runtimeChildren);
+            selectorNode.Name = name;
 
             // 3. 构造运行时组合节点，传入子节点列表
-            return new SelectorNode(blackboard, runtimeChildren);
+            return selectorNode;
         }
     }
 }

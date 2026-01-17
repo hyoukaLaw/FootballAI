@@ -1,0 +1,22 @@
+﻿namespace BehaviorTree.Runtime
+{
+    public class CheckCanPass : Node
+    {
+        public CheckCanPass(FootballBlackboard blackboard) : base(blackboard)
+        {
+        }
+
+        public override NodeState Evaluate()
+        {
+            // 直接读取黑板中的布尔状态
+            if (Blackboard.PassTarget != null)
+            {
+                return NodeState.SUCCESS;
+            }
+            else
+            {
+                return NodeState.FAILURE;
+            }
+        }
+    }
+}
