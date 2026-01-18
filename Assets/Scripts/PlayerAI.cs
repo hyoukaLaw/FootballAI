@@ -434,7 +434,6 @@ public class PlayerAI : MonoBehaviour
 
         // --- 重置个人决策数据 ---
         _blackboard.MoveTarget = Vector3.zero;
-        _blackboard.PassTarget = null;
 
         // --- 重置进攻决策数据 ---
         _blackboard.BestPassTarget = null;

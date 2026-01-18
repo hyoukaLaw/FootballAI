@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BehaviorTree.Runtime
@@ -25,95 +27,68 @@ namespace BehaviorTree.Runtime
 
         public override NodeState Evaluate()
         {
-            // 防御性编程：检查上下文
-            if (Blackboard.MatchContext == null)
-                return NodeState.FAILURE;
-
-            // 清理上一帧的数据
-            Blackboard.BestPassTarget = null;
-            Blackboard.MoveTarget = Vector3.zero;
-            Blackboard.CanShoot = false;
-
-            GameObject owner = Blackboard.Owner;
-            Vector3 goalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
-
-            // === 0. 评估射门条件 (最高优先级) ===
-            if (CanShoot(owner, goalPos))
+            Vector3 currentPos = Blackboard.Owner.transform.position;
+            // 优先射门
+            Vector3 enemyGoalPosition = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
+            float distToGoal = Vector3.Distance(Blackboard.Owner.transform.position, enemyGoalPosition);
+            float shootProb = Math.Max(FootballConstants.ShootDistanceBase - distToGoal, 0) / FootballConstants.ShootDistanceBase;
+            float shootBlockFactor = IsPathClear(currentPos, enemyGoalPosition) ? 1f : FootballConstants.ShootBlockPenaltyFactor;
+            float shootScore = shootProb * FootballConstants.BaseShootScore * shootBlockFactor;
+            
+            
+            // 接下来是传球
+            float bestPassScore = 0f;
+            GameObject bestPassTarget = null;
+            foreach (var mate in Blackboard.MatchContext.GetTeammates(Blackboard.Owner))
             {
-                Blackboard.CanShoot = true;
-                Blackboard.BestPassTarget = null; // 明确不传球
-                Blackboard.MoveTarget = Vector3.zero; // 明确不移动
-                return NodeState.SUCCESS;
-            }
-
-            // === 1. 评估传球选项 (寻找最佳队友) ===
-            GameObject bestMate = null;
-            float highestScore = -1f;
-
-            var teammates = Blackboard.MatchContext.GetTeammates(owner);
-            if (teammates == null) return NodeState.FAILURE;
-
-            foreach (var mate in teammates)
-            {
-                if (mate == owner) continue; // 排除自己
-
-                float score = CalculatePassScore(owner, mate, goalPos);
-
-                if (score > highestScore)
+                if(mate == Blackboard.Owner) continue;
+                float passScore = CalculatePassScore(Blackboard.Owner, mate, enemyGoalPosition);
+                if (passScore > bestPassScore)
                 {
-                    highestScore = score;
-                    bestMate = mate;
+                    bestPassScore = passScore;
+                    bestPassTarget = mate;
                 }
             }
-
-            // 设定传球阈值：如果最高分都低于传球阈值，说明没有好机会，不如自己带球
-            if (highestScore > FootballConstants.PassThreshold)
+            
+            // 最后是带球
+            float dribbleScore = CalculateDribbleScore(out List<GameObject> enemiesInFront);
+            Debug.Log($"TaskEvaluateOffensiveOptions({Blackboard.Owner.name}): " +
+                      $"shootScore={shootScore}, bestPassScore={bestPassScore}, dribbleScore={dribbleScore}");
+            if(shootScore > bestPassScore && shootScore > dribbleScore)
             {
-                Blackboard.BestPassTarget = bestMate;
-                // 决策完成：建议传球
-                return NodeState.SUCCESS;
+                DecideToShoot();
             }
-
-            // === 2. 评估盘带选项 (如果传球不好，计算向前带球点) ===
-
-            Vector3 dribbleDirection = (goalPos - owner.transform.position).normalized;
-            dribbleDirection.y = 0;
-
-            // 检测前方扇形区域内是否有敌人
-            GameObject blockingEnemy = FindEnemyInFront(owner, dribbleDirection);
-
-            Vector3 potentialDribblePos;
-
-            if (blockingEnemy != null)
+            else if(bestPassScore > dribbleScore)
             {
-                // 前方有阻挡，侧向移动绕过
-                Vector3 sidestepDir = Vector3.Cross(Vector3.up, dribbleDirection);
-
-                // 判断往左还是往右移：选择离球门更近的方向
-                Vector3 leftPos = owner.transform.position + sidestepDir * _sidestepDistance;
-                Vector3 rightPos = owner.transform.position - sidestepDir * _sidestepDistance;
-                float leftDistToGoal = Vector3.Distance(leftPos, goalPos);
-                float rightDistToGoal = Vector3.Distance(rightPos, goalPos);
-
-                Vector3 sidestepPos = leftDistToGoal < rightDistToGoal ? leftPos : rightPos;
-                potentialDribblePos = sidestepPos + dribbleDirection;
-
-                potentialDribblePos = owner.transform.position +
-                                      (potentialDribblePos - owner.transform.position).normalized *
-                                      MatchContext.MoveSegment;
-                Debug.Log($"dribble: {(potentialDribblePos - owner.transform.position).normalized} {owner.transform.position} {potentialDribblePos}");
+                DecideToPass(bestPassTarget);
             }
             else
             {
-                // 前方无阻挡，直接带球
-                potentialDribblePos = owner.transform.position + dribbleDirection * MatchContext.MoveSegment;
+                DecideToDribble(GetDribbleTarget(enemiesInFront, enemyGoalPosition));
             }
-
-            Blackboard.MoveTarget = potentialDribblePos;
-            Blackboard.BestPassTarget = null; // 明确表示不传球
-
-            // 决策完成：建议盘带
+            
             return NodeState.SUCCESS;
+        }
+
+        public void DecideToShoot()
+        {
+            Blackboard.CanShoot = true;
+            Blackboard.BestPassTarget = null;
+            Blackboard.MoveTarget = Vector3.zero;
+        }
+        
+        public void DecideToPass(GameObject bestPassTarget)
+        {
+            Blackboard.CanShoot = false;
+            Blackboard.BestPassTarget = bestPassTarget;
+            Blackboard.MoveTarget = Vector3.zero;
+        }
+        
+        public void DecideToDribble(Vector3 dribbleTarget)
+        {
+            Blackboard.CanShoot = false;
+            Blackboard.BestPassTarget = null;
+            Blackboard.MoveTarget = dribbleTarget;
         }
 
         // === 辅助：判断是否可以射门 ===
@@ -146,29 +121,65 @@ namespace BehaviorTree.Runtime
         }
 
         // === 辅助：给传球目标打分 ===
-        private float CalculatePassScore(GameObject me, GameObject mate, Vector3 goal)
+        private float CalculatePassScore(GameObject me, GameObject mate, Vector3 goalPos)
         {
-            float score = _basePassScore;
-            float distToMate = Vector3.Distance(me.transform.position, mate.transform.position);
+            float myDist = Vector3.Distance(me.transform.position, goalPos);
+            float mateDist = Vector3.Distance(mate.transform.position, goalPos);
+            float improvement = Mathf.Max(0, (myDist - mateDist) * FootballConstants.PassForwardWeight);
+            float passProb = IsPathClear(me.transform.position, mate.transform.position) ? 1f:FootballConstants.PassBlockPenaltyFactor;
+            return (FootballConstants.BasePassScore + improvement * FootballConstants.PassForwardWeight) * passProb;
+        }
 
-            // A. 距离评分：太远容易失误，太近没意义
-            if (distToMate < FootballConstants.TooClosePassDistance) score -= 40f; // 太近
-            if (distToMate > FootballConstants.TooFarPassDistance) score -= 30f; // 太远
+        private float CalculateDribbleScore(out List<GameObject> enemiesInFront)
+        {
+            Vector3 enemyGoalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
+            enemiesInFront = FindEnemiesInFront(Blackboard.Owner,
+                (enemyGoalPos - Blackboard.Owner.transform.position).normalized);
+            return FootballConstants.BaseDribbleScore - enemiesInFront.Count * FootballConstants.DribbleEnemyPenalty;
+        }
 
-            // B. 进攻性评分：队友比我更接近球门吗？
-            float myDistToGoal = Vector3.Distance(me.transform.position, goal);
-            float mateDistToGoal = Vector3.Distance(mate.transform.position, goal);
-            float forwardGain = myDistToGoal - mateDistToGoal; // 正数表示队友更靠前
-
-            score += forwardGain * _forwardWeight;
-
-            // C. 安全性评分 (阻挡检测)
-            if (!IsPathClear(me.transform.position, mate.transform.position))
+        public Vector3 GetDribbleTarget(List<GameObject> enemiesInFront, Vector3 goalPos)
+        {
+            GameObject closestBlockingEnemy = null;
+            float closestDistance = float.MaxValue;
+            foreach (var enemy in enemiesInFront)
             {
-                return -100f; // 被阻挡，直接废弃
+                float distToEnemy = Vector3.Distance(Blackboard.Owner.transform.position, enemy.transform.position);
+                if (distToEnemy < closestDistance)
+                {
+                    closestDistance = distToEnemy;
+                    closestBlockingEnemy = enemy;
+                }
             }
+            Vector3 dribbleDirection = (goalPos - Blackboard.Owner.transform.position).normalized;
+            dribbleDirection.y = 0;
+            Vector3 potentialDribblePos;
+            GameObject owner = Blackboard.Owner;
+            if (closestBlockingEnemy != null)
+            {
+                // 前方有阻挡，侧向移动绕过
+                Vector3 sidestepDir = Vector3.Cross(Vector3.up, dribbleDirection);
 
-            return score;
+                // 判断往左还是往右移：选择离球门更近的方向
+                Vector3 leftPos = owner.transform.position + sidestepDir * _sidestepDistance;
+                Vector3 rightPos = owner.transform.position - sidestepDir * _sidestepDistance;
+                float leftDistToGoal = Vector3.Distance(leftPos, goalPos);
+                float rightDistToGoal = Vector3.Distance(rightPos, goalPos);
+
+                Vector3 sidestepPos = leftDistToGoal < rightDistToGoal ? leftPos : rightPos;
+                potentialDribblePos = sidestepPos + dribbleDirection;
+
+                potentialDribblePos = owner.transform.position +
+                                      (potentialDribblePos - owner.transform.position).normalized *
+                                      MatchContext.MoveSegment;
+                Debug.Log($"dribble: {(potentialDribblePos - owner.transform.position).normalized} {owner.transform.position} {potentialDribblePos}");
+            }
+            else
+            {
+                // 前方无阻挡，直接带球
+                potentialDribblePos = owner.transform.position + dribbleDirection * MatchContext.MoveSegment;
+            }
+            return potentialDribblePos;
         }
 
         // === 辅助：检查路径是否安全 ===
@@ -198,16 +209,6 @@ namespace BehaviorTree.Runtime
             return true; // 安全
         }
 
-        private float CalculateShootScore()
-        {
-            return 0f;
-        }
-
-        private float CalculatePassScore()
-        {
-            return 0f;
-        }
-
         // === 辅助：计算点到线段的距离 ===
         private float DistancePointToLineSegment(Vector3 a, Vector3 b, Vector3 p)
         {
@@ -225,33 +226,25 @@ namespace BehaviorTree.Runtime
         }
 
         // === 辅助：查找前方阻挡的敌人 ===
-        private GameObject FindEnemyInFront(GameObject owner, Vector3 forwardDir)
+        private List<GameObject> FindEnemiesInFront(GameObject owner, Vector3 forwardDir)
         {
-            if (Blackboard.MatchContext == null) return null;
-
             var opponents = Blackboard.MatchContext.GetOpponents(owner);
-            if (opponents == null) return null;
-
+            List<GameObject> enemiesInFront = new List<GameObject>();
             foreach (var enemy in opponents)
             {
                 if (enemy == null) continue;
 
                 Vector3 toEnemy = enemy.transform.position - owner.transform.position;
-                toEnemy.y = 0;
                 float distance = toEnemy.magnitude;
-
+                float angle = Vector3.Angle(forwardDir, toEnemy.normalized);
                 // 检查距离和角度
-                if (distance <= _detectRange)
+                if (distance <= FootballConstants.DribbleDetectDistance && angle <= FootballConstants.DribbleDetectHalfAngle)
                 {
-                    float angle = Vector3.Angle(forwardDir, toEnemy.normalized);
-                    if (angle <= _detectAngle)
-                    {
-                        return enemy;
-                    }
+                    enemiesInFront.Add(enemy);
                 }
             }
 
-            return null;
+            return enemiesInFront;
         }
     }
 }

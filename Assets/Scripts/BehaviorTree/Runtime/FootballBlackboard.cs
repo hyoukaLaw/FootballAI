@@ -10,7 +10,6 @@ namespace BehaviorTree.Runtime
         // --- 个人决策数据 (每个球员独有的状态) ---
         public GameObject Owner; // 黑板属于哪个球员
         public Vector3 MoveTarget; // 当前准备跑向的目标点
-        public GameObject PassTarget;      // 评估后选出的最佳传球目标
 
         // --- 进攻决策数据 ---
         public GameObject BestPassTarget; // 计算出的最佳接球人

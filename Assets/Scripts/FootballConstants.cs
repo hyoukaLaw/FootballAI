@@ -20,7 +20,7 @@ public static class FootballConstants
     public static float DistanceBonusCoefficient = 0.3f;  // 距离加成系数
     
     // TaskEvaluateOffensiveOptions Constants
-    public static float BasePassScore = 30f;              // 基础传球评分
+    // public static float BasePassScore = 30f;              // 基础传球评分
     public static float ForwardWeight = 1.0f;             // 前方权重
     public static float DistanceWeight = 1.0f;            // 距离权重
     public static float DribbleForwardDistance = 0.1f;    // 盘带前进距离
@@ -33,6 +33,17 @@ public static class FootballConstants
     public static float TooClosePassDistance = 3f;        // 太近传球距离阈值
     public static float TooFarPassDistance = 10f;         // 太远传球距离阈值
     public static float EnemyBlockDistanceThreshold = 1.5f; // 敌人阻挡距离阈值
+    // 进攻选择评估（new）
+    public static float ShootDistanceBase = 7f; // 最远射门距离
+    public static float BaseShootScore = 100f;
+    public static float ShootBlockPenaltyFactor = 0.1f;
+    public static float BasePassScore = 0f;
+    public static float PassForwardWeight = 0.2f;
+    public static float PassBlockPenaltyFactor = 0.1f;
+    public static float DribbleDetectDistance = 2f;
+    public static float DribbleDetectHalfAngle = 90f;
+    public static float DribbleEnemyPenalty = 10f;
+    public static float BaseDribbleScore = 40f;
     
     // TaskCalculateSupportSpot Constants
     public static float IdealSupportDistance = 8.0f;      // 理想接应距离

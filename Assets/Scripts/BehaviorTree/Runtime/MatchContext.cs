@@ -75,6 +75,7 @@ namespace BehaviorTree.Runtime
             return null;
         }
 
+        // 我方要进攻的球门位置
         public Vector3 GetEnemyGoalPosition(GameObject player)
         {
             if (TeamRedPlayers.Contains(player))
