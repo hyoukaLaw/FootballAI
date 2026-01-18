@@ -12,6 +12,7 @@ namespace BehaviorTree.Runtime
 
         public override NodeState Execute()
         {
+            OnStart();
             for (int i = _currentIndex; i < ChildrenNodes.Count; i++)
             {
                 var status = ChildrenNodes[i].Execute();
@@ -33,6 +34,7 @@ namespace BehaviorTree.Runtime
 
             _currentIndex = 0; // 全部失败，重置
             NodeState = NodeState.FAILURE;
+            OnEnd();
             return NodeState.FAILURE;
         }
 

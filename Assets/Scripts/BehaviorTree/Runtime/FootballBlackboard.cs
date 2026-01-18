@@ -30,4 +30,13 @@ namespace BehaviorTree.Runtime
 
         
     }
+
+    public static class BlackboardUtils
+    {
+        public static void StartStun(FootballBlackboard bb, float stunDuration = 1f)
+        {
+            bb.IsStunned = true;
+            bb.StunTimer = stunDuration;
+        }
+    }
 }

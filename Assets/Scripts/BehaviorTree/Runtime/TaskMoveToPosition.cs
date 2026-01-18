@@ -35,7 +35,8 @@ namespace BehaviorTree.Runtime
                 return NodeState;
             }
             if(TeamPositionUtils.IsPositionOccupiedByTeammates(owner, targetPos, Blackboard.MatchContext.GetTeammates(owner), 
-                   Blackboard.MatchContext.GetOpponents(owner)))
+                   Blackboard.MatchContext.GetOpponents(owner)) || 
+                    TeamPositionUtils.IsPositionOccupiedByEnemy(owner, targetPos, Blackboard.MatchContext.GetOpponents(owner)))
                 targetPos = TeamPositionUtils.FindUnoccupiedPosition(owner, targetPos, Blackboard.MatchContext.GetTeammates(owner), 
                     Blackboard.MatchContext.GetOpponents(owner));
             // 4. 如果没到，执行移动逻辑 (简单的匀速移动)

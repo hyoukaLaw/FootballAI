@@ -42,67 +42,34 @@ namespace BehaviorTree.Runtime
         }
 
         // 查找执行路径（追踪当前执行的节点）
+// ... existing code ...
         private void FindExecutionPath(Node node, System.Collections.Generic.List<string> path)
         {
-            // 如果是叶子节点
-            if (!(node is CompositeNode))
-            {
-                if (node.GetNodeState() != NodeState.NOT_EVALUATED)
-                {
-                    path.Add(node.GetNodeTypeName() + " " + node.GetNodeState().ToString());
-                }
-                return;
-            }
-
-            // 如果是组合节点，根据类型不同处理
-            var composite = node as CompositeNode;
-
-            // 组合节点本身也要显示状态
-            if (composite.GetNodeState() != NodeState.NOT_EVALUATED)
-            {
-                path.Add(composite.GetNodeTypeName() + " " + composite.GetNodeState().ToString());
-            }
-            else
+            // 2. 记录当前节点状态
+            path.Add($"{node.GetNodeTypeName()} [{node.GetNodeState()}]");
+            // 3. 如果是叶子节点，递归结束
+            if (!(node is CompositeNode composite))
             {
                 return;
             }
 
-            // SelectorNode：只遍历到第一个 SUCCESS/RUNNING 的子节点
-            if (composite is SelectorNode)
+            // 4. 处理组合节点的特殊短路逻辑
+            foreach (var child in composite.ChildrenNodes)
             {
-                foreach (var child in composite.ChildrenNodes)
+
+                if (composite is SequenceNode && child.GetNodeState() == NodeState.FAILURE)
                 {
-                    var childPath = new System.Collections.Generic.List<string>();
-                    FindExecutionPath(child, childPath);
-                    path.AddRange(childPath);
-                    if (child.GetNodeState() == NodeState.RUNNING || child.GetNodeState() == NodeState.SUCCESS)
-                    {
-                        break; // Selector 只选择第一个成功分支
-                    }
+                    break;
                 }
-            }
-            // SequenceNode：遍历所有子节点，直到遇到 FAILURE
-            else if (composite is SequenceNode)
-            {
-                foreach (var child in composite.ChildrenNodes)
+                // 递归记录子节点路径
+                FindExecutionPath(child, path);
+                if (composite is SelectorNode && child.GetNodeState() == NodeState.SUCCESS)
                 {
-                    var childPath = new System.Collections.Generic.List<string>();
-                    FindExecutionPath(child, childPath);
-
-                    // 如果子节点被评估过（NOT_EVALUATED 除外），就加入路径
-                    if (child.GetNodeState() != NodeState.NOT_EVALUATED)
-                    {
-                        path.AddRange(childPath);
-
-                        // 如果遇到 FAILURE，停止遍历后续子节点
-                        if (child.GetNodeState() == NodeState.FAILURE || child.GetNodeState() == NodeState.RUNNING)
-                        {
-                            break;
-                        }
-                    }
+                    break;
                 }
             }
         }
+// ... existing code ...
 
         public FootballBlackboard GetBlackboard() => _blackboard;
     }

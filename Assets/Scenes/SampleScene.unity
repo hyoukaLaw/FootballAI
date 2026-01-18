@@ -268,9 +268,13 @@ MonoBehaviour:
   TeamRedPlayers:
   - {fileID: 1911970295465355901}
   - {fileID: 400217453}
+  - {fileID: 664814745}
+  - {fileID: 748614073}
   TeamBluePlayers:
   - {fileID: 2090009418}
   - {fileID: 368359375}
+  - {fileID: 1847371046}
+  - {fileID: 618478509}
   Field: {fileID: 619943738}
   PossessionThreshold: 0.8
   GoalDistance: 1
@@ -374,7 +378,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -600,6 +604,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
   m_PrefabInstance: {fileID: 610245187}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &618478509 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+  m_PrefabInstance: {fileID: 456303881}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &619943738
 GameObject:
   m_ObjectHideFlags: 0
@@ -706,6 +715,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &664814745 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+  m_PrefabInstance: {fileID: 1135069983}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -800,6 +814,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &748614073 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+  m_PrefabInstance: {fileID: 1637958900}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &839189665 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
@@ -1443,7 +1462,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 7287159286380817005, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
@@ -1529,7 +1548,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1846,7 +1865,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1974,6 +1993,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ResumeButton: {fileID: 866144399}
+--- !u!1 &1847371046 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+  m_PrefabInstance: {fileID: 1428402840}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2090009416
 PrefabInstance:
   m_ObjectHideFlags: 0

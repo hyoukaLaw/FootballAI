@@ -114,11 +114,11 @@ public class PlayerAI : MonoBehaviour
             return;
         // 每帧运行行为树
         _tree.Tick();
-        if (_tree.GetRootNode().GetNodeState() != NodeState.RUNNING)
-        {
-            ResetBlackboard();
-            _tree.GetRootNode().Reset();
-        }
+        // if (_tree.GetRootNode().GetNodeState() != NodeState.RUNNING)
+        // {
+        //     //ResetBlackboard();
+        //     _tree.GetRootNode().Reset(); // 只重置节点状态
+        // }
 
         // 更新执行路径（用于调试）
         ExecutionPath = _tree.ExecutionPath;

@@ -28,8 +28,8 @@ namespace BehaviorTree.Runtime
 
             // 尝试抢断
             float tackleChance = CalculateTackleChance(owner, ballHolder);
-            float random = Random.Range(0f, 1f);
-
+            float random = Random.Range(0, 1f);// Random.Range(0.8f, 0.85f); // (0,1)
+            Debug.Log($"{Blackboard.Owner.name} Tackle Chance :{tackleChance}");
             if(random <= tackleChance)
             {
                 // 抢断成功！
@@ -39,6 +39,8 @@ namespace BehaviorTree.Runtime
             else
             {
                 // 抢断失败
+                BlackboardUtils.StartStun(Blackboard, 0.5f);
+                Debug.Log($"Tackle failed {Time.realtimeSinceStartup} {Time.frameCount} {Blackboard.Owner.name}");
                 return NodeState.FAILURE;
             }
         }

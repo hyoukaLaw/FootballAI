@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
@@ -14,8 +15,10 @@ namespace BehaviorTree.Runtime
     [System.Serializable]
     public abstract class Node
     {
-        protected NodeState NodeState;
+        public string GetOwnerName() => Blackboard.Owner.name;
+        public NodeState NodeState { get; protected set; }
         public NodeState GetNodeState() => NodeState;
+        public int LastTickFrame { get; private set; } // 新增：记录最后一帧执行的时间
         protected FootballBlackboard Blackboard; // 核心：引用数据源
 
         public string Name;
@@ -29,7 +32,6 @@ namespace BehaviorTree.Runtime
 
         // 核心方法：每帧调用，返回当前状态
         public abstract NodeState Evaluate();
-
         // 执行节点（包装生命周期）
         public virtual NodeState Execute()
         {
@@ -51,7 +53,10 @@ namespace BehaviorTree.Runtime
         }
 
         // 任务首次执行时调用（用于初始化）
-        public virtual void OnStart() { }
+        public virtual void OnStart()
+        {
+            LastTickFrame = Time.frameCount; // 每次执行时标记当前帧
+        }
 
         // 任务返回 Success/Failure 后调用（用于清理）
         public virtual void OnEnd() { }
