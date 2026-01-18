@@ -18,7 +18,7 @@ namespace BehaviorTree.Runtime
         public string GetOwnerName() => Blackboard.Owner.name;
         public NodeState NodeState { get; protected set; }
         public NodeState GetNodeState() => NodeState;
-        public int LastTickFrame { get; private set; } // 新增：记录最后一帧执行的时间
+        public int LastTickFrame { get; protected set; } // 新增：记录最后一帧执行的时间
         protected FootballBlackboard Blackboard; // 核心：引用数据源
 
         public string Name;
@@ -35,6 +35,9 @@ namespace BehaviorTree.Runtime
         // 执行节点（包装生命周期）
         public virtual NodeState Execute()
         {
+            // 【修改 1】无论是否 Running，只要 Execute 被调用，就标记当前帧
+            LastTickFrame = Time.frameCount; 
+
             if (!_isRunning)
             {
                 OnStart();
@@ -42,6 +45,7 @@ namespace BehaviorTree.Runtime
             }
 
             var status = Evaluate();
+            NodeState = status;
 
             if (status == NodeState.SUCCESS || status == NodeState.FAILURE)
             {
@@ -55,7 +59,8 @@ namespace BehaviorTree.Runtime
         // 任务首次执行时调用（用于初始化）
         public virtual void OnStart()
         {
-            LastTickFrame = Time.frameCount; // 每次执行时标记当前帧
+            // 【修改 2】删掉这里的 LastTickFrame = Time.frameCount; 
+            // 只要保留业务逻辑即可，帧戳由 Execute 统一管理
         }
 
         // 任务返回 Success/Failure 后调用（用于清理）

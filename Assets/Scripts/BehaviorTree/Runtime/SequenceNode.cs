@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
@@ -13,6 +14,7 @@ namespace BehaviorTree.Runtime
 
         public override NodeState Execute()
         {
+            LastTickFrame = Time.frameCount;
             OnStart();
             for (int i = _currentIndex; i < ChildrenNodes.Count; i++)
             {
