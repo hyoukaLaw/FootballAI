@@ -26,12 +26,21 @@ public class SceneViewTextDisplay : MonoBehaviour
             // 计算文本位置（Scene窗口右上角）
             float width = 200f;
             float height = 30f;
-            Rect rect = new Rect(SceneView.currentDrawingSceneView.position.width - width - 20, 20, width, height);
+            int i = 1;
+            Rect rect = new Rect(SceneView.currentDrawingSceneView.position.width - width*i - 20, 20, width, height);
             GameObject playerGo = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Player.prefab");
             // 显示文本
             string diameterText = $"Player当前直径: {playerGo.transform.lossyScale.x}";
             Handles.BeginGUI();
             GUI.Label(rect, diameterText, style);
+            Handles.EndGUI();
+            
+            playerGo = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Plane.prefab");
+            // 显示文本
+            string fieldText = $"球场当前长度: {playerGo.transform.lossyScale.z * 10} 宽度: {playerGo.transform.lossyScale.x * 10}";
+            rect = new Rect(SceneView.currentDrawingSceneView.position.width - width*i - 20, 50, width, height);
+            Handles.BeginGUI();
+            GUI.Label(rect, fieldText, style);
             Handles.EndGUI();
         }
     }

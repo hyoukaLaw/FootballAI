@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
@@ -16,8 +16,7 @@ namespace BehaviorTree.Runtime
             // 1. 如果球没有持球人，无法进行针对性的抢断动作（通常由争抢无主球逻辑处理）
             if (Blackboard.MatchContext.BallHolder == null)
             {
-                NodeState = NodeState.FAILURE;
-                return NodeState;
+                return NodeState.FAILURE;
             }
 
             // 3. 计算与持球人的距离
@@ -29,14 +28,12 @@ namespace BehaviorTree.Runtime
             // 4. 判断是否在常量定义的抢断范围内
             if (distance < FootballConstants.TryTackleDistance)
             {
-                NodeState = NodeState.SUCCESS;
+                return NodeState.SUCCESS;
             }
             else
             {
-                NodeState = NodeState.FAILURE;
+                return NodeState.FAILURE;
             }
-
-            return NodeState;
         }
     }
 }

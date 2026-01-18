@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
@@ -19,15 +19,13 @@ namespace BehaviorTree.Runtime
             if (Blackboard.MarkedPlayer == null)
             {
                 // 没有盯人目标，返回 SUCCESS
-                NodeState = NodeState.SUCCESS;
+                return NodeState.SUCCESS;
             }
             else
             {
                 // 已有盯人目标，返回 FAILURE
-                NodeState = NodeState.FAILURE;
+                return NodeState.FAILURE;
             }
-
-            return NodeState;
         }
     }
 }

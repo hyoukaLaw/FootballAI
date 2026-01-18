@@ -16,8 +16,7 @@ namespace BehaviorTree.Runtime
                 Blackboard.MatchContext.BallHolder == null ||
                 Blackboard.Owner == null)
             {
-                NodeState = NodeState.FAILURE;
-                return NodeState;
+                return NodeState.FAILURE;
             }
 
             // 核心逻辑：
@@ -25,13 +24,11 @@ namespace BehaviorTree.Runtime
             // 这里的 Owner 是在 PlayerAI 初始化黑板时赋值的自身 GameObject
             if (Blackboard.MatchContext.BallHolder == Blackboard.Owner)
             {
-                NodeState = NodeState.SUCCESS;
-                return NodeState;
+                return NodeState.SUCCESS;
             }
             else
             {
-                NodeState = NodeState.FAILURE;
-                return NodeState;
+                return NodeState.FAILURE;
             }
         }
     }

@@ -10,13 +10,11 @@ namespace BehaviorTree.Runtime
         {
             if (Blackboard.IsStunned)
             {
-                NodeState = NodeState.SUCCESS;
-                return NodeState;
+                return NodeState.SUCCESS;
             }
             else
             {
-                NodeState = NodeState.FAILURE;
-                return NodeState;
+                return NodeState.FAILURE;
             }
         }
     }

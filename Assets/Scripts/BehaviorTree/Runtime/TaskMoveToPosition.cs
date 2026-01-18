@@ -22,8 +22,7 @@ namespace BehaviorTree.Runtime
             // 防御性检查
             if (owner == null)
             {
-                NodeState = NodeState.FAILURE;
-                return NodeState;
+                return NodeState.FAILURE;
             }
             // 2. 计算距离
             float distance = Vector3.Distance(owner.transform.position, targetPos);
@@ -31,8 +30,7 @@ namespace BehaviorTree.Runtime
             if (distance < _stoppingDistance)
             {
                 // 到了！任务完成
-                NodeState = NodeState.SUCCESS;
-                return NodeState;
+                return NodeState.SUCCESS;
             }
             if(TeamPositionUtils.IsPositionOccupiedByTeammates(owner, targetPos, Blackboard.MatchContext.GetTeammates(owner), 
                    Blackboard.MatchContext.GetOpponents(owner)) || 
@@ -62,9 +60,8 @@ namespace BehaviorTree.Runtime
             // 2. --- 新增：带球逻辑 (Dribble Logic) ---
             DribbleBall(owner);
             // 5. 还在路上，返回 RUNNING
-            NodeState = NodeState.RUNNING;
             Debug.Log($"{Blackboard.Owner.name} From {owner.transform.position} Move to {targetPos}");
-            return NodeState;
+            return NodeState.RUNNING;
         }
         
         // 核心辅助方法：如果是持球人，就更新球的位置

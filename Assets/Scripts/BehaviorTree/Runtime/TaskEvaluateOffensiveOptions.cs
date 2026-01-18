@@ -71,8 +71,7 @@ namespace BehaviorTree.Runtime
             {
                 Blackboard.BestPassTarget = bestMate;
                 // 决策完成：建议传球
-                NodeState = NodeState.SUCCESS;
-                return NodeState;
+                return NodeState.SUCCESS;
             }
 
             // === 2. 评估盘带选项 (如果传球不好，计算向前带球点) ===
@@ -114,8 +113,7 @@ namespace BehaviorTree.Runtime
             Blackboard.BestPassTarget = null; // 明确表示不传球
 
             // 决策完成：建议盘带
-            NodeState = NodeState.SUCCESS;
-            return NodeState;
+            return NodeState.SUCCESS;
         }
 
         // === 辅助：判断是否可以射门 ===
@@ -198,6 +196,16 @@ namespace BehaviorTree.Runtime
             }
 
             return true; // 安全
+        }
+
+        private float CalculateShootScore()
+        {
+            return 0f;
+        }
+
+        private float CalculatePassScore()
+        {
+            return 0f;
         }
 
         // === 辅助：计算点到线段的距离 ===

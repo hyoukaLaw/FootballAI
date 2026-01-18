@@ -10,8 +10,7 @@ namespace BehaviorTree.Runtime
         {
             if (!Blackboard.IsStunned)
             {
-                NodeState = NodeState.FAILURE;
-                return NodeState;
+                return NodeState.FAILURE;
             }
 
             // 更新停顿计时器
@@ -22,13 +21,11 @@ namespace BehaviorTree.Runtime
                 // 停顿结束，清除状态
                 Blackboard.IsStunned = false;
                 Blackboard.StunTimer = 0f;
-                NodeState = NodeState.SUCCESS;
-                return NodeState;
+                return NodeState.SUCCESS;
             }
 
             // 继续停顿中
-            NodeState = NodeState.RUNNING;
-            return NodeState;
+            return NodeState.RUNNING;
         }
     }
 }
