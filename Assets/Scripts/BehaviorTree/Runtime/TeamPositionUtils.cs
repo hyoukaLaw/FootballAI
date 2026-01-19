@@ -38,11 +38,20 @@ namespace BehaviorTree.Runtime
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="owner"></param>
+        /// <param name="desiredPosition"></param>
+        /// <param name="teammates"></param>
+        /// <param name="enemies"></param>
+        /// <param name="minDistance">判断位置被占据的最小距离</param>
+        /// <returns></returns>
         // 找到不重叠的最佳位置
         public static Vector3 FindUnoccupiedPosition(GameObject owner, Vector3 desiredPosition,
             List<GameObject> teammates, List<GameObject> enemies, float minDistance = 1f)
         {
-            var searchRadius = 1.5f;
+            var searchRadius = FootballConstants.OccupiedSearchRadius;
             // 1. 先检查理想位置是否可用
             bool occupied = IsPositionOccupiedByTeammates(owner, desiredPosition, teammates, enemies,  minDistance) || 
                             IsPositionOccupiedByEnemy(owner, desiredPosition, enemies, minDistance);
@@ -56,10 +65,10 @@ namespace BehaviorTree.Runtime
             Vector3 bestPosition = desiredPosition;
             float bestScore = float.MinValue;
 
-            // 8个方向搜索（每45度）
-            for (int i = 0; i < 8; i++)
+            // 12个方向搜索（每30度）
+            for (int i = 0; i < 12; i++)
             {
-                float angle = i * 45f;
+                float angle = i * 30f;
                 Vector3 searchDir = Quaternion.Euler(0, angle, 0) * Vector3.forward;
                 Vector3 testPos = desiredPosition + searchDir * searchRadius;
 

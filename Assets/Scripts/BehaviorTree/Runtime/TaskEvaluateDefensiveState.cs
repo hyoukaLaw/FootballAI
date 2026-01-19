@@ -8,9 +8,6 @@ namespace BehaviorTree.Runtime
 
         public override NodeState Evaluate()
         {
-            // 防御性编程：检查上下文
-            if (Blackboard.MatchContext == null || Blackboard.MatchContext.Ball == null)
-                return NodeState.FAILURE;
 
             // 如果球是无主的（Loose Ball），防守逻辑暂时不处理，交给通用的抢球逻辑
             if (Blackboard.MatchContext.BallHolder == null)
@@ -52,8 +49,10 @@ namespace BehaviorTree.Runtime
                 Vector3 ballPos = Blackboard.MatchContext.Ball.transform.position;
 
                 // 站位策略：站在敌人和球连线的 20% 处（靠近敌人，阻断接球）
-                Vector3 idealPos = targetPos + (ballPos - targetPos).normalized *1.5f;
+                Vector3 idealPos = targetPos + (ballPos - targetPos).normalized;
                 Blackboard.MoveTarget = Blackboard.Owner.transform.position + (idealPos - Blackboard.Owner.transform.position).normalized * FootballConstants.DecideMinStep;
+                Blackboard.MoveTarget = TeamPositionUtils.FindUnoccupiedPosition(owner, Blackboard.MoveTarget,
+                    Blackboard.MatchContext.GetTeammates(owner), Blackboard.MatchContext.GetOpponents(owner));
                 return NodeState.SUCCESS;
             }
             Debug.Log($"{Blackboard.Owner.name} TaskEvaluateDefensiveState: Failure");

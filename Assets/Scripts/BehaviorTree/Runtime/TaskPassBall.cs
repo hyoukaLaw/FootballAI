@@ -12,7 +12,7 @@ namespace BehaviorTree.Runtime
         {
             if (Blackboard.MatchContext == null || Blackboard.MatchContext.Ball == null)
                 return NodeState.FAILURE;
-            Debug.Log($"Pass {Time.realtimeSinceStartup} {Time.frameCount} {Blackboard.Owner.name}");
+            
             GameObject target = Blackboard.BestPassTarget;
             GameObject ball = Blackboard.MatchContext.Ball;
 
@@ -42,13 +42,13 @@ namespace BehaviorTree.Runtime
 
             // 4. 计算预测点：他现在的位置 + (速度 * 时间)
             // 也就是：球到了之后，他大概会在哪
-            Vector3 predictedPos = target.transform.position + (targetVelocity * flightTime);
+            Vector3 predictedPos = target.transform.position;//+ (targetVelocity * flightTime);
 
             // --- 5. 传球给预测点，而不是当前点 ---
             ballCtrl.KickTo(predictedPos, Blackboard.Stats.PassingSpeed);
             Blackboard.IsStunned = true;
             Blackboard.StunTimer = Blackboard.StunDuration;
-
+            Debug.Log($"Pass From {ball.transform.position} To {predictedPos}({targetAI.gameObject.name})");
             return NodeState.SUCCESS;
         }
     }

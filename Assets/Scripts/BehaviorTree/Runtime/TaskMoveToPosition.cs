@@ -55,15 +55,16 @@ namespace BehaviorTree.Runtime
                     owner.transform.forward = direction;
                 }
             }
-            
-            newPos = LimitPosToField(newPos);
-            
-            owner.transform.position = newPos;
+            NodeState retNodeState = NodeState.RUNNING;
+            Vector3 clampedNewPos = LimitPosToField(newPos);
+            if (Vector3.Distance(clampedNewPos, newPos) > _stoppingDistance)
+                retNodeState = NodeState.SUCCESS;
+            owner.transform.position = clampedNewPos;
             // 2. --- 新增：带球逻辑 (Dribble Logic) ---
             DribbleBall(owner);
             // 5. 还在路上，返回 RUNNING
             Debug.Log($"{Blackboard.Owner.name} From {owner.transform.position} Move to {targetPos}");
-            return NodeState.RUNNING;
+            return retNodeState;
         }
         
         // 核心辅助方法：如果是持球人，就更新球的位置

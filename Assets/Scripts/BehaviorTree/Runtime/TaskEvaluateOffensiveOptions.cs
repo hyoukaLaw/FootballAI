@@ -54,7 +54,7 @@ namespace BehaviorTree.Runtime
             float dribbleScore = CalculateDribbleScore(out List<GameObject> enemiesInFront);
             Vector3 dribbleTarget = GetDribbleTarget(enemiesInFront, enemyGoalPosition);
             Debug.Log($"TaskEvaluateOffensiveOptions({Blackboard.Owner.name}): " +
-                      $"shootScore={shootScore}, bestPassScore={bestPassScore}, dribbleScore={dribbleScore}" +
+                      $"shootScore={shootScore}(shootBlockFactor={shootBlockFactor}), bestPassScore={bestPassScore}, dribbleScore={dribbleScore}" +
                       $"bestPassTarget={bestPassTarget?.name}, dribbleTarget={dribbleTarget}");
             
             if(shootScore > bestPassScore && shootScore > dribbleScore)
@@ -128,7 +128,7 @@ namespace BehaviorTree.Runtime
         {
             float myDist = Vector3.Distance(me.transform.position, goalPos);
             float mateDist = Vector3.Distance(mate.transform.position, goalPos);
-            float improvement = Mathf.Max(0, (myDist - mateDist) * FootballConstants.PassForwardWeight);
+            float improvement = (myDist - mateDist) * FootballConstants.PassForwardWeight;
             float passProb = IsPathClear(me.transform.position, mate.transform.position) ? 1f:FootballConstants.PassBlockPenaltyFactor;
             return (FootballConstants.BasePassScore + improvement * FootballConstants.PassForwardWeight) * passProb;
         }
@@ -138,6 +138,8 @@ namespace BehaviorTree.Runtime
             Vector3 enemyGoalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
             enemiesInFront = FindEnemiesInFront(Blackboard.Owner,
                 (enemyGoalPos - Blackboard.Owner.transform.position).normalized);
+            if(enemiesInFront.Count == 0)
+                return FootballConstants.BaseDribbleScore + FootballConstants.DribbleClearBonus;
             return FootballConstants.BaseDribbleScore - enemiesInFront.Count * FootballConstants.DribbleEnemyPenalty;
         }
 
