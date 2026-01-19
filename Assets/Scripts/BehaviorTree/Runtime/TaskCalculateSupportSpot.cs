@@ -10,7 +10,6 @@ namespace BehaviorTree.Runtime
 
         public override NodeState Evaluate()
         {
-
             GameObject ball = Blackboard.MatchContext.Ball;
             GameObject owner = Blackboard.Owner;
             // 1 如果当前离持球人太近，横向拉开距离

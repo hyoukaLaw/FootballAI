@@ -21,11 +21,6 @@ namespace BehaviorTree.Runtime
             GameObject owner = Blackboard.Owner;
             if(Vector3.Distance(_targetPos, Blackboard.MoveTarget) > FootballConstants.DecideMinStep / 2f)
                 _targetPos = Blackboard.MoveTarget; // 从黑板读取"要去哪"
-            // 防御性检查
-            if (owner == null)
-            {
-                return NodeState.FAILURE;
-            }
             // 2. 计算距离
             float distance = Vector3.Distance(owner.transform.position, _targetPos);
             // 3. 判定是否到达
