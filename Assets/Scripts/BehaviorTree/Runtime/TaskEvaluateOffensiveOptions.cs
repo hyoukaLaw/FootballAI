@@ -133,11 +133,13 @@ namespace BehaviorTree.Runtime
             return (FootballConstants.BasePassScore + improvement * FootballConstants.PassForwardWeight) * passProb;
         }
 
-        private float CalculateDribbleScore(out List<GameObject> enemiesInFront)
+private float CalculateDribbleScore(out List<GameObject> enemiesInFront)
         {
             Vector3 enemyGoalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
-            enemiesInFront = FindEnemiesInFront(Blackboard.Owner,
-                (enemyGoalPos - Blackboard.Owner.transform.position).normalized);
+            var opponents = Blackboard.MatchContext.GetOpponents(Blackboard.Owner);
+            enemiesInFront = FootballUtils.FindEnemiesInFront(Blackboard.Owner,
+                (enemyGoalPos - Blackboard.Owner.transform.position).normalized, opponents,
+                FootballConstants.DribbleDetectDistance, FootballConstants.DribbleDetectHalfAngle);
             if(enemiesInFront.Count == 0)
                 return FootballConstants.BaseDribbleScore + FootballConstants.DribbleClearBonus;
             return FootballConstants.BaseDribbleScore - enemiesInFront.Count * FootballConstants.DribbleEnemyPenalty;
@@ -188,72 +190,18 @@ namespace BehaviorTree.Runtime
             return potentialDribblePos;
         }
 
-        // === 辅助：检查路径是否安全 ===
+// === 辅助：检查路径是否安全 ===
         private bool IsPathClear(Vector3 start, Vector3 end)
         {
             if (Blackboard.MatchContext == null) return true;
 
-            // 遍历 Context.Opponents 检测是否在路径上
             var owner = Blackboard.Owner;
             var opponents = Blackboard.MatchContext.GetOpponents(owner);
             if (opponents == null) return true;
 
-            foreach (var enemy in opponents)
-            {
-                if (enemy == null) continue;
-                if (Vector3.Dot(end - start, enemy.transform.position - start) < 0)
-                    continue;
-
-                // 计算点到线段的距离
-                float distToLine = DistancePointToLineSegment(start, end, enemy.transform.position);
-
-                // 如果敌人距离传球路线小于敌人阻挡距离阈值，认为会被阻挡
-                if (distToLine < FootballConstants.EnemyBlockDistanceThreshold)
-                {
-                    return false; // 被阻挡
-                }
-            }
-
-            return true; // 安全
+            return FootballUtils.IsPathClear(start, end, opponents, FootballConstants.EnemyBlockDistanceThreshold);
         }
 
-        // === 辅助：计算点到线段的距离 ===
-        private float DistancePointToLineSegment(Vector3 a, Vector3 b, Vector3 p)
-        {
-            Vector3 ab = b - a;
-            Vector3 ap = p - a;
-            float magOfab2 = ab.sqrMagnitude;
-            if (magOfab2 == 0) return (p - a).magnitude;
-            float t = Vector3.Dot(ap, ab) / magOfab2;
-            if (t < 0)
-                return (p - a).magnitude;
-            else if (t > 1)
-                return (p - b).magnitude;
-            Vector3 closestPoint = a + ab * t;
-            return (p - closestPoint).magnitude;
-        }
-        
 
-        // === 辅助：查找前方阻挡的敌人 ===
-        private List<GameObject> FindEnemiesInFront(GameObject owner, Vector3 forwardDir)
-        {
-            var opponents = Blackboard.MatchContext.GetOpponents(owner);
-            List<GameObject> enemiesInFront = new List<GameObject>();
-            foreach (var enemy in opponents)
-            {
-                if (enemy == null) continue;
-
-                Vector3 toEnemy = enemy.transform.position - owner.transform.position;
-                float distance = toEnemy.magnitude;
-                float angle = Vector3.Angle(forwardDir, toEnemy.normalized);
-                // 检查距离和角度
-                if (distance <= FootballConstants.DribbleDetectDistance && angle <= FootballConstants.DribbleDetectHalfAngle)
-                {
-                    enemiesInFront.Add(enemy);
-                }
-            }
-
-            return enemiesInFront;
-        }
     }
 }

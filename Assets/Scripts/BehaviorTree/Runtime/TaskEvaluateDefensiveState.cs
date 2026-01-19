@@ -65,19 +65,10 @@ namespace BehaviorTree.Runtime
         {
             if (Blackboard.MatchContext == null) return false;
 
-            float myDist = Vector3.Distance(Blackboard.Owner.transform.position, targetPos);
             var teammates = Blackboard.MatchContext.GetTeammates(Blackboard.Owner);
             if (teammates == null) return false;
 
-            foreach (var mate in teammates)
-            {
-                if (mate == Blackboard.Owner) continue;
-                if (Vector3.Distance(mate.transform.position, targetPos) < myDist - 0.5f) // 0.5f 容错
-                {
-                    return false;
-                }
-            }
-            return true;
+            return FootballUtils.IsClosestTeammateToTarget(targetPos, Blackboard.Owner, teammates, 0.5f);
         }
 
         // 是防线上的最后一人，也应该上前拦截
@@ -103,26 +94,8 @@ namespace BehaviorTree.Runtime
         // 辅助：找个没人盯的或者离我最近的无球敌人
         private GameObject FindClosestEnemyToMark(GameObject me, GameObject ballHolder)
         {
-            if (Blackboard.MatchContext == null) return null;
-
-            GameObject bestTarget = null;
-            float closestDist = float.MaxValue;
-
             var opponents = Blackboard.MatchContext.GetOpponents(Blackboard.Owner);
-            if (opponents == null) return null;
-
-            foreach (var enemy in opponents)
-            {
-                if (enemy == ballHolder) continue; // 不盯持球人，持球人由施压者负责
-
-                float d = Vector3.Distance(me.transform.position, enemy.transform.position);
-                if (d < closestDist)
-                {
-                    closestDist = d;
-                    bestTarget = enemy;
-                }
-            }
-            return bestTarget;
+            return FootballUtils.FindClosestEnemy(me, opponents, ballHolder);
         }
     }
 }
