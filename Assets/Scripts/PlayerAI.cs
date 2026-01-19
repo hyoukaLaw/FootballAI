@@ -59,9 +59,7 @@ public class PlayerAI : MonoBehaviour
         _blackboard = new FootballBlackboard();
         _blackboard.Owner = this.gameObject; // 记录自己是谁
         _blackboard.Stats = Stats; // 传入球员属性
-
-        // 记录初始位置
-        InitialPosition = transform.position;
+        
 
         // 2. 注入全局上下文
         if (MatchManager.Instance != null && MatchManager.Instance.Context != null)

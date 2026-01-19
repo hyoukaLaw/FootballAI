@@ -201,6 +201,8 @@ namespace BehaviorTree.Runtime
             foreach (var enemy in opponents)
             {
                 if (enemy == null) continue;
+                if (Vector3.Dot(end - start, enemy.transform.position - start) < 0)
+                    continue;
 
                 // 计算点到线段的距离
                 float distToLine = DistancePointToLineSegment(start, end, enemy.transform.position);
@@ -230,6 +232,7 @@ namespace BehaviorTree.Runtime
             Vector3 closestPoint = a + ab * t;
             return (p - closestPoint).magnitude;
         }
+        
 
         // === 辅助：查找前方阻挡的敌人 ===
         private List<GameObject> FindEnemiesInFront(GameObject owner, Vector3 forwardDir)
