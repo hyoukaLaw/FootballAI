@@ -14,7 +14,7 @@ namespace BehaviorTree.Runtime
         {
         }
 
-        private Vector3 _targetPos = Vector3.negativeInfinity;
+        private Vector3 _targetPos = Vector3.negativeInfinity; // 上一轮的targetPos
         public override NodeState Evaluate()
         {
             // 1. 获取主角和目标

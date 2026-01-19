@@ -170,17 +170,17 @@ private float CalculateDribbleScore(out List<GameObject> enemiesInFront)
                 // 判断往左还是往右移：选择离球门更近的方向
                 Vector3 leftPos = owner.transform.position + sidestepDir * _sidestepDistance;
                 Vector3 rightPos = owner.transform.position - sidestepDir * _sidestepDistance;
-                float leftDistToGoal = Vector3.Distance(leftPos, goalPos);
-                float rightDistToGoal = Vector3.Distance(rightPos, goalPos);
+                // float leftDistToGoal = Vector3.Distance(leftPos, goalPos);
+                // float rightDistToGoal = Vector3.Distance(rightPos, goalPos);
                 float leftDistToEnemy = Vector3.Distance(leftPos, closestBlockingEnemy.transform.position);
                 float rightDistToEnemy = Vector3.Distance(rightPos, closestBlockingEnemy.transform.position);
 
-                Vector3 sidestepPos = leftDistToGoal < rightDistToGoal ? leftPos : rightPos;
-                potentialDribblePos = sidestepPos + dribbleDirection;
+                Vector3 sidestepPos = leftDistToEnemy > rightDistToEnemy ? leftPos : rightPos;
+                potentialDribblePos = sidestepPos;
 
                 potentialDribblePos = owner.transform.position +
                                       (potentialDribblePos - owner.transform.position).normalized;
-                Debug.Log($"dribble: {(potentialDribblePos - owner.transform.position).normalized} {owner.transform.position} {potentialDribblePos}");
+                Debug.Log($"Block: From {owner.transform.position} To {potentialDribblePos}");
             }
             else
             {

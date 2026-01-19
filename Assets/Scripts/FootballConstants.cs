@@ -41,7 +41,7 @@ public static class FootballConstants
     public static float BasePassScore = 60f;
     public static float PassForwardWeight = 0.2f;
     public static float PassBlockPenaltyFactor = 0.1f;
-    public static float DribbleDetectDistance = 2f;
+    public static float DribbleDetectDistance = 2.5f;
     public static float DribbleDetectHalfAngle = 90f;
     public static float DribbleEnemyPenalty = 10f;
     public static float BaseDribbleScore = 40f;
