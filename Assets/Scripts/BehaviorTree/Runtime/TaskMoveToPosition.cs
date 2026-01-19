@@ -14,11 +14,13 @@ namespace BehaviorTree.Runtime
         {
         }
 
+        private Vector3 targetPos = Vector3.negativeInfinity;
         public override NodeState Evaluate()
         {
             // 1. 获取主角和目标
             GameObject owner = Blackboard.Owner;
-            Vector3 targetPos = Blackboard.MoveTarget; // 从黑板读取"要去哪"
+            if(Vector3.Distance(targetPos, Blackboard.MoveTarget) > FootballConstants.DecideMinStep / 2f)
+                targetPos = Blackboard.MoveTarget; // 从黑板读取"要去哪"
             // 防御性检查
             if (owner == null)
             {
@@ -32,11 +34,11 @@ namespace BehaviorTree.Runtime
                 // 到了！任务完成
                 return NodeState.SUCCESS;
             }
-            if(TeamPositionUtils.IsPositionOccupiedByTeammates(owner, targetPos, Blackboard.MatchContext.GetTeammates(owner), 
-                   Blackboard.MatchContext.GetOpponents(owner)) || 
-                    TeamPositionUtils.IsPositionOccupiedByEnemy(owner, targetPos, Blackboard.MatchContext.GetOpponents(owner)))
-                targetPos = TeamPositionUtils.FindUnoccupiedPosition(owner, targetPos, Blackboard.MatchContext.GetTeammates(owner), 
-                    Blackboard.MatchContext.GetOpponents(owner));
+            // if(TeamPositionUtils.IsPositionOccupiedByTeammates(owner, targetPos, Blackboard.MatchContext.GetTeammates(owner), 
+            //        Blackboard.MatchContext.GetOpponents(owner)) || 
+            //         TeamPositionUtils.IsPositionOccupiedByEnemy(owner, targetPos, Blackboard.MatchContext.GetOpponents(owner)))
+            //     targetPos = TeamPositionUtils.FindUnoccupiedPosition(owner, targetPos, Blackboard.MatchContext.GetTeammates(owner), 
+            //         Blackboard.MatchContext.GetOpponents(owner));
             // 4. 如果没到，执行移动逻辑 (简单的匀速移动)
             // 注意：这里直接修改 Transform，不依赖 NavMesh，符合你的白盒测试需求
             Vector3 newPos = Vector3.MoveTowards(owner.transform.position, targetPos,

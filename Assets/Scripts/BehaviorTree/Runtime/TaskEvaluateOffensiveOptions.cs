@@ -52,8 +52,11 @@ namespace BehaviorTree.Runtime
             
             // 最后是带球
             float dribbleScore = CalculateDribbleScore(out List<GameObject> enemiesInFront);
+            Vector3 dribbleTarget = GetDribbleTarget(enemiesInFront, enemyGoalPosition);
             Debug.Log($"TaskEvaluateOffensiveOptions({Blackboard.Owner.name}): " +
-                      $"shootScore={shootScore}, bestPassScore={bestPassScore}, dribbleScore={dribbleScore}");
+                      $"shootScore={shootScore}, bestPassScore={bestPassScore}, dribbleScore={dribbleScore}" +
+                      $"bestPassTarget={bestPassTarget?.name}, dribbleTarget={dribbleTarget}");
+            
             if(shootScore > bestPassScore && shootScore > dribbleScore)
             {
                 DecideToShoot();
@@ -64,7 +67,7 @@ namespace BehaviorTree.Runtime
             }
             else
             {
-                DecideToDribble(GetDribbleTarget(enemiesInFront, enemyGoalPosition));
+                DecideToDribble(dribbleTarget);
             }
             
             return NodeState.SUCCESS;
@@ -165,19 +168,20 @@ namespace BehaviorTree.Runtime
                 Vector3 rightPos = owner.transform.position - sidestepDir * _sidestepDistance;
                 float leftDistToGoal = Vector3.Distance(leftPos, goalPos);
                 float rightDistToGoal = Vector3.Distance(rightPos, goalPos);
+                float leftDistToEnemy = Vector3.Distance(leftPos, closestBlockingEnemy.transform.position);
+                float rightDistToEnemy = Vector3.Distance(rightPos, closestBlockingEnemy.transform.position);
 
                 Vector3 sidestepPos = leftDistToGoal < rightDistToGoal ? leftPos : rightPos;
                 potentialDribblePos = sidestepPos + dribbleDirection;
 
                 potentialDribblePos = owner.transform.position +
-                                      (potentialDribblePos - owner.transform.position).normalized *
-                                      MatchContext.MoveSegment;
+                                      (potentialDribblePos - owner.transform.position).normalized;
                 Debug.Log($"dribble: {(potentialDribblePos - owner.transform.position).normalized} {owner.transform.position} {potentialDribblePos}");
             }
             else
             {
                 // 前方无阻挡，直接带球
-                potentialDribblePos = owner.transform.position + dribbleDirection * MatchContext.MoveSegment;
+                potentialDribblePos = owner.transform.position + dribbleDirection.normalized;
             }
             return potentialDribblePos;
         }

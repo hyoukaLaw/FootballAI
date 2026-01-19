@@ -54,7 +54,6 @@ namespace BehaviorTree.Runtime
 
         public override void OnEnd()
         {
-            base.OnEnd();
             _currentIndex = 0; // 选择器结束时重置索引
         }
     }

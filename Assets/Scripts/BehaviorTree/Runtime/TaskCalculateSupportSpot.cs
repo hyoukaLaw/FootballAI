@@ -36,8 +36,9 @@ namespace BehaviorTree.Runtime
                 return NodeState.SUCCESS;
             }
             // 3 最后，直接往球门方向跑
-            Blackboard.MoveTarget = Blackboard.MatchContext.GetEnemyGoalPosition(owner);
-            return NodeState.FAILURE;
+            Blackboard.MoveTarget = Vector3.MoveTowards(Blackboard.Owner.transform.position,
+                Blackboard.MatchContext.GetEnemyGoalPosition(owner), FootballConstants.DecideMinStep );
+            return NodeState.SUCCESS;
         }
     }
 }

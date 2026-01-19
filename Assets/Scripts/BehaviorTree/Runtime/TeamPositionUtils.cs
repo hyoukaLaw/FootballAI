@@ -80,7 +80,6 @@ namespace BehaviorTree.Runtime
         private static float EvaluatePosition(GameObject owner, Vector3 testPos, Vector3 desiredPosition,
             List<GameObject> teammates, List<GameObject> enemies, float minDistance)
         {
-            
             // 因素1：与理想位置的接近程度（越近越好）
             float distanceToIdeal = Vector3.Distance(testPos, desiredPosition);
             float proximityScore = Mathf.Max(0, 10f - distanceToIdeal);

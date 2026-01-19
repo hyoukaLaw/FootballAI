@@ -59,4 +59,6 @@ public static class FootballConstants
     public static float ShootAccuracyBase = 1.0f;         // 射门精度计算基础值
     public static float ShootXOffsetRange = 1.5f;         // 射门X轴偏移范围
     public static float ShootYOffsetRange = 1.0f;         // 射门Y轴偏移范围
+
+    public static float DecideMinStep = 0.5f;
 }
