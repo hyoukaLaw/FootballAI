@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor; // 添加UnityEditor命名空间引用
+using UnityEngine.Events; // 添加UnityEvents命名空间引用
 
 public class MatchManager : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class MatchManager : MonoBehaviour
     // 在 Inspector 中把红队和蓝队的圆柱体分别拖进去
     public List<GameObject> TeamRedPlayers = new List<GameObject>();
     public List<GameObject> TeamBluePlayers = new List<GameObject>();
+    public GameObject RedStartPlayer;// 红方开球人
+    public GameObject BlueStartPlayer;// 蓝方开球人
     public GameObject Field; // 球场模型
 
     [Header("Game Settings")]
@@ -30,11 +33,19 @@ public class MatchManager : MonoBehaviour
     public float GoalDistance = 1.0f; // 球门判定距离
     public bool GamePaused = false; // 游戏是否暂停
 
+    [Header("比分系统")]
+    public int RedScore = 0; // 红方得分
+    public int BlueScore = 0; // 蓝方得分
+    public string NextKickoffTeam = "Red"; // 下一个开球队伍 ("Red" 或 "Blue")
+
     [Header("传球状态")]
     private float _passTimeout = 3.0f;    // 传球超时时间
 
     [Header("抢断保护")]
     public float StealCooldownDuration = 3f; // 抢断保护期时长（秒）
+
+    [Header("事件系统")]
+    public UnityEvent<int, int> OnScoreChanged; // 红方分数, 蓝方分数
 
     private void Awake()
     {
@@ -50,6 +61,8 @@ public class MatchManager : MonoBehaviour
         Context.RedGoal = RedGoal;
         Context.BlueGoal = BlueGoal;
         Context.Field = Field;
+        NextKickoffTeam = "Red";
+        ResetBall();
     }
 
     private void Update()
@@ -193,33 +206,47 @@ public class MatchManager : MonoBehaviour
         //3. 重置球和球权
         ResetBall();
 
-        //4. 恢复游戏
+        //5. 恢复游戏
         GamePaused = false;
 
-        Debug.Log("比赛恢复！所有球员归位，球放回中心，行为树状态已重置。");
+        Debug.Log($"比赛恢复！{NextKickoffTeam}方开球，所有球员归位，球放回中心，行为树状态已重置。");
     }
 
     /// <summary>
-    /// 暂停所有AI逻辑
-    /// </summary>
-    private void OnGoalScored(string scoringTeam)
+/// 暂停所有AI逻辑
+/// </summary>
+private void OnGoalScored(string scoringTeam)
+{
+    // 更新比分
+    if (scoringTeam == "Red")
     {
-        // 暂停游戏
-        GamePaused = true;
-        
-        
-        if (Context != null)
-        {
-            Context.IncomingPassTarget = null;
-            Context.SetPassTarget(null);
-        }
-
-        // 5. 清除抢断保护期
-        if (Context != null)
-        {
-            Context.SetStealCooldown(0f);
-        }
+        RedScore++;
+        NextKickoffTeam = "Blue"; // 蓝方开球
     }
+    else if (scoringTeam == "Blue")
+    {
+        BlueScore++;
+        NextKickoffTeam = "Red"; // 红方开球
+    }
+
+    // 暂停游戏
+    GamePaused = true;
+    
+    if (Context != null)
+    {
+        Context.IncomingPassTarget = null;
+        Context.SetPassTarget(null);
+    }
+
+    // 清除抢断保护期
+    if (Context != null)
+    {
+        Context.SetStealCooldown(0f);
+    }
+
+    // 通知UI更新比分显示
+    UpdateScoreUI();
+}
 
     /// <summary>
     /// 触发抢断保护期，防止抢断后立即被反抢
@@ -235,6 +262,26 @@ public class MatchManager : MonoBehaviour
     public void ResetBall()
     {
         Ball.transform.position = Vector3.zero;
+        if (NextKickoffTeam == "Red" && RedStartPlayer != null)
+        {
+            RedStartPlayer.transform.position = Vector3.zero;
+            Debug.Log($"RedStartPlayer position reset to {RedStartPlayer.transform.position}");
+        }
+        else if (NextKickoffTeam == "Blue" && BlueStartPlayer != null)
+        {
+            BlueStartPlayer.transform.position = Vector3.zero;
+        }
+    }
+
+    /// <summary>
+    /// 更新比分显示UI
+    /// </summary>
+    private void UpdateScoreUI()
+    {
+        if (OnScoreChanged != null)
+        {
+            OnScoreChanged.Invoke(RedScore, BlueScore);
+        }
     }
 
     /// <summary>
