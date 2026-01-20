@@ -14,7 +14,7 @@ public static class FootballConstants
     
     // TaskTackle Constants
     public static float DefaultTackleSuccessRate = 0.5f;  // 默认抢断成功率
-    public static float TackleDistanceFactorBase = 2f;    // 距离因子计算的基础值
+    public static float TackleDistanceFactorBase = 1.5f;    // 距离因子计算的基础值
     public static float BaseTackleProbability = 0.3f;     // 基础抢断概率
     public static float DefensiveAttributeBonus = 0.2f;   // 防守属性加成系数
     public static float DistanceBonusCoefficient = 0.3f;  // 距离加成系数
@@ -41,11 +41,11 @@ public static class FootballConstants
     public static float BasePassScore = 60f;
     public static float PassForwardWeight = 0.2f;
     public static float PassBlockPenaltyFactor = 0.1f;
-    public static float DribbleDetectDistance = 2.5f;
+    public static float DribbleDetectDistance = 3f;
     public static float DribbleDetectHalfAngle = 90f;
     public static float DribbleEnemyPenalty = 10f;
     public static float BaseDribbleScore = 40f;
-    public static float DribbleClearBonus = 30f;
+    public static float DribbleClearBonus = 25f;
     
     // TaskCalculateSupportSpot Constants
     public static float IdealSupportDistance = 4.0f;      // 理想接应距离

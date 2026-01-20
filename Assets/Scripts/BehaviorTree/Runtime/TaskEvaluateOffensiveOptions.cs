@@ -133,7 +133,7 @@ namespace BehaviorTree.Runtime
             return (FootballConstants.BasePassScore + improvement * FootballConstants.PassForwardWeight) * passProb;
         }
 
-private float CalculateDribbleScore(out List<GameObject> enemiesInFront)
+        private float CalculateDribbleScore(out List<GameObject> enemiesInFront)
         {
             Vector3 enemyGoalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
             var opponents = Blackboard.MatchContext.GetOpponents(Blackboard.Owner);
