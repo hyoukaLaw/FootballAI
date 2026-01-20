@@ -22,12 +22,15 @@ namespace BehaviorTree.Runtime
         // --- 球员属性数据 (来自 PlayerAI) ---
         public PlayerStats Stats;
 
+        // --- 角色系统 ---
+        public PlayerRole Role;  // 球员角色配置
+
         // --- 状态效果 ---
         public bool IsStunned;        // 是否处于眩晕/停顿状态
         public float StunTimer = 0f;  // 停顿计时器
         public float StunDuration = 1f; // 停顿时长（秒）
 
-        
+
     }
 
     public static class BlackboardUtils

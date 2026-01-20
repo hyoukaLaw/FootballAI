@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ed1769a5479e304dbe912412b5f69ac, type: 3}
+  m_Name: ForwardRole
+  m_EditorClassIdentifier: 
+  RoleType: 2
+  RoleName: Forward
+  AttackPreferences:
+    OwnDefensiveZoneWeight: 0.5
+    OwnOffensiveZoneWeight: 2
+    EnemyOffensiveZoneWeight: 6
+    EnemyDefensiveZoneWeight: 10
+    DistanceDecayRate: 0.15
+    MaxZoneDeviation: 10
+  DefendPreferences:
+    OwnDefensiveZoneWeight: 1
+    OwnOffensiveZoneWeight: 3
+    EnemyOffensiveZoneWeight: 4
+    EnemyDefensiveZoneWeight: 2
+    DistanceDecayRate: 0.1
+    MaxZoneDeviation: 12
+  ChaseBallPreferences:
+    OwnDefensiveZoneWeight: 1
+    OwnOffensiveZoneWeight: 3
+    EnemyOffensiveZoneWeight: 5
+    EnemyDefensiveZoneWeight: 8
+    DistanceDecayRate: 0.2
+    MaxZoneDeviation: 15
+  OffensiveBias: 0.8
+  DefensiveBias: 0.2
+  SupportBias: 0.4
+  HomeZoneRadius: 8
+  MaximumRoamingDistance: 20
