@@ -5,7 +5,7 @@ namespace BehaviorTree.Runtime
     /// <summary>
     /// 条件节点：检查当前球员是否在抢断范围内
     /// </summary>
-    public class CheckCanTackle : Node
+    public class CheckCanTackle : ConditionalNode
     {
         public CheckCanTackle(FootballBlackboard blackboard) : base(blackboard)
         {

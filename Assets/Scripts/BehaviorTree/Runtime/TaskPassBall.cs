@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
-    public class TaskPassBall : Node
+    public class TaskPassBall : ActionNode
     {
         public TaskPassBall(FootballBlackboard blackboard) : base(blackboard)
         {

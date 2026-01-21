@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
-    public class TaskTestSetTarget: Node
+    public class TaskTestSetTarget: ActionNode
     {
         public TaskTestSetTarget(FootballBlackboard blackboard) : base(blackboard)
         {

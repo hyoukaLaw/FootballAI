@@ -2,7 +2,7 @@ using UnityEngine; // 为了使用 GameObject 比较
 
 namespace BehaviorTree.Runtime
 {
-    public class CheckHasBallNode : Node
+    public class CheckHasBallNode : ConditionalNode
     {
         // 构造函数透传黑板引用
         public CheckHasBallNode(FootballBlackboard blackboard) : base(blackboard)

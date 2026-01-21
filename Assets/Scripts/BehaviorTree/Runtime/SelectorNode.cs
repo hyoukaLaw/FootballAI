@@ -17,6 +17,7 @@ namespace BehaviorTree.Runtime
         {
             LastTickFrame = Time.frameCount;
             OnStart();
+            
             for (int i = _currentIndex; i < ChildrenNodes.Count; i++)
             {
                 var status = ChildrenNodes[i].Execute();

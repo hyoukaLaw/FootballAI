@@ -6,7 +6,7 @@ namespace BehaviorTree.Runtime
     /// 射门动作节点
     /// 将球踢向对方球门
     /// </summary>
-    public class TaskShoot : Node
+    public class TaskShoot : ActionNode
     {
         private float _shootPower = FootballConstants.ShootForce; // 射门力度
 

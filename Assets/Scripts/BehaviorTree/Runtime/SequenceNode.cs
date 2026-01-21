@@ -17,9 +17,23 @@ namespace BehaviorTree.Runtime
         {
             LastTickFrame = Time.frameCount;
             OnStart();
-            if (AbortType == AbortTypeEnum.Self)
+            if (AbortType == AbortTypeEnum.Self && NodeState == NodeState.RUNNING)
             {
-                //TODO
+                for (int i = 0; i < _currentIndex; i++)
+                {
+                    if (ChildrenNodes[i] is CompositeNode || ChildrenNodes[i] is ConditionalNode)
+                    {
+                        var status = ChildrenNodes[i].Execute();
+                        if (status == NodeState.FAILURE)
+                        {
+                            _currentIndex = 0; // 失败，重置
+                            Debug.Log($"{Blackboard.Owner.name} Abort {ChildrenNodes[_currentIndex].GetNodeTypeName()}");
+                            NodeState = NodeState.FAILURE;
+                            return NodeState.FAILURE;
+                        }
+                    }
+                }
+                
             }
             for (int i = _currentIndex; i < ChildrenNodes.Count; i++)
             {

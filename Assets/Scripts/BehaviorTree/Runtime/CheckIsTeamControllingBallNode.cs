@@ -6,7 +6,7 @@ namespace BehaviorTree.Runtime
     /// <summary>
     /// 条件节点：检查当前球权是否在己方队伍手中
     /// </summary>
-    public class CheckIsTeamControllingBall : Node
+    public class CheckIsTeamControllingBall : ConditionalNode
     {
         public CheckIsTeamControllingBall(FootballBlackboard blackboard) : base(blackboard)
         {

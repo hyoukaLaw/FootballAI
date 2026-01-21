@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
-    public class CheckIsStunned : Node
+    public class CheckIsStunned : ConditionalNode
     {
         public CheckIsStunned(FootballBlackboard bb) : base(bb) { }
 

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
-    public class TaskTackle : Node
+    public class TaskTackle : ActionNode
     {
         public TaskTackle(FootballBlackboard bb) : base(bb) { }
 

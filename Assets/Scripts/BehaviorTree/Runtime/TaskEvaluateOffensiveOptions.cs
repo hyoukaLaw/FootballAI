@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
-    public class TaskEvaluateOffensiveOptions : Node
+    public class TaskEvaluateOffensiveOptions : ActionNode
     {
         // 评分权重配置
         private float _basePassScore = FootballConstants.BasePassScore;

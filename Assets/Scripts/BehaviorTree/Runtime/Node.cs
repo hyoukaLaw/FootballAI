@@ -112,4 +112,18 @@ namespace BehaviorTree.Runtime
             }
         }
     }
+
+    public abstract class ActionNode : Node
+    {
+        protected ActionNode(FootballBlackboard blackboard) : base(blackboard)
+        {
+        }
+    }
+
+    public abstract class ConditionalNode : Node
+    {
+        protected ConditionalNode(FootballBlackboard blackboard) : base(blackboard)
+        {
+        }
+    }
 }

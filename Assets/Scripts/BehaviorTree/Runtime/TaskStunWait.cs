@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
-    public class TaskStunWait : Node
+    public class TaskStunWait : ActionNode
     {
         public TaskStunWait(FootballBlackboard bb) : base(bb) { }
 

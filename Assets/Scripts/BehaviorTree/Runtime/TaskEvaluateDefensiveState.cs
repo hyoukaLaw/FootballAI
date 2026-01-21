@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
-    public class TaskEvaluateDefensiveState : Node
+    public class TaskEvaluateDefensiveState : ActionNode
     {
         public TaskEvaluateDefensiveState(FootballBlackboard bb) : base(bb) { }
 

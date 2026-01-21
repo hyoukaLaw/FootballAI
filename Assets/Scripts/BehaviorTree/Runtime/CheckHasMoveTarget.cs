@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
-    public class CheckHasMoveTarget:Node
+    public class CheckHasMoveTarget:ConditionalNode
     {
         public CheckHasMoveTarget(FootballBlackboard blackboard) : base(blackboard)
         {

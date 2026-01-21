@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
-    public class CheckIsClosestToLooseBall : Node
+    public class CheckIsClosestToLooseBall : ConditionalNode
     {
         public CheckIsClosestToLooseBall(FootballBlackboard bb) : base(bb) { }
 

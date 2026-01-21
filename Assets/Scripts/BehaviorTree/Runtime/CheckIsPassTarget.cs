@@ -7,7 +7,7 @@ namespace BehaviorTree.Runtime
     /// 用于方案A：传球目标锁定机制
     /// 当该节点返回 SUCCESS 时，球员必须去接球（忽略"是否最近"判断）
     /// </summary>
-    public class CheckIsPassTarget : Node
+    public class CheckIsPassTarget : ConditionalNode
     {
         public CheckIsPassTarget(FootballBlackboard bb) : base(bb) { }
 

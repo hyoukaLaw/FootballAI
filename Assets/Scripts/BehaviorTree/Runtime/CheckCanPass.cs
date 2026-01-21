@@ -1,6 +1,6 @@
-﻿namespace BehaviorTree.Runtime
+namespace BehaviorTree.Runtime
 {
-    public class CheckCanPass : Node
+    public class CheckCanPass : ConditionalNode
     {
         public CheckCanPass(FootballBlackboard blackboard) : base(blackboard)
         {

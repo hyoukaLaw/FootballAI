@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
-    public class TaskCalculateRoleBasedDefensePosition : Node
+    public class TaskCalculateRoleBasedDefensePosition : ActionNode
     {
         public TaskCalculateRoleBasedDefensePosition(FootballBlackboard blackboard) : base(blackboard)
         {

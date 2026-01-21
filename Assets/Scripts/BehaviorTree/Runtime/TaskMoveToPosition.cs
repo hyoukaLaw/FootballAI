@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
-    public class TaskMoveToPosition : Node
+    public class TaskMoveToPosition : ActionNode
     {
         // 到达判定的误差范围
         private float _stoppingDistance = 0.1f;

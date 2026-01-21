@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
-    public class TaskCalculateSupportSpot : Node
+    public class TaskCalculateSupportSpot : ActionNode
     {
         public TaskCalculateSupportSpot(FootballBlackboard blackboard) : base(blackboard)
         {

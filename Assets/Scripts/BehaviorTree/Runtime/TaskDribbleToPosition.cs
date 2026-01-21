@@ -1,6 +1,6 @@
-﻿namespace BehaviorTree.Runtime
+namespace BehaviorTree.Runtime
 {
-    public class TaskDribbleToPosition : Node
+    public class TaskDribbleToPosition : ActionNode
     {
         public TaskDribbleToPosition(FootballBlackboard blackboard) : base(blackboard)
         {

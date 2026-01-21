@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
-    public class TaskChaseBall : Node
+    public class TaskChaseBall : ActionNode
     {
         public TaskChaseBall(FootballBlackboard bb) : base(bb) { }
 

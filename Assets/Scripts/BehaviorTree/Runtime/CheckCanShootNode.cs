@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
@@ -6,7 +6,7 @@ namespace BehaviorTree.Runtime
     /// 条件节点：检查黑板上是否标记为可以射门
     /// 通常由之前的评估节点（如 TaskEvaluateOffensiveOptions）计算得出
     /// </summary>
-    public class CheckCanShoot : Node
+    public class CheckCanShoot : ConditionalNode
     {
         public CheckCanShoot(FootballBlackboard blackboard) : base(blackboard)
         {
