@@ -37,7 +37,8 @@ namespace BehaviorTree.Runtime
                 }
                 else
                 {
-                    float ballDistanceBase = 10f;
+                    
+                    float ballDistanceBase = 20f;
                     float ballScore = Mathf.Clamp01((ballDistanceBase - Vector3.Distance(position, ballPosition)) / ballDistanceBase) * ballWeight;
                     float markScore = CalculateNormalizedMarkScore(position, role, context, myGoal, player) * markWeight;
                     return zoneScore + ballScore + markScore;
