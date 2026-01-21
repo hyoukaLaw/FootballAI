@@ -5,7 +5,7 @@ namespace BehaviorTree.Runtime
     public class TaskMoveToPosition : Node
     {
         // 到达判定的误差范围
-        private float _stoppingDistance = 0.02f;
+        private float _stoppingDistance = 0.1f;
         // --- 新增：带球参数 ---
         // 球在脚下的偏移量 (圆柱体前方 0.5米)
         private float _dribbleOffset = 0f;

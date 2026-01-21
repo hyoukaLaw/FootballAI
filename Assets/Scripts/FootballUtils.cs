@@ -114,4 +114,18 @@ public static class FootballUtils
         }
         return closestEnemy;
     }
+    
+    public static Vector3 GetPositionTowards(Vector3 cur, Vector3 target, float maxDistance)
+    {
+        Vector3 dir = (target - cur).normalized;
+        float dist = Vector3.Distance(cur, target);
+        if (dist <= maxDistance)
+        {
+            return target;
+        }
+        else
+        {
+            return cur + dir * maxDistance;
+        }
+    }
 }
