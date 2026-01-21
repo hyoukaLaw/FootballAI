@@ -1,4 +1,4 @@
-﻿using Unity.VisualScripting;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace BehaviorTree.Runtime
@@ -16,7 +16,7 @@ namespace BehaviorTree.Runtime
             Vector3 bestPos = ContextAwareZoneCalculator.FindBestPosition(Blackboard.Role, curPos,
                 Blackboard.MatchContext.GetMyGoalPosition(owner), Blackboard.MatchContext.GetEnemyGoalPosition(owner),
                 Blackboard.MatchContext.Ball.transform.position, Blackboard.MatchContext, owner,
-                Blackboard.MatchContext.GetTeammates(owner), Blackboard.MatchContext.GetOpponents(owner));
+                Blackboard.MatchContext.GetTeammates(owner), Blackboard.MatchContext.GetOpponents(owner), Blackboard);
             Blackboard.MoveTarget = bestPos;
             return NodeState.SUCCESS;
         }

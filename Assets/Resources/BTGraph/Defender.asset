@@ -1,5 +1,44 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8850344504152591055
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0f8b6f29a9cb3f4782036eba55a4cb9, type: 3}
+  m_Name: Check Can Tackle Graph
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -760, y: 184}
+  ports:
+    keys:
+    - Entry
+    - Exit
+    values:
+    - _fieldName: Entry
+      _node: {fileID: -8850344504152591055}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Exit
+      _node: {fileID: -8850344504152591055}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  Entry: 0
+  Exit: 0
 --- !u!114 &-6601251811169462603
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -162,6 +201,48 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+--- !u!114 &-4033609059802618448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0f8b6f29a9cb3f4782036eba55a4cb9, type: 3}
+  m_Name: Check Can Tackle Graph
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -56, y: 72}
+  ports:
+    keys:
+    - Entry
+    - Exit
+    values:
+    - _fieldName: Entry
+      _node: {fileID: -4033609059802618448}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Exit
+        node: {fileID: -1439331990471321106}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Exit
+      _node: {fileID: -4033609059802618448}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  Entry: 0
+  Exit: 0
 --- !u!114 &-3425451344181662340
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -244,7 +325,55 @@ MonoBehaviour:
         node: {fileID: 6308731643895650825}
         reroutePoints: []
       - fieldName: Entry
-        node: {fileID: 3474743011356454141}
+        node: {fileID: 512758899921528894}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  Entry: 0
+  Exit: 0
+--- !u!114 &-1439331990471321106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed37a66498fc045488008517c68a9953, type: 3}
+  m_Name: TackleSequence
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -312, y: 200}
+  ports:
+    keys:
+    - Entry
+    - Exit
+    values:
+    - _fieldName: Entry
+      _node: {fileID: -1439331990471321106}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Exit
+        node: {fileID: 512758899921528894}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Exit
+      _node: {fileID: -1439331990471321106}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Entry
+        node: {fileID: -4033609059802618448}
+        reroutePoints: []
+      - fieldName: Entry
+        node: {fileID: 3005983048710080128}
         reroutePoints: []
       _direction: 1
       _connectionType: 0
@@ -323,7 +452,11 @@ MonoBehaviour:
   - {fileID: 7341124781608206883}
   - {fileID: 6128332842845629366}
   - {fileID: 1277758009972131679}
-  - {fileID: 3474743011356454141}
+  - {fileID: 512758899921528894}
+  - {fileID: -8850344504152591055}
+  - {fileID: -1439331990471321106}
+  - {fileID: -4033609059802618448}
+  - {fileID: 3005983048710080128}
 --- !u!114 &28208552656871271
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -357,6 +490,51 @@ MonoBehaviour:
       _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
       connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  Entry: 0
+  Exit: 0
+--- !u!114 &512758899921528894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67e276285623adf4d93d267d04141665, type: 3}
+  m_Name: DefenseRootSelector
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -584, y: 312}
+  ports:
+    keys:
+    - Entry
+    - Exit
+    values:
+    - _fieldName: Entry
+      _node: {fileID: 512758899921528894}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Exit
+        node: {fileID: -1525673592170635992}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Exit
+      _node: {fileID: 512758899921528894}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Entry
+        node: {fileID: -1439331990471321106}
+        reroutePoints: []
       _direction: 1
       _connectionType: 0
       _typeConstraint: 0
@@ -424,7 +602,7 @@ MonoBehaviour:
   m_Name: Task Move To Position Graph
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -635.59204, y: 358.11368}
+  position: {x: -504, y: 520}
   ports:
     keys:
     - Entry
@@ -434,10 +612,7 @@ MonoBehaviour:
       _node: {fileID: 1277758009972131679}
       _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: Exit
-        node: {fileID: 3474743011356454141}
-        reroutePoints: []
+      connections: []
       _direction: 0
       _connectionType: 0
       _typeConstraint: 0
@@ -453,7 +628,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
---- !u!114 &3474743011356454141
+--- !u!114 &3005983048710080128
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -462,39 +637,33 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed37a66498fc045488008517c68a9953, type: 3}
-  m_Name: Sequence Node Graph
+  m_Script: {fileID: 11500000, guid: 797bb081e76e41d4ab531a269ba2118f, type: 3}
+  m_Name: Task Tackle Graph
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -855, y: 303.83334}
+  position: {x: -56, y: 200}
   ports:
     keys:
     - Entry
     - Exit
     values:
     - _fieldName: Entry
-      _node: {fileID: 3474743011356454141}
+      _node: {fileID: 3005983048710080128}
       _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
       connections:
       - fieldName: Exit
-        node: {fileID: -1525673592170635992}
+        node: {fileID: -1439331990471321106}
         reroutePoints: []
       _direction: 0
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
     - _fieldName: Exit
-      _node: {fileID: 3474743011356454141}
+      _node: {fileID: 3005983048710080128}
       _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: Entry
-        node: {fileID: 6128332842845629366}
-        reroutePoints: []
-      - fieldName: Entry
-        node: {fileID: 1277758009972131679}
-        reroutePoints: []
+      connections: []
       _direction: 1
       _connectionType: 0
       _typeConstraint: 0
@@ -553,7 +722,7 @@ MonoBehaviour:
   m_Name: Task Calculate Role Based Defense Position Graph
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -616, y: 184}
+  position: {x: -968, y: 376}
   ports:
     keys:
     - Entry
@@ -563,10 +732,7 @@ MonoBehaviour:
       _node: {fileID: 6128332842845629366}
       _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: Exit
-        node: {fileID: 3474743011356454141}
-        reroutePoints: []
+      connections: []
       _direction: 0
       _connectionType: 0
       _typeConstraint: 0

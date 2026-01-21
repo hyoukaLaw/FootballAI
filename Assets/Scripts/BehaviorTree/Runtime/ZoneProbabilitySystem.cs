@@ -29,6 +29,7 @@ namespace BehaviorTree.Runtime
             else return FieldZone.EnemyDefensiveZone;
         }
 
+        // 对某个位置，计算其区域得分。先找到区域中心，计算该位置与区域中心的距离（越小分数越高）
         public static float CalculateZonePreferenceScore(Vector3 position, PlayerRole role, Vector3 myGoal,
             Vector3 enemyGoal, MatchState currentState)
         {
@@ -37,7 +38,8 @@ namespace BehaviorTree.Runtime
             float baseWeight = GetZoneWeight(zone, preferences);
             Vector3 idealPosition = CalculateIdealPosition(role, currentState, myGoal, enemyGoal);
             float distanceToIdeal = Vector3.Distance(position, idealPosition);
-            float distanceDecay = Mathf.Exp(-distanceToIdeal * preferences.DistanceDecayRate);// e^(-DecayRate)
+            float distanceDecay = Mathf.Exp(-distanceToIdeal * preferences.DistanceDecayRate);// e^(-distance * DecayRate) = distanceDecay
+            Debug.Log($"idealPosition For {role} in {zone} is {idealPosition}, distanceToIdeal is {distanceToIdeal}, distanceDecay is {distanceDecay}");
             if (distanceToIdeal > preferences.MaxZoneDeviation)
             {
                 distanceDecay *= 0.2f;

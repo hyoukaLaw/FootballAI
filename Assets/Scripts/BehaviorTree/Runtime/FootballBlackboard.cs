@@ -1,7 +1,25 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
+    [System.Serializable]
+    public class CandidatePosition
+    {
+        public Vector3 Position;
+        public float RoleScore;
+        public float AvoidOverlapScore;
+        public float TotalScore;
+
+        public CandidatePosition(Vector3 position, float roleScore, float avoidOverlapScore)
+        {
+            Position = position;
+            RoleScore = roleScore;
+            AvoidOverlapScore = avoidOverlapScore;
+            TotalScore = roleScore + avoidOverlapScore;
+        }
+    }
+
     public class FootballBlackboard
     {
         // --- 全局上下文引用 ---
@@ -30,6 +48,9 @@ namespace BehaviorTree.Runtime
         public float StunTimer = 0f;  // 停顿计时器
         public float StunDuration = 1f; // 停顿时长（秒）
 
+        // --- 调试数据 ---
+        public List<CandidatePosition> DebugCandidatePositions;
+        public bool DebugShowCandidates = true;
 
     }
 

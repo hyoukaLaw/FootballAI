@@ -58,28 +58,40 @@ namespace BehaviorTree.Runtime
 
         public static Vector3 FindBestPosition(PlayerRole role, Vector3 currentPosition, Vector3 myGoal,
             Vector3 enemyGoal, Vector3 ballPosition, MatchContext context, GameObject player,
-            List<GameObject> teammates, List<GameObject> enemies)
+            List<GameObject> teammates, List<GameObject> enemies, FootballBlackboard blackboard = null)
         {
             List<Vector3> candidatePositions = GenerateCandidatePositions(player, context,
                 role, currentPosition, myGoal, enemyGoal, ballPosition);
 
             Vector3 bestPosition = currentPosition;
             float bestScore = float.MinValue;
+
+            if (blackboard != null && blackboard.DebugShowCandidates)
+            {
+                blackboard.DebugCandidatePositions = new List<CandidatePosition>();
+            }
+
             StringBuilder sb = new StringBuilder();
-            sb.Append($"{player.name} ");
+            sb.Append($"{player.name} candidate ");
             foreach (var candidate in candidatePositions)
             {
                 float roleScore = CalculateContextAwareScore(candidate, role, myGoal, enemyGoal, ballPosition, context, player);
                 float avoidOverlapScore = CalculateAvoidOverlapScore(candidate, player, teammates, enemies);
                 float totalScore = roleScore + avoidOverlapScore;
+
+                if (blackboard != null && blackboard.DebugShowCandidates)
+                {
+                    blackboard.DebugCandidatePositions.Add(new CandidatePosition(candidate, roleScore, avoidOverlapScore));
+                }
+
                 if (totalScore > bestScore)
                 {
                     bestScore = totalScore;
                     bestPosition = candidate;
                 }
-                sb.Append($"{candidate}-{roleScore}-{avoidOverlapScore} ");
+                sb.Append($"{candidate}-{roleScore}-{avoidOverlapScore}\n");
             }
-            Debug.Log(sb.ToString());
+            Debug.Log($"{bestPosition}-{bestScore}\n{sb}");
 
             return bestPosition;
         }

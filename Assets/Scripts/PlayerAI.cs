@@ -138,41 +138,7 @@ public class PlayerAI : MonoBehaviour
         return false;
     }
     
-    // 调试用：在 Scene 窗口画出他想去哪
-    void OnDrawGizmos()
-    {
-        if (_blackboard != null)
-        {
-            // // === 持球范围可视化 ===
-            // if (_blackboard.MatchContext != null && 
-            //     _blackboard.MatchContext.BallHolder == _blackboard.Owner)
-            // {
-            //     // 持球范围（淡黄色，1.0m）
-            //     Gizmos.color = new Color(1f, 1f, 0.5f, 0.5f);
-            //     Gizmos.DrawWireSphere(transform.position, 1.0f);
-            //
-            //     // 抢断范围（红色，1.6m）
-            //     Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.5f);
-            //     Gizmos.DrawWireSphere(transform.position, Stats.TackledDistance);
-            // }
-
-            // 画出移动目标
-            if (_blackboard.MoveTarget != Vector3.zero)
-            {
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawLine(transform.position,
-                    transform.position + (_blackboard.MoveTarget - transform.position).normalized);
-                Gizmos.DrawWireSphere(transform.position + (_blackboard.MoveTarget - transform.position).normalized, 0.3f);
-            }
-            // 画出传球目标连线
-            if (_blackboard.BestPassTarget != null)
-            {
-                Gizmos.color = Color.green;
-                Gizmos.DrawLine(transform.position, _blackboard.BestPassTarget.transform.position);
-                Gizmos.DrawIcon(transform.position + Vector3.up * 2, "Pass");
-            }
-        }
-     }
+    
      
     // === 新增：归位方法 ===
     public void ResetPosition()
@@ -224,5 +190,91 @@ public class PlayerAI : MonoBehaviour
     public FootballBlackboard GetBlackboard()
     {
         return _blackboard;
+    }
+    
+    // Debug
+    // 调试用：在 Scene 窗口画出他想去哪
+    void OnDrawGizmos()
+    {
+        if (_blackboard != null)
+        {
+            // // === 持球范围可视化 ===
+            // if (_blackboard.MatchContext != null && 
+            //     _blackboard.MatchContext.BallHolder == _blackboard.Owner)
+            // {
+            //     // 持球范围（淡黄色，1.0m）
+            //     Gizmos.color = new Color(1f, 1f, 0.5f, 0.5f);
+            //     Gizmos.DrawWireSphere(transform.position, 1.0f);
+            //
+            //     // 抢断范围（红色，1.6m）
+            //     Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.5f);
+            //     Gizmos.DrawWireSphere(transform.position, Stats.TackledDistance);
+            // }
+
+            // 画出移动目标
+            // if (_blackboard.MoveTarget != Vector3.zero)
+            // {
+            //     Gizmos.color = Color.yellow;
+            //     Gizmos.DrawLine(transform.position,
+            //         transform.position + (_blackboard.MoveTarget - transform.position).normalized);
+            //     Gizmos.DrawWireSphere(transform.position + (_blackboard.MoveTarget - transform.position).normalized, 0.3f);
+            // }
+            // // 画出传球目标连线
+            // if (_blackboard.BestPassTarget != null)
+            // {
+            //     Gizmos.color = Color.green;
+            //     Gizmos.DrawLine(transform.position, _blackboard.BestPassTarget.transform.position);
+            //     Gizmos.DrawIcon(transform.position + Vector3.up * 2, "Pass");
+            // }
+
+            DrawCandidatePositions();
+        }
+     }
+
+    private void DrawCandidatePositions()
+    {
+        if (!_blackboard.DebugShowCandidates || _blackboard.DebugCandidatePositions == null)
+            return;
+
+        if (_blackboard.DebugCandidatePositions.Count == 0)
+            return;
+
+        float minScore = float.MaxValue;
+        float maxScore = float.MinValue;
+
+        foreach (var candidate in _blackboard.DebugCandidatePositions)
+        {
+            if (candidate.TotalScore < minScore)
+                minScore = candidate.TotalScore;
+            if (candidate.TotalScore > maxScore)
+                maxScore = candidate.TotalScore;
+        }
+
+        float scoreRange = maxScore - minScore;
+        if (scoreRange < 0.0001f)
+            scoreRange = 1f;
+
+        foreach (var candidate in _blackboard.DebugCandidatePositions)
+        {
+            float normalizedScore = (candidate.TotalScore - minScore) / scoreRange;
+            float radius = 0.1f + normalizedScore * 0.4f;
+
+            Color color;
+            if (normalizedScore > 0.7f)
+            {
+                color = Color.green;
+            }
+            else if (normalizedScore > 0.3f)
+            {
+                color = Color.yellow;
+            }
+            else
+            {
+                color = Color.red;
+            }
+
+            Gizmos.color = color;
+            Gizmos.DrawWireSphere(candidate.Position, radius);
+        }
     }
 }
