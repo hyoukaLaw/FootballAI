@@ -51,6 +51,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 1
 --- !u!114 &-7114086521449923102
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -225,6 +226,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &-6584873314112411460
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,6 +275,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &-4521777931562926665
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -489,6 +492,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &-1525673592170635992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -540,6 +544,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &-1439331990471321106
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -588,6 +593,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &-1349484831638170439
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -764,6 +770,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &606134686061415494
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -812,6 +819,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &688453224971736220
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -944,6 +952,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &2591117179921715850
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -992,6 +1001,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &3005983048710080128
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1082,6 +1092,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &3663852889193471423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1172,6 +1183,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &5240300239509634620
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1349,6 +1361,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &6691273700045064562
 MonoBehaviour:
   m_ObjectHideFlags: 0

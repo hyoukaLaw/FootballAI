@@ -93,6 +93,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &-7356974303906694704
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -141,6 +142,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &-7185968071708250579
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -402,6 +404,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &-4638100762716616759
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -450,6 +453,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &-4521777931562926665
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -624,6 +628,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &-3425451344181662340
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -759,6 +764,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &-1349484831638170439
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1033,6 +1039,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &458124760946548571
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1168,6 +1175,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &606134686061415494
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1216,6 +1224,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &798092287485173340
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1267,6 +1276,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &1326984976828681953
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1483,6 +1493,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &3115537165403922433
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1573,6 +1584,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &6114672162943897941
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1663,6 +1675,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &6183333012511303625
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1756,6 +1769,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &6987147265777343714
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1846,6 +1860,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &7341124781608206883
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1939,6 +1954,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &7819943721790338667
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1987,6 +2003,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 0
 --- !u!114 &8022539427445513395
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2000,7 +2017,7 @@ MonoBehaviour:
   m_Name: offensiveBranch
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -424, y: 40}
+  position: {x: -584, y: 56}
   ports:
     keys:
     - Entry
@@ -2035,6 +2052,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+  AbortType: 1
 --- !u!114 &8519897866401303079
 MonoBehaviour:
   m_ObjectHideFlags: 0

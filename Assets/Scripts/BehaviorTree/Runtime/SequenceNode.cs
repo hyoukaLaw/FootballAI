@@ -7,15 +7,20 @@ namespace BehaviorTree.Runtime
     {
         private int _currentIndex = 0; // 记忆执行到第几个子节点
 
-        public SequenceNode(FootballBlackboard blackboard,List<Node> children) : base(blackboard)
+        public SequenceNode(FootballBlackboard blackboard,List<Node> children,AbortTypeEnum abortType) : base(blackboard)
         {
             ChildrenNodes = children;
+            AbortType = abortType;
         }
 
         public override NodeState Execute()
         {
             LastTickFrame = Time.frameCount;
             OnStart();
+            if (AbortType == AbortTypeEnum.Self)
+            {
+                //TODO
+            }
             for (int i = _currentIndex; i < ChildrenNodes.Count; i++)
             {
                 var status = ChildrenNodes[i].Execute();

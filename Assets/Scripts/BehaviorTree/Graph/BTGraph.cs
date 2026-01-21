@@ -51,4 +51,9 @@ namespace BehaviorTree.Graph
         }
     }
     
+    public abstract class BTGraphCompositeNode : BTGraphNode
+    {
+        public CompositeNode.AbortTypeEnum AbortType = CompositeNode.AbortTypeEnum.None;
+    }
+    
 }

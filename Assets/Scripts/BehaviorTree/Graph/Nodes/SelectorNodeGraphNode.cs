@@ -6,7 +6,7 @@ using Node = BehaviorTree.Runtime.Node;
 namespace BehaviorTree.Graph
 {
     [CreateNodeMenu("Football AI/Composite/SelectorNode")]
-    public class SelectorNodeGraphNode : BTGraphNode
+    public class SelectorNodeGraphNode: BTGraphCompositeNode
     {
         public override Node CreateRuntimeNode(FootballBlackboard blackboard)
         {
@@ -23,7 +23,7 @@ namespace BehaviorTree.Graph
                     runtimeChildren.Add(childGraphNode.CreateRuntimeNode(blackboard));
                 }
             }
-            SelectorNode selectorNode = new SelectorNode(blackboard, runtimeChildren);
+            SelectorNode selectorNode = new SelectorNode(blackboard, runtimeChildren, AbortType);
             selectorNode.Name = name;
 
             // 3. 构造运行时组合节点，传入子节点列表

@@ -6,7 +6,7 @@ using Node = BehaviorTree.Runtime.Node;
 namespace BehaviorTree.Graph
 {
     [CreateNodeMenu("Football AI/Composite/SequenceNode")]
-    public class SequenceNodeGraphNode : BTGraphNode
+    public class SequenceNodeGraphNode : BTGraphCompositeNode
     {
         public override Node CreateRuntimeNode(FootballBlackboard blackboard)
         {
@@ -23,7 +23,7 @@ namespace BehaviorTree.Graph
                     runtimeChildren.Add(childGraphNode.CreateRuntimeNode(blackboard));
                 }
             }
-            SequenceNode sequenceNode = new SequenceNode(blackboard, runtimeChildren);
+            SequenceNode sequenceNode = new SequenceNode(blackboard, runtimeChildren, AbortType);
             sequenceNode.Name = name;
             // 3. 构造运行时组合节点，传入子节点列表
             return sequenceNode;

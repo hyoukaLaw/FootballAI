@@ -7,9 +7,10 @@ namespace BehaviorTree.Runtime
     {
         private int _currentIndex = 0; // 记忆执行到第几个子节点
 
-        public SelectorNode(FootballBlackboard blackboard, List<Node> children) : base(blackboard)
+        public SelectorNode(FootballBlackboard blackboard, List<Node> children, AbortTypeEnum abortType) : base(blackboard)
         {
             ChildrenNodes = children;
+            AbortType = abortType;
         }
 
         public override NodeState Execute()

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Sirenix.OdinInspector.Editor;
 using UnityEngine;
 
 namespace BehaviorTree.Runtime
@@ -81,8 +82,13 @@ namespace BehaviorTree.Runtime
 
     public abstract class CompositeNode : Node
     {
+        public enum AbortTypeEnum
+        {
+            None,
+            Self
+        }
         public List<Node> ChildrenNodes = new();
-
+        public AbortTypeEnum AbortType = AbortTypeEnum.None;
         protected CompositeNode(FootballBlackboard blackboard) : base(blackboard)
         {
         }
