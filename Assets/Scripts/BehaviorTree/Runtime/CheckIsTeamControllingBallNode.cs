@@ -21,6 +21,8 @@ namespace BehaviorTree.Runtime
             // 2. 如果没人控球（无主球），则认为本队不处于控球状态
             if (ballHolder == null)
             {
+                if(Blackboard.MatchContext.GetTeammates(Blackboard.Owner).Contains(Blackboard.MatchContext.IncomingPassTarget))
+                    return NodeState.SUCCESS;
                 return NodeState.FAILURE;
             }
 
