@@ -14,7 +14,8 @@ public class BallController : MonoBehaviour
         _targetPos = target;
         _speed = speed;
         _isMoving = true;
-        _flyTimer = 0.5f; // 给0.2秒的"飞行保护期"
+        _flyTimer = 0.5f; 
+        Debug.Log($"Ball KickTo {_targetPos} {_speed}");
     }
 
     void Update()

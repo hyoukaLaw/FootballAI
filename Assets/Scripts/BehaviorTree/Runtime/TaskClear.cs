@@ -10,7 +10,7 @@
         {
             var ballControl = Blackboard.MatchContext.Ball.GetComponent<BallController>();
             ballControl.KickTo(Blackboard.ClearanceTarget, FootballConstants.ClearKickSpeed);
-            return NodeState.RUNNING;
+            return NodeState.SUCCESS;
         }
     }
 }
