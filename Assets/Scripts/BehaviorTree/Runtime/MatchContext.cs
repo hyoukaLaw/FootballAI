@@ -48,7 +48,7 @@ namespace BehaviorTree.Runtime
                 _passTimer += Time.deltaTime;
 
                 // 超时或球已被接住，清除传球目标
-                if (_passTimer > passTimeout || ballHolder != null)
+                if (_passTimer > passTimeout || ballHolder != null && !Ball.GetComponent<BallController>().IsInFlyTimer())
                 {
                     IncomingPassTarget = null;
                     _passTimer = 0f;
@@ -96,14 +96,7 @@ namespace BehaviorTree.Runtime
         {
             return IncomingPassTarget == player;
         }
-
-        public void Reset()
-        {
-            IncomingPassTarget = null;
-            _stealCooldownTimer = 0f;
-            BallHolder = null;
-            _passTimer = 0f;
-        }
+        
 
         public float GetLeftBorder()
         {

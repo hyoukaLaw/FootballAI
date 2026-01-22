@@ -71,12 +71,8 @@ public class MatchManager : MonoBehaviour
         {
             return; // 游戏暂停，不执行任何逻辑
         }
-
         // 更新抢断保护期计时器
-        if (Context != null)
-        {
-            Context.UpdateStealCooldown(Time.deltaTime);
-        }
+        Context.UpdateStealCooldown(Time.deltaTime);
 
         // 1. 计算物理状态 (谁拿着球？)
         UpdatePossessionState();
@@ -94,10 +90,7 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void UpdatePassTargetState()
     {
-        if (Context != null)
-        {
-            Context.UpdatePassTarget(_passTimeout, Context.BallHolder);
-        }
+        Context.UpdatePassTarget(_passTimeout, Context.BallHolder);
     }
 
     /// <summary>
@@ -105,7 +98,6 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void UpdatePossessionState()
     {
-
         GameObject closestPlayer = null;
         float minDistance = float.MaxValue;
 
