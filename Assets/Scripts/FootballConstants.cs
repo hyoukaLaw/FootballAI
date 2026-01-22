@@ -64,4 +64,17 @@ public static class FootballConstants
 
     public static float DecideMinStep = 0.25f; // 每一步位置移动决策的长度
     public static float OccupiedSearchRadius = 0.25f; // 距离多远开始算是被占据
+    
+    // TaskEvaluateRolePreferences Constants
+    public static float PassMinDistance = 2f;
+    public static float PassMaxDistance = 10f;
+    public static float BaseClearanceScore = 20f;
+    public static float ClearanceScorePerEnemy = 10f;
+    public static float ClearanceDistance = 10f; // 向前踢出多远
+    public static float ClearanceDetectDistance = 4f; // 解围探测敌方的阈值
+    public static float ClearanceDetectFrontHalfAngle = 15f;
+    public static float ClearKickSpeed = 10f;
+    
+    // 通用常量
+    public static float FloatEpsilon = 0.0001f;
 }

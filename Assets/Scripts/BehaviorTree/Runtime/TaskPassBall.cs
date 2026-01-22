@@ -45,6 +45,7 @@ namespace BehaviorTree.Runtime
             Vector3 predictedPos = target.transform.position;//+ (targetVelocity * flightTime);
 
             // --- 5. 传球给预测点，而不是当前点 ---
+            Debug.Log($"Pass From {ball.transform.position} To {predictedPos}({targetAI.gameObject.name})");
             ballCtrl.KickTo(predictedPos, Blackboard.Stats.PassingSpeed);
             Blackboard.IsStunned = true;
             Blackboard.StunTimer = Blackboard.StunDuration;

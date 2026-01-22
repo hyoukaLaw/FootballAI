@@ -19,8 +19,12 @@ namespace BehaviorTree.Runtime
         {
             // 1. 获取主角和目标
             GameObject owner = Blackboard.Owner;
-            if(Vector3.Distance(_targetPos, Blackboard.MoveTarget) > FootballConstants.DecideMinStep / 2f)
+            if (Vector3.Distance(_targetPos, Blackboard.MoveTarget) > FootballConstants.DecideMinStep / 2f)
+            {
                 _targetPos = Blackboard.MoveTarget; // 从黑板读取"要去哪"
+                Debug.Log($"{Blackboard.Owner.name} From {owner.transform.position} Move to {_targetPos}");
+            }
+
             // 2. 计算距离
             float distance = Vector3.Distance(owner.transform.position, _targetPos);
             // 3. 判定是否到达
@@ -51,7 +55,7 @@ namespace BehaviorTree.Runtime
             // 2. --- 新增：带球逻辑 (Dribble Logic) ---
             DribbleBall(owner);
             // 5. 还在路上，返回 RUNNING
-            Debug.Log($"{Blackboard.Owner.name} From {owner.transform.position} Move to {_targetPos}");
+
             return retNodeState;
         }
         

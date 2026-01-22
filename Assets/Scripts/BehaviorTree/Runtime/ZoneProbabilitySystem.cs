@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,6 +67,19 @@ namespace BehaviorTree.Runtime
             RolePreferences preferences = GetPreferencesForState(role, state);
             (FieldZone zone, float weight) highestZoneAndWeight = FindHighestWeightZoneAndWeight(preferences);
             return CalculateZoneCenter(highestZoneAndWeight.zone, myGoal, enemyGoal);
+        }
+
+        public static List<Vector3> CalculateOtherZonePositions(PlayerRole role, MatchState state, Vector3 myGoal,
+            Vector3 enemyGoal, Vector3 idealPosition)
+        {
+            List<Vector3> positions = new List<Vector3>();
+            foreach (FieldZone zone in Enum.GetValues(typeof(FieldZone)))
+            {
+                Vector3 pos = CalculateZoneCenter(zone, myGoal, enemyGoal);
+                if(pos != idealPosition) 
+                    positions.Add(pos);
+            }
+            return positions;
         }
 
         private static (FieldZone zone, float weight) FindHighestWeightZoneAndWeight(RolePreferences preferences)

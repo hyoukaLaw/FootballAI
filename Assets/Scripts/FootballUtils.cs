@@ -47,14 +47,11 @@ public static class FootballUtils
 
     public static bool IsPathClear(Vector3 start, Vector3 end, List<GameObject> obstacles, float blockThreshold)
     {
-        if (obstacles == null) return true;
-
         foreach (var obstacle in obstacles)
         {
             if (obstacle == null) continue;
             if (Vector3.Dot(end - start, obstacle.transform.position - start) < 0)
                 continue;
-
             float distToLine = DistancePointToLineSegment(start, end, obstacle.transform.position);
             if (distToLine < blockThreshold)
             {
@@ -81,6 +78,19 @@ public static class FootballUtils
         }
 
         return enemiesInFront;
+    }
+    
+    public static List<GameObject> FindNearEnemies(GameObject owner, List<GameObject> enemies, float detectDistance)
+    {
+        List<GameObject> nearEnemies = new List<GameObject>();
+        foreach (var enemy in enemies)
+        {
+            if (Vector3.Distance(owner.transform.position, enemy.transform.position) <= detectDistance)
+            {
+                nearEnemies.Add(enemy);
+            }
+        }
+        return nearEnemies;
     }
 
     public static bool IsClosestTeammateToTarget(Vector3 targetPos, GameObject owner, List<GameObject> teammates, float tolerance = 0.5f)

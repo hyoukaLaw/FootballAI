@@ -16,9 +16,9 @@ MonoBehaviour:
   RoleName: Defender
   AttackPreferences:
     OwnDefensiveZoneWeight: 4.5
-    OwnOffensiveZoneWeight: 4
-    EnemyOffensiveZoneWeight: 0.75
-    EnemyDefensiveZoneWeight: 0.75
+    OwnOffensiveZoneWeight: 4.5
+    EnemyOffensiveZoneWeight: 0.5
+    EnemyDefensiveZoneWeight: 0.5
     DistanceDecayRate: 0.1
     MaxZoneDeviation: 10
   DefendPreferences:

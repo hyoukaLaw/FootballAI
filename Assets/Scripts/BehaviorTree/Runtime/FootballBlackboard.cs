@@ -36,6 +36,7 @@ namespace BehaviorTree.Runtime
         // --- 防守决策数据 ---
         public GameObject MarkedPlayer;   // 我当前负责盯防的敌人
         public Vector3 DefensePosition;   // 计算出的防守站位点
+        public Vector3 ClearanceTarget = Vector3.negativeInfinity; // 计算出解围位置
 
         // --- 球员属性数据 (来自 PlayerAI) ---
         public PlayerStats Stats;

@@ -37,8 +37,7 @@ namespace BehaviorTree.Runtime
                 }
                 else
                 {
-                    
-                    float ballDistanceBase = 20f;
+                    float ballDistanceBase = 40f;
                     float ballScore = Mathf.Clamp01((ballDistanceBase - Vector3.Distance(position, ballPosition)) / ballDistanceBase) * ballWeight;
                     float markScore = CalculateNormalizedMarkScore(position, role, context, myGoal, player) * markWeight;
                     return zoneScore + ballScore + markScore;
@@ -106,17 +105,14 @@ namespace BehaviorTree.Runtime
             Vector3 enemyGoal, Vector3 ballPosition, MatchContext context, GameObject player,
             List<GameObject> teammates, List<GameObject> enemies, FootballBlackboard blackboard = null)
         {
-            List<Vector3> candidatePositions = GenerateCandidatePositions(player, context,
+            List<Vector3> candidatePositions = GenerateCandidatePositions(player, context, 
                 role, currentPosition, myGoal, enemyGoal, ballPosition);
-
             List<Vector3> bestCandidates = new List<Vector3>();
             float bestScore = float.MinValue;
-
-            if (blackboard != null && blackboard.DebugShowCandidates)
+            if (blackboard.DebugShowCandidates)
             {
                 blackboard.DebugCandidatePositions = new List<CandidatePosition>();
             }
-
             StringBuilder sb = new StringBuilder();
             sb.Append($"{player.name} candidate\n");
             foreach (var candidate in candidatePositions)
@@ -124,31 +120,28 @@ namespace BehaviorTree.Runtime
                 float roleScore = CalculateContextAwareScore(candidate, role, myGoal, enemyGoal, ballPosition, context, player);
                 float avoidOverlapScore = 0f;
                 float totalScore = roleScore + avoidOverlapScore;
-
-                if (blackboard != null && blackboard.DebugShowCandidates)
+                if (blackboard.DebugShowCandidates)
                 {
                     blackboard.DebugCandidatePositions.Add(new CandidatePosition(candidate, roleScore, avoidOverlapScore));
                 }
-
                 if (totalScore > bestScore)
                 {
                     bestScore = totalScore;
                     bestCandidates.Clear();
                     bestCandidates.Add(candidate);
                 }
-                else if (Mathf.Abs(totalScore - bestScore) < 0.0001f)
+                else if (Mathf.Abs(totalScore - bestScore) < FootballConstants.FloatEpsilon)
                 {
                     bestCandidates.Add(candidate);
                 }
                 sb.Append($"{candidate}-{totalScore}-{avoidOverlapScore}\n");
             }
-
             Vector3 bestPosition;
-            if (bestCandidates.Count == 0)
+            if (bestCandidates.Count == 0) // 如果只有一个最佳点位，则选择它
             {
                 bestPosition = currentPosition;
             }
-            else
+            else // 如果有多个最佳点位，则选择最近的一个
             {
                 bestPosition = currentPosition;
                 float minDistance = float.MaxValue;
@@ -163,7 +156,6 @@ namespace BehaviorTree.Runtime
                 }
             }
             Debug.Log($"{bestPosition}-{bestScore} (共{bestCandidates.Count}个最高分候选点)\n{sb}");
-
             return FootballUtils.GetPositionTowards(currentPosition, bestPosition, FootballConstants.DecideMinStep);
         }
         /// <summary>
@@ -257,7 +249,7 @@ namespace BehaviorTree.Runtime
                 candidates.Add(ballPosition); // 1 考虑向球跑
                 int numPointsForGoal = 3;
                 candidates.AddRange(GenerateTwoPointsBetweenPoints(ballPosition, myGoal, numPointsForGoal)); // 2 封堵射门角度
-                Vector3 idealPos = ZoneProbabilitySystem.CalculateIdealPosition(role, state, myGoal, enemyGoal); // 角色理想位置
+                Vector3 idealPos = ZoneProbabilitySystem.CalculateIdealPosition(role, state, myGoal, enemyGoal); // 区域中心位置
                 int layers = 2; float layerWidth = 3f; int pointsPerLayer = 8;
                 candidates.AddRange(GeneratePositionAround(idealPos, layers, 3f, pointsPerLayer)); // 3 考虑向理想位置或周围跑
                 candidates.Add(idealPos);
@@ -266,12 +258,12 @@ namespace BehaviorTree.Runtime
             else if (state == MatchState.Attacking)
             {
                 candidates.Add(matchContext.BallHolder.transform.position); // 1 考虑向对方持球人跑
-                int numPointsForGoal = 3;
-                candidates.AddRange(GenerateTwoPointsBetweenPoints(ballPosition, myGoal, numPointsForGoal)); // 2 封堵射门角度
-                Vector3 idealPos = ZoneProbabilitySystem.CalculateIdealPosition(role, state, myGoal, enemyGoal); // 角色理想位置
+                Vector3 idealPos = ZoneProbabilitySystem.CalculateIdealPosition(role, state, myGoal, enemyGoal); // 区域中心位置
                 int layers = 2; float layerWidth = 2f; int pointsPerLayer = 8;
                 candidates.AddRange(GeneratePositionAround(idealPos, layers, layerWidth, pointsPerLayer)); // 3 考虑向理想位置或周围跑
                 candidates.Add(idealPos);
+                List<Vector3> otherZonePos = ZoneProbabilitySystem.CalculateOtherZonePositions(role, state, myGoal, enemyGoal, idealPos);
+                candidates.AddRange(otherZonePos); // 4 进攻时考虑其他区域
             }
             return candidates;
         }

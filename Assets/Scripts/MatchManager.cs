@@ -27,7 +27,7 @@ public class MatchManager : MonoBehaviour
 
     [Header("Game Settings")]
     // 距离球多少米以内算"持球"
-    public float PossessionThreshold = 0.8f;
+    public float PossessionThreshold = 0.5f;
 
     [Header("进球检测")]
     public float GoalDistance = 1.0f; // 球门判定距离
