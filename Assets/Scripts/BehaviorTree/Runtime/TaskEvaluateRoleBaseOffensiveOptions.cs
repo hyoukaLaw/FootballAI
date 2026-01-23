@@ -20,6 +20,11 @@ namespace BehaviorTree.Runtime
                 HandleDefenderOptions();
                 return NodeState.SUCCESS;
             }
+            else if (Blackboard.Role.RoleType == PlayerRoleType.Forward)
+            {
+                HandleForwardOptions();
+                return NodeState.SUCCESS;   
+            }
             return NodeState.FAILURE;
         }
 
@@ -50,6 +55,7 @@ namespace BehaviorTree.Runtime
             }
         }
         
+        #region Defender
         private void CalculatePassScoreAndTarget(out float passScore, out GameObject passTarget)
         {
             passScore = 0f;
@@ -180,5 +186,78 @@ namespace BehaviorTree.Runtime
 
             return score;
         }
+        #endregion
+        
+        #region Forward
+
+        private void HandleForwardOptions()
+        {
+            CalculateShootScoreAndTarget(out float shootScore, out Vector3 shootTarget);
+            CalculateDribbleScoreAndTarget(out float dribbleScore, out Vector3 dribbleTarget);
+            CalculatePassScoreAndTargetForward(out float passScore, out GameObject passTarget);
+            Debug.Log($"{Blackboard.Owner.name} TaskEvaluateRoleBaseOffensiveOptions " +
+                      $"ShootScore:{shootScore}, DribbleScore:{dribbleScore}, PassScore:{passScore} ");
+            if (shootScore > dribbleScore && shootScore > passScore)
+            {
+                Blackboard.CanShoot = true;
+                Blackboard.MoveTarget = Vector3.zero;
+                Blackboard.BestPassTarget = null;
+            }
+            else if (dribbleScore > shootScore && dribbleScore > passScore)
+            {
+                Blackboard.CanShoot = false;
+                Blackboard.MoveTarget = dribbleTarget;
+                Blackboard.BestPassTarget = null;
+            }
+            else
+            {
+                Blackboard.CanShoot = false;
+                Blackboard.MoveTarget = Vector3.zero;
+                Blackboard.BestPassTarget = passTarget;
+            }
+        }
+        
+        private void CalculateShootScoreAndTarget(out float shootScore, out Vector3 shootTarget)
+        {
+            shootTarget = Vector3.zero;
+            // 优先射门,[12m可以射门，7m以内满分，7m-12m取系数]
+            Vector3 enemyGoalPosition = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
+            List<GameObject> opponents = Blackboard.MatchContext.GetOpponents(Blackboard.Owner);
+            float distToGoal = Vector3.Distance(Blackboard.Owner.transform.position, enemyGoalPosition);
+            shootScore = Mathf.Max((1 - Mathf.Max(distToGoal - 7, 0f) / 5f),0) * FootballConstants.BaseScoreShootScore;
+            // 考虑射门是否被阻挡
+            float shootBlockFactor = FootballUtils.IsPathClear(Blackboard.Owner.transform.position, 
+                enemyGoalPosition, opponents, FootballConstants.ClearanceBlockThreshold) ? FootballConstants.ShootNoBlockFactor : FootballConstants.ShootBlockPenaltyFactor;
+            shootScore = shootScore * shootBlockFactor;
+            shootTarget = enemyGoalPosition;
+        }
+        
+        private void CalculatePassScoreAndTargetForward(out float passScore, out GameObject passTarget)
+        {
+            passScore = 0f;
+            passTarget = null;
+            var teammates = Blackboard.MatchContext.GetTeammates(Blackboard.Owner);
+            List<GameObject> enemyPlayers = Blackboard.MatchContext.GetOpponents(Blackboard.Owner);
+            foreach (var candidate in teammates)
+            {
+                if(FootballUtils.IsPathClear(Blackboard.Owner.transform.position, 
+                       candidate.transform.position, enemyPlayers, 
+                       FootballConstants.PassBlockThreshold))
+                {
+                    float mid = (FootballConstants.PassMinDistance + FootballConstants.PassMaxDistance) / 2f;
+                    float distance = Vector3.Distance(Blackboard.Owner.transform.position, candidate.transform.position);
+                    if(distance >= FootballConstants.PassMinDistance && distance <= FootballConstants.PassMaxDistance)
+                    {
+                        float score = FootballConstants.BasePassScoreForward - FootballConstants.PassScoreDistancePenalty * Mathf.Abs(distance - mid);
+                        if (score > passScore)
+                        {
+                            passScore = score;
+                            passTarget = candidate;
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
     }
 }

@@ -38,6 +38,7 @@ public static class FootballConstants
     public static float ShootDistanceBase = 10f; // 最远射门距离
     public static float BaseShootScore = 100f;
     public static float ShootBlockPenaltyFactor = 0.1f;
+    public static float ShootNoBlockFactor = 1.1f;
     public static float BasePassScore = 60f;
     public static float PassForwardWeight = 0.2f;
     public static float PassBlockPenaltyFactor = 0.1f;
@@ -78,8 +79,12 @@ public static class FootballConstants
     public static float ClearanceDistance = 15f; // 向前踢出多远
     public static float ClearanceDetectDistance = 3f; // 解围探测敌方的阈值
     public static float ClearKickSpeed = 20f;
+
+    public static float BaseScoreShootScore = 80f;
+    public static float BasePassScoreForward = 60f;
     
     // 通用常量
     public static float FloatEpsilon = 0.0001f;
     public static float SamePositionDistance = 0.05f;
+    public static float CommonBlockThreshold = 1f;
 }

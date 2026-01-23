@@ -16,9 +16,9 @@ MonoBehaviour:
   RoleName: Forward
   AttackPreferences:
     OwnDefensiveZoneWeight: 0.5
-    OwnOffensiveZoneWeight: 2
-    EnemyOffensiveZoneWeight: 6
-    EnemyDefensiveZoneWeight: 10
+    OwnOffensiveZoneWeight: 0.5
+    EnemyOffensiveZoneWeight: 3
+    EnemyDefensiveZoneWeight: 6
     DistanceDecayRate: 0.15
     MaxZoneDeviation: 10
   DefendPreferences:

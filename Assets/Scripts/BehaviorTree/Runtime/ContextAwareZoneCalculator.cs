@@ -10,24 +10,15 @@ namespace BehaviorTree.Runtime
         /// <summary>
         /// 计算感知当前态势的跑位得分
         /// </summary>
-        /// <param name="position"></param>
-        /// <param name="role"></param>
-        /// <param name="myGoal"></param>
-        /// <param name="enemyGoal"></param>
-        /// <param name="ballPosition"></param>
-        /// <param name="context"></param>
-        /// <param name="player"></param>
-        /// <returns></returns>
-        // 公式 = ( 1 + zoneScore) 
         public static float CalculateContextAwareScore(Vector3 position, PlayerRole role, Vector3 myGoal,
             Vector3 enemyGoal, Vector3 ballPosition, MatchContext context, GameObject player)
         {
             MatchState currentState = DetermineMatchState(player, context);
-
             float zoneWeight = 50f, ballWeight = 25f, markWeight = 25f;
             float zoneScore = ZoneProbabilitySystem.CalculateNormalizedZoneScore(position, role, myGoal, enemyGoal, currentState) * zoneWeight;
             if (role.RoleType == PlayerRoleType.Defender)
             {
+
                 if (currentState == MatchState.Defending)
                 {
                     float ballDistanceBase = 10f;
@@ -36,6 +27,24 @@ namespace BehaviorTree.Runtime
                     return zoneScore + ballScore + markScore;
                 }
                 else
+                {
+                    float ballDistanceBase = 40f;
+                    float ballScore = Mathf.Clamp01((ballDistanceBase - Vector3.Distance(position, ballPosition)) / ballDistanceBase) * ballWeight;
+                    float markScore = CalculateNormalizedMarkScore(position, role, context, myGoal, player) * markWeight;
+                    return zoneScore + ballScore + markScore;
+                }
+            }
+            else if (role.RoleType == PlayerRoleType.Forward)
+            {
+                if (currentState == MatchState.Attacking)
+                {
+                    zoneWeight = 50f;float goalWeight = 25f, avoidEnemyWeight = 25f;
+                    zoneScore = ZoneProbabilitySystem.CalculateNormalizedZoneScore(position, role, myGoal, enemyGoal, currentState) * zoneWeight;
+                    float goalScore = CalculateNormalizedGoalScore(position, role, context, enemyGoal, player) * goalWeight;
+                    float avoidEnemyScore = CalculateNormalizedAvoidEnemyScore(position, role, context, player) * avoidEnemyWeight;
+                    return zoneScore + goalScore + avoidEnemyScore;
+                }
+                else if (currentState == MatchState.ChasingBall || currentState == MatchState.Defending)
                 {
                     float ballDistanceBase = 40f;
                     float ballScore = Mathf.Clamp01((ballDistanceBase - Vector3.Distance(position, ballPosition)) / ballDistanceBase) * ballWeight;
@@ -176,6 +185,10 @@ namespace BehaviorTree.Runtime
             {
                 return GenerateCandidatePositionsDefender(player, matchContext, role, currentPos, myGoal, enemyGoal, ballPosition);
             }
+            if (role.RoleType == PlayerRoleType.Forward)
+            {
+                return GenerateCandidatePositionsForward(player, matchContext, role, currentPos, myGoal, enemyGoal, ballPosition);
+            }
             List<Vector3> candidates = new List<Vector3>();
             // 1 先搜索理想点（最高权重区域的中心）周围的位置
             MatchState state = DetermineMatchState(player, matchContext);
@@ -262,6 +275,71 @@ namespace BehaviorTree.Runtime
             return candidates;
         }
 
+        /// <summary>
+        /// 生成前锋的候选跑位
+        /// </summary>
+        public static List<Vector3> GenerateCandidatePositionsForward(GameObject player, MatchContext matchContext, PlayerRole role,
+            Vector3 currentPos, Vector3 myGoal, Vector3 enemyGoal, Vector3 ballPosition)
+        {
+            MatchState state = DetermineMatchState(player, matchContext);
+            List<Vector3> candidates = new List<Vector3>();
+
+            if (state == MatchState.Attacking)
+            {
+                candidates.Add(CalculatePenaltyAreaFront(enemyGoal)); // 1 禁区前沿（寻找射门机会）
+                candidates.AddRange(GeneratePositionAround(CalculatePenaltyAreaFront(enemyGoal), 2, 2f, 6)); // 禁区周围
+
+                GameObject ballHolder = matchContext.GetBallHolder();
+                if (ballHolder != null && ballHolder != player)
+                {
+                    candidates.Add(CalculateSupportingPosition(ballHolder.transform.position, enemyGoal)); // 2 接应持球人
+                    candidates.Add(CalculateSpacePosition(currentPos, matchContext.GetOpponents(player))); // 3 拉开空间
+                }
+
+                Vector3 idealPos = ZoneProbabilitySystem.CalculateIdealPosition(role, state, myGoal, enemyGoal);
+                candidates.AddRange(GeneratePositionAround(idealPos, 2, 4f, 8)); // 4 理想区域周围
+                candidates.Add(idealPos);
+            }
+            else if (state == MatchState.Defending || state == MatchState.ChasingBall)
+            {
+                candidates.Add(ballPosition); // 1 向球跑
+
+                GameObject ballHolder = matchContext.GetBallHolder();
+                if (ballHolder != null)
+                {
+                    candidates.Add(CalculatePressingPosition(ballHolder.transform.position, myGoal)); // 2 适度前压
+                }
+
+                Vector3 idealPos = ZoneProbabilitySystem.CalculateIdealPosition(role, state, myGoal, enemyGoal);
+                candidates.AddRange(GeneratePositionAround(idealPos, 2, 3f, 8)); // 3 理想区域周围
+                candidates.Add(idealPos);
+            }
+            return candidates;
+        }
+
+        private static float CalculateNormalizedGoalScore(Vector3 position, PlayerRole role, MatchContext context, Vector3 enemyGoal, GameObject player)
+        {
+            // < 8m
+            float distance = Vector3.Distance(position, enemyGoal);
+            if (distance > 8f) return 0f;
+            float normalizedScore = 1f - distance / 8f;
+            return normalizedScore;
+        }
+        
+        private static float CalculateNormalizedAvoidEnemyScore(Vector3 position, PlayerRole role, MatchContext context, GameObject player)
+        {
+            float normalizedAvoidScore = 1f;
+            foreach (GameObject enemy in context.GetOpponents(player))
+            {
+                float distance = Vector3.Distance(position, enemy.transform.position);
+                if (distance < 3f)
+                {
+                    normalizedAvoidScore += 1f - distance / 3f;
+                }
+            }
+            return Mathf.Max(0, normalizedAvoidScore);
+        }
+
         private static List<Vector3> GeneratePositionAround(Vector3 position, int layers, float layerWidth, int pointsPerLayer)
         {
             List<Vector3> points = new List<Vector3>();
@@ -290,6 +368,66 @@ namespace BehaviorTree.Runtime
                 points.Add(point);
             }
             return points;
+        }
+
+        // === 前锋跑位辅助方法 ===
+
+        /// <summary>
+        /// 计算禁区前沿位置（距离球门8米，用于寻找射门机会）
+        /// </summary>
+        private static Vector3 CalculatePenaltyAreaFront(Vector3 enemyGoal)
+        {
+            Vector3 goalToCenter = Vector3.zero - enemyGoal;
+            goalToCenter.y = 0;
+            return enemyGoal + goalToCenter.normalized * 8f;
+        }
+
+        /// <summary>
+        /// 计算接应位置（在持球人前方6米，用于接应传球）
+        /// </summary>
+        private static Vector3 CalculateSupportingPosition(Vector3 holderPos, Vector3 enemyGoal)
+        {
+            Vector3 holderToGoal = (enemyGoal - holderPos).normalized;
+            holderToGoal.y = 0;
+            return holderPos + holderToGoal * 6f;
+        }
+
+        /// <summary>
+        /// 计算拉开空间位置（远离最近防守者4米，用于创造跑动空间）
+        /// </summary>
+        private static Vector3 CalculateSpacePosition(Vector3 currentPos, List<GameObject> opponents)
+        {
+            GameObject nearestOpponent = null;
+            float minDistance = float.MaxValue;
+
+            foreach (var opp in opponents)
+            {
+                float dist = Vector3.Distance(currentPos, opp.transform.position);
+                if (dist < minDistance)
+                {
+                    minDistance = dist;
+                    nearestOpponent = opp;
+                }
+            }
+
+            if (nearestOpponent != null)
+            {
+                Vector3 awayFromOpponent = (currentPos - nearestOpponent.transform.position).normalized;
+                awayFromOpponent.y = 0;
+                return currentPos + awayFromOpponent * 4f;
+            }
+
+            return currentPos;
+        }
+
+        /// <summary>
+        /// 计算前压位置（中场附近，距持球人8米，用于适度前压拦截）
+        /// </summary>
+        private static Vector3 CalculatePressingPosition(Vector3 holderPos, Vector3 myGoal)
+        {
+            Vector3 holderToMyGoal = (myGoal - holderPos).normalized;
+            holderToMyGoal.y = 0;
+            return holderPos + holderToMyGoal * 8f;
         }
 
         struct EnemyInfo
