@@ -13,7 +13,7 @@ namespace BehaviorTree.Runtime
         {
             // 防御性编程：如果上下文或黑板数据没准备好，默认为失败
             if (Blackboard.MatchContext == null ||
-                Blackboard.MatchContext.BallHolder == null ||
+                Blackboard.MatchContext.GetBallHolder() == null ||
                 Blackboard.Owner == null)
             {
                 return NodeState.FAILURE;
@@ -22,7 +22,7 @@ namespace BehaviorTree.Runtime
             // 核心逻辑：
             // 比较 "全场谁拿着球" (BallHolder) 和 "我是谁" (Owner)
             // 这里的 Owner 是在 PlayerAI 初始化黑板时赋值的自身 GameObject
-            if (Blackboard.MatchContext.BallHolder == Blackboard.Owner)
+            if (Blackboard.MatchContext.GetBallHolder() == Blackboard.Owner)
             {
                 return NodeState.SUCCESS;
             }

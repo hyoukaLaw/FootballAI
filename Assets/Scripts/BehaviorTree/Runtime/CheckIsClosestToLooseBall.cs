@@ -13,7 +13,7 @@ namespace BehaviorTree.Runtime
                 return NodeState.FAILURE;
 
             // 1. 如果球有人拿，那就不算 Loose Ball，我不去抢
-            if (Blackboard.MatchContext.BallHolder != null)
+            if (Blackboard.MatchContext.GetBallHolder() != null)
             {
                 return NodeState.FAILURE;
             }

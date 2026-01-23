@@ -16,7 +16,7 @@ namespace BehaviorTree.Runtime
         public override NodeState Evaluate()
         {
             // 1. 获取当前持球人
-            GameObject ballHolder = Blackboard.MatchContext.BallHolder;
+            GameObject ballHolder = Blackboard.MatchContext.GetBallHolder();
 
             // 2. 如果没人控球（无主球），则认为本队不处于控球状态
             if (ballHolder == null)

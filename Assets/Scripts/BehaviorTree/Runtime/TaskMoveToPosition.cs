@@ -64,7 +64,7 @@ namespace BehaviorTree.Runtime
         {
             // 检查：我是持球人吗？
             // 注意：这里必须用 Context 里的 BallHolder 判断，因为 Context 是权威
-            if (Blackboard.MatchContext.BallHolder == owner)
+            if (Blackboard.MatchContext.GetBallHolder() == owner)
             {
                 // 计算球的理想位置：玩家正前方 + 偏移量
                 Vector3 ballPos = owner.transform.position + owner.transform.forward * _dribbleOffset;

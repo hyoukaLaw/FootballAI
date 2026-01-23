@@ -20,8 +20,8 @@ public class BallController : MonoBehaviour
     {
         if (!_isMoving) return;
         
-        if (MatchManager.Instance.Context.BallHolder != null && 
-            MatchManager.Instance.Context.BallHolder != _lastKicker)
+        if (MatchManager.Instance.Context.GetBallHolder() != null && 
+            MatchManager.Instance.Context.GetBallHolder() != _lastKicker)
         {
             _isMoving = false;
             return;

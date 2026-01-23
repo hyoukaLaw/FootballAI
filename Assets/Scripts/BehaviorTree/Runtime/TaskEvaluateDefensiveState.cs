@@ -10,13 +10,13 @@ namespace BehaviorTree.Runtime
         {
 
             // 如果球是无主的（Loose Ball），防守逻辑暂时不处理，交给通用的抢球逻辑
-            if (Blackboard.MatchContext.BallHolder == null)
+            if (Blackboard.MatchContext.GetBallHolder() == null)
             {
                 return NodeState.FAILURE;
             }
 
             GameObject owner = Blackboard.Owner;
-            GameObject ballHolder = Blackboard.MatchContext.BallHolder;
+            GameObject ballHolder = Blackboard.MatchContext.GetBallHolder();
 
             // 1. 判断是否需要"施压" (Pressing)
             // 逻辑：如果我是离持球人最近的队友，我就负责去抢球

@@ -130,11 +130,11 @@ public class PlayerAI : MonoBehaviour
     private bool IsTeamControllingBall(FootballBlackboard bb)
     {
         // 如果球没人拿，或者球在队友脚下，或者是自己脚下
-        if (bb.MatchContext.BallHolder == null) return false; // 无主球不算控球，通常进入争抢逻辑(防守端处理)
-        
-        if (bb.MatchContext.BallHolder == bb.Owner) return true;
-        if (bb.MatchContext.GetTeammates(this.gameObject).Contains(bb.MatchContext.BallHolder)) return true;
-        
+        if (bb.MatchContext.GetBallHolder() == null) return false; // 无主球不算控球，通常进入争抢逻辑(防守端处理)
+
+        if (bb.MatchContext.GetBallHolder() == bb.Owner) return true;
+        if (bb.MatchContext.GetTeammates(this.gameObject).Contains(bb.MatchContext.GetBallHolder())) return true;
+
         return false;
     }
     

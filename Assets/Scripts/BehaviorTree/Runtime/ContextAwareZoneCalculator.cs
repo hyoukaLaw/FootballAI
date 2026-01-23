@@ -51,7 +51,7 @@ namespace BehaviorTree.Runtime
             {
                 contextBonus += (1f - distToBall / 10f) * 20f; // 接近球的bonus
             }
-            if (context.BallHolder == null && IsClosestToBall(player, context))
+            if (context.GetBallHolder() == null && IsClosestToBall(player, context))
             {
                 contextBonus += 50f; // 最接近无主球的额外bonus
             }
@@ -229,10 +229,10 @@ namespace BehaviorTree.Runtime
         {
             if (context == null) return MatchState.ChasingBall;
 
-            if (context.BallHolder == null)
+            if (context.GetBallHolder() == null)
                 return MatchState.ChasingBall;
 
-            if (context.GetTeammates(player).Contains(context.BallHolder))
+            if (context.GetTeammates(player).Contains(context.GetBallHolder()))
                 return MatchState.Attacking;
             else
                 return MatchState.Defending;
@@ -257,7 +257,7 @@ namespace BehaviorTree.Runtime
             }
             else if (state == MatchState.Attacking)
             {
-                candidates.Add(matchContext.BallHolder.transform.position); // 1 考虑向对方持球人跑
+                candidates.Add(matchContext.GetBallHolder().transform.position); // 1 考虑向对方持球人跑
                 Vector3 idealPos = ZoneProbabilitySystem.CalculateIdealPosition(role, state, myGoal, enemyGoal); // 区域中心位置
                 int layers = 2; float layerWidth = 2f; int pointsPerLayer = 8;
                 candidates.AddRange(GeneratePositionAround(idealPos, layers, layerWidth, pointsPerLayer)); // 3 考虑向理想位置或周围跑

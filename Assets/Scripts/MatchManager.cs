@@ -91,7 +91,7 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void UpdatePassTargetState()
     {
-        Context.UpdatePassTarget(_passTimeout, Context.BallHolder);
+        Context.UpdatePassTarget(_passTimeout, Context.GetBallHolder());
     }
 
     /// <summary>
@@ -119,8 +119,8 @@ public class MatchManager : MonoBehaviour
                 closestPlayer = player;
             }
         }
-        if(closestPlayer != Context.BallHolder) Debug.Log($"possession {Context.BallHolder?.name}->{closestPlayer?.name}");
-        Context.BallHolder = closestPlayer;
+        if(closestPlayer != Context.GetBallHolder()) Debug.Log($"possession {Context.GetBallHolder()?.name}->{closestPlayer?.name}");
+        Context.SetBallHolder(closestPlayer);
     }
 
     /// <summary>
@@ -252,6 +252,33 @@ private void OnGoalScored(string scoringTeam)
         else if (NextKickoffTeam == "Blue" && BlueStartPlayer != null)
         {
             BlueStartPlayer.transform.position = Vector3.zero;
+        }
+    }
+
+    /// <summary>
+    /// 执行抢断动作：统一管理球权转移和相关状态更新
+    /// </summary>
+    /// <param name="tackler">抢断者</param>
+    /// <param name="currentHolder">当前持球人（被抢断者）</param>
+    public void StealBall(GameObject tackler, GameObject currentHolder)
+    {
+        if (tackler == null) return;
+        // 1. 移动球到抢断者位置
+        Ball.transform.position = tackler.transform.position;
+        // 2. 更新球权
+        Context.SetBallHolder(tackler);
+        // 3. 触发抢断保护期
+        TriggerStealCooldown();
+        // 4. 让被抢断者停顿
+        if (currentHolder != null)
+        {
+            var holderAI = currentHolder.GetComponent<PlayerAI>();
+            if (holderAI?.GetBlackboard() != null)
+            {
+                var bb = holderAI.GetBlackboard();
+                bb.IsStunned = true;
+                bb.StunTimer = bb.StunDuration;
+            }
         }
     }
 

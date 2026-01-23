@@ -16,11 +16,11 @@ namespace BehaviorTree.Runtime
             }
 
             // 检查必要条件
-            if (Blackboard.MatchContext == null || Blackboard.MatchContext.BallHolder == null)
+            if (Blackboard.MatchContext == null || Blackboard.MatchContext.GetBallHolder() == null)
                 return NodeState.FAILURE; // 没有持球人，无法抢断
 
             GameObject owner = Blackboard.Owner;
-            GameObject ballHolder = Blackboard.MatchContext.BallHolder;
+            GameObject ballHolder = Blackboard.MatchContext.GetBallHolder();
 
             // 检查是否在抢断范围内
             float tackleDistance =  ballHolder.GetComponent<PlayerAI>().Stats.TackledDistance; // 抢断有效距离
@@ -68,35 +68,8 @@ namespace BehaviorTree.Runtime
         // 执行抢断动作
         private void StealBall(GameObject tackler)
         {
-            // 检查上下文
-            if (Blackboard.MatchContext == null || Blackboard.MatchContext.Ball == null)
-                return;
-
-            // 将球移动到抢断球员的位置
-            Vector3 tacklerPosition = tackler.transform.position;
-            Blackboard.MatchContext.Ball.transform.position = tacklerPosition;
-
-            // 被抢断者（记录在抢断前）
-            GameObject ballHolder = Blackboard.MatchContext.BallHolder;
-
-            // 将球权转移给抢断球员（MatchManager 会同步到 Context）
-            if (Blackboard.MatchContext != null)
-                Blackboard.MatchContext.BallHolder = tackler;
-
-            // 触发抢断保护期，防止立即被反抢
-            MatchManager.Instance.TriggerStealCooldown();
-
-            // 让被抢断者停顿一下（符合现实，避免反复互相抢断）
-            if (ballHolder != null)
-            {
-                var ballHolderAI = ballHolder.GetComponent<PlayerAI>();
-                if (ballHolderAI != null && ballHolderAI.GetBlackboard() != null)
-                {
-                    var bb = ballHolderAI.GetBlackboard();
-                    bb.IsStunned = true;
-                    bb.StunTimer = bb.StunDuration; // 使用配置的停顿时长
-                }
-            }
+            GameObject currentHolder = Blackboard.MatchContext.GetBallHolder();
+            MatchManager.Instance.StealBall(tackler, currentHolder);
         }
     }
 }

@@ -46,7 +46,7 @@ public class PlayerAIInspector : Editor
 
         var sb = new System.Text.StringBuilder();
         sb.AppendLine($"球 (Ball): {(context.Ball != null ? context.Ball.name : "None")}");
-        sb.AppendLine($"持球人 (BallHolder): {(context.BallHolder != null ? context.BallHolder.name : "None")}");
+        sb.AppendLine($"持球人 (BallHolder): {(context.GetBallHolder() != null ? context.GetBallHolder().name : "None")}");
         sb.AppendLine($"传球目标 (IncomingPassTarget): {(context.IncomingPassTarget != null ? context.IncomingPassTarget.name : "None")}");
         sb.AppendLine($"抢断保护期 (StealCooldown): {context.IsInStealCooldown}");
         sb.AppendLine($"红队人数: {context.TeamRedPlayers?.Count ?? 0}");

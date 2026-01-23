@@ -8,7 +8,7 @@ namespace BehaviorTree.Runtime
 
         public override NodeState Evaluate()
         {
-            if( Blackboard.MatchContext.BallHolder != Blackboard.Owner)
+            if( Blackboard.MatchContext.GetBallHolder() != Blackboard.Owner)
                 return NodeState.FAILURE;
             
             return NodeState.RUNNING;
