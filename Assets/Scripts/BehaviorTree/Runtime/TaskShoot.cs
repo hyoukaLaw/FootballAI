@@ -24,7 +24,7 @@ namespace BehaviorTree.Runtime
             Vector3 shootTarget = CalculateShootTarget(goalPos);
 
             // 踢球
-            ballCtrl.KickTo(shootTarget, _shootPower);
+            ballCtrl.KickTo(Blackboard.Owner, shootTarget, _shootPower);
             Debug.Log($"{Blackboard.Owner.name} Shoot {Time.realtimeSinceStartup} {Time.frameCount} {shootTarget}");
             Blackboard.IsStunned = true;
             Blackboard.StunTimer = Blackboard.StunDuration;

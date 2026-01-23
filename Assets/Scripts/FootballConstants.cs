@@ -81,4 +81,5 @@ public static class FootballConstants
     
     // 通用常量
     public static float FloatEpsilon = 0.0001f;
+    public static float SamePositionDistance = 0.05f;
 }

@@ -7,7 +7,16 @@ namespace BehaviorTree.Runtime
     {
         // --- 全局共享数据 ---
         public GameObject Ball;
+        public BallController BallController;
         public GameObject BallHolder;
+        public GameObject GetBallHolder()
+        {
+            return BallHolder;
+        }
+        public void SetBallHolder(GameObject holder)
+        {
+            BallHolder = holder;
+        }
         public List<GameObject> TeamRedPlayers;
         public List<GameObject> TeamBluePlayers;
         public Transform RedGoal;
@@ -48,7 +57,7 @@ namespace BehaviorTree.Runtime
                 _passTimer += Time.deltaTime;
 
                 // 超时或球已被接住，清除传球目标
-                if (_passTimer > passTimeout || ballHolder != null && !Ball.GetComponent<BallController>().IsInFlyTimer())
+                if (_passTimer > passTimeout || ballHolder != null)
                 {
                     IncomingPassTarget = null;
                     _passTimer = 0f;

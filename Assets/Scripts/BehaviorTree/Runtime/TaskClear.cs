@@ -9,7 +9,7 @@
         public override NodeState Evaluate()
         {
             var ballControl = Blackboard.MatchContext.Ball.GetComponent<BallController>();
-            ballControl.KickTo(Blackboard.ClearanceTarget, FootballConstants.ClearKickSpeed);
+            ballControl.KickTo(Blackboard.Owner, Blackboard.ClearanceTarget, FootballConstants.ClearKickSpeed);
             return NodeState.SUCCESS;
         }
     }

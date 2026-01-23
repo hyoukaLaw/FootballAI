@@ -3,36 +3,25 @@ using UnityEngine;
 public class BallController : MonoBehaviour
 {
     private Vector3 _targetPos;
-    private bool _isMoving = false;
+    private bool _isMoving = false; // 当前是否被踢出在运动
     private float _speed = 15.0f;
+    private GameObject _lastKicker;
 
-// (可选优化) 防止踢球瞬间自己立刻把球停住
-    private float _flyTimer = 0f;
-
-    public void KickTo(Vector3 target, float speed)
+    public void KickTo(GameObject kicker, Vector3 target, float speed)
     {
         _targetPos = target;
         _speed = speed;
         _isMoving = true;
-        _flyTimer = 0.5f; 
-        Debug.Log($"Ball KickTo {_targetPos} {_speed}");
+        _lastKicker = kicker;
+        Debug.Log($"{_lastKicker.name} Ball KickTo {_targetPos} {_speed}");
     }
 
     void Update()
     {
         if (!_isMoving) return;
-
-        if (_flyTimer > 0)
-        {
-            _flyTimer -= Time.deltaTime;
-            // 保护期内只移动，不检测拦截
-            transform.position = Vector3.MoveTowards(transform.position, _targetPos, _speed * Time.deltaTime);
-            return; 
-        }
-        // 保护期过后，才允许被拦截
-        if (MatchManager.Instance != null &&
-            MatchManager.Instance.Context != null &&
-            MatchManager.Instance.Context.BallHolder != null)
+        
+        if (MatchManager.Instance.Context.BallHolder != null && 
+            MatchManager.Instance.Context.BallHolder != _lastKicker)
         {
             _isMoving = false;
             return;
@@ -40,16 +29,23 @@ public class BallController : MonoBehaviour
         // --- 正常的飞行逻辑 ---
         // 2. 移动
         transform.position = Vector3.MoveTowards(transform.position, _targetPos, _speed * Time.deltaTime);
+        Debug.Log($"Ball Move To {_targetPos} {_speed}");
         // 3. 到达检测 (自然滚动停止)
         // 如果一直没人接，球滚到了终点也该停了
-        if (Vector3.Distance(transform.position, _targetPos) < 0.1f)
+        if (Vector3.Distance(transform.position, _targetPos) < FootballConstants.SamePositionDistance)
         {
             _isMoving = false;
         }
     }
+    
 
-    public bool IsInFlyTimer()
+    public GameObject GetLastKicker()
     {
-        return _flyTimer > 0;
+        return _lastKicker;
+    }
+
+    public void ForceStopMove()
+    {
+        _isMoving = false;
     }
 }

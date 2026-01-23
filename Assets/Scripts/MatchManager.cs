@@ -56,6 +56,7 @@ public class MatchManager : MonoBehaviour
         // 初始化全局上下文
         Context = new BehaviorTree.Runtime.MatchContext();
         Context.Ball = Ball;
+        Context.BallController = Ball.GetComponent<BallController>();
         Context.TeamRedPlayers = TeamRedPlayers;
         Context.TeamBluePlayers = TeamBluePlayers;
         Context.RedGoal = RedGoal;
@@ -111,26 +112,15 @@ public class MatchManager : MonoBehaviour
             if (player == null) continue;
 
             float dist = Vector3.Distance(player.transform.position, Ball.transform.position);
-            if (dist < minDistance)
+            if (dist < minDistance && dist < PossessionThreshold && 
+                player != Context.BallController.GetLastKicker())
             {
                 minDistance = dist;
                 closestPlayer = player;
             }
         }
-
-        // 只有距离小于阈值，才算真正持球
-        // 否则球处于"无人控制"状态 (Loose Ball)
-        if (minDistance <= PossessionThreshold)
-        {
-            if(closestPlayer != Context.BallHolder) Debug.Log($"possession {Context.BallHolder?.name}->{closestPlayer?.name}");
-            if (Context != null)
-                Context.BallHolder = closestPlayer;
-        }
-        else
-        {
-            if (Context != null)
-                Context.BallHolder = null;
-        }
+        if(closestPlayer != Context.BallHolder) Debug.Log($"possession {Context.BallHolder?.name}->{closestPlayer?.name}");
+        Context.BallHolder = closestPlayer;
     }
 
     /// <summary>
