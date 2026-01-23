@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -28,7 +28,7 @@ namespace BehaviorTree.Runtime
             CalculatePassScoreAndTarget(out float passScore, out GameObject passTarget);
             CalculateDribbleScoreAndTarget(out float dribbleScore, out Vector3 dribbleTarget);
             CalculateClearanceScoreAndTarget(out float clearanceScore, out Vector3 clearanceTarget);
-            Debug.Log($"TaskEvaluateRoleBaseOffensiveOptions({Blackboard.Owner.name}) " +
+            Debug.Log($"{Blackboard.Owner.name} TaskEvaluateRoleBaseOffensiveOptions " +
                       $"PassScore:{passScore}, DribbleScore:{dribbleScore}, ClearanceScore:{clearanceScore} ");
             if (passScore > dribbleScore && passScore > clearanceScore)
             {
@@ -58,13 +58,20 @@ namespace BehaviorTree.Runtime
             List<GameObject> enemyPlayers = Blackboard.MatchContext.GetOpponents(Blackboard.Owner);
             foreach (var candidate in teammates)
             {
-                if(FootballUtils.IsPathClear(Blackboard.Owner.transform.position, candidate.transform.position, enemyPlayers, 1f))
+                if(FootballUtils.IsPathClear(Blackboard.Owner.transform.position, 
+                       candidate.transform.position, enemyPlayers, 
+                       FootballConstants.PassBlockThreshold))
                 {
-                    if(Vector3.Distance(Blackboard.Owner.transform.position, candidate.transform.position) >= FootballConstants.PassMinDistance &&
-                       Vector3.Distance(Blackboard.Owner.transform.position, candidate.transform.position) <= FootballConstants.PassMaxDistance)
+                    float mid = (FootballConstants.PassMinDistance + FootballConstants.PassMaxDistance) / 2f;
+                    float distance = Vector3.Distance(Blackboard.Owner.transform.position, candidate.transform.position);
+                    if(distance >= FootballConstants.PassMinDistance && distance <= FootballConstants.PassMaxDistance)
                     {
-                        passScore = 100f;
-                        passTarget = candidate;
+                        float score = FootballConstants.BasePassScoreDefender - FootballConstants.PassScoreDistancePenalty * Mathf.Abs(distance - mid);
+                        if (score > passScore)
+                        {
+                            passScore = score;
+                            passTarget = candidate;
+                        }
                     }
                 }
             }
@@ -120,23 +127,58 @@ namespace BehaviorTree.Runtime
         
         private void CalculateClearanceScoreAndTarget(out float clearanceScore, out Vector3 clearanceTarget)
         {
-            clearanceScore = FootballConstants.BaseClearanceScore;
-            clearanceTarget = Vector3.zero;
-            Vector3 enemyGoalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
-            var opponents = Blackboard.MatchContext.GetOpponents(Blackboard.Owner); 
+            var opponents = Blackboard.MatchContext.GetOpponents(Blackboard.Owner);
             Vector3 forwardDir = FootballUtils.GetForward(Blackboard.Owner);
+
+            float[] angles = { 0f, 45f, -45f };
+            float bestScore = float.MinValue;
+            Vector3 bestTarget = Vector3.zero;
+
+            foreach (float angle in angles)
+            {
+                float rad = angle * Mathf.Deg2Rad;
+                Vector3 clearanceDir = Quaternion.Euler(0, rad, 0) * forwardDir;
+                Vector3 candidateTarget = Blackboard.Owner.transform.position + clearanceDir * FootballConstants.ClearanceDistance;
+
+                float score = CalculateDirectionClearanceScore(clearanceDir, candidateTarget, opponents);
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestTarget = candidateTarget;
+                }
+            }
+
+            clearanceScore = bestScore;
+            clearanceTarget = bestTarget;
+        }
+
+        private float CalculateDirectionClearanceScore(Vector3 clearanceDir, Vector3 targetPos, List<GameObject> opponents)
+        {
+            Vector3 startPos = Blackboard.Owner.transform.position;
+            float score = FootballConstants.BaseClearanceScore;
+
+            if (!FootballUtils.IsPathClear(startPos, targetPos, opponents, FootballConstants.ClearanceBlockThreshold))
+            {
+                score -= FootballConstants.ClearanceScoreDistancePenalty;
+            }
+
             var enemiesNear = FootballUtils.FindNearEnemies(Blackboard.Owner, opponents, FootballConstants.ClearanceDetectDistance);
             foreach (var enemyNear in enemiesNear)
             {
-                Vector3 meToEnemy = (Blackboard.Owner.transform.position - enemyNear.transform.position).normalized;
-                if (Vector3.Dot(meToEnemy, forwardDir) >=
-                    Mathf.Cos(FootballConstants.ClearanceDetectFrontHalfAngle * Mathf.Deg2Rad))
+                Vector3 meToEnemy = (enemyNear.transform.position - startPos).normalized;
+                float angleToEnemy = Vector3.Angle(clearanceDir, meToEnemy);
+                
+                if (angleToEnemy < 30f)
                 {
-                    continue;
+                    score -= FootballConstants.ClearanceScorePerEnemy * 2;
                 }
-                clearanceScore += FootballConstants.ClearanceScorePerEnemy;
+                else if (angleToEnemy < 60f)
+                {
+                    score -= FootballConstants.ClearanceScorePerEnemy;
+                }
             }
-            clearanceTarget = Blackboard.Owner.transform.position + forwardDir * FootballConstants.ClearanceDistance;
+
+            return score;
         }
     }
 }

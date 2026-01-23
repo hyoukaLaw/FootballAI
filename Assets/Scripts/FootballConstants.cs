@@ -68,12 +68,16 @@ public static class FootballConstants
     // TaskEvaluateRolePreferences Constants
     public static float PassMinDistance = 2f;
     public static float PassMaxDistance = 10f;
-    public static float BaseClearanceScore = 20f;
+    public static float PassBlockThreshold = 1f;
+    public static float BasePassScoreDefender = 80f;
+    public static float PassScoreDistancePenalty = 5f;
+    public static float BaseClearanceScore = 30f;
     public static float ClearanceScorePerEnemy = 10f;
-    public static float ClearanceDistance = 10f; // 向前踢出多远
+    public static float ClearanceBlockThreshold = 1.5f;
+    public static float ClearanceScoreDistancePenalty = 50f;
+    public static float ClearanceDistance = 15f; // 向前踢出多远
     public static float ClearanceDetectDistance = 3f; // 解围探测敌方的阈值
-    public static float ClearanceDetectFrontHalfAngle = 15f;
-    public static float ClearKickSpeed = 10f;
+    public static float ClearKickSpeed = 20f;
     
     // 通用常量
     public static float FloatEpsilon = 0.0001f;

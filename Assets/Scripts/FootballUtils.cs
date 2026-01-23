@@ -58,7 +58,6 @@ public static class FootballUtils
                 return false;
             }
         }
-
         return true;
     }
 
