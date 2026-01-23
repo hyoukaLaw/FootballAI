@@ -19,11 +19,7 @@ public class PlayerStats
     
     [Header("传球属性")]
     public float PassingSpeed = 10f;
-    [Range(0.5f, 1.0f)]
-    public float PassingAccuracy = 0.9f;
-
-    [Header("射门属性")]
-    public float ShootingPower = 20f;
+    
     [Range(0.3f, 1.0f)]
     public float ShootingAccuracy = 0.7f;
 

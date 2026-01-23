@@ -177,13 +177,10 @@ namespace BehaviorTree.Runtime
                 return GenerateCandidatePositionsDefender(player, matchContext, role, currentPos, myGoal, enemyGoal, ballPosition);
             }
             List<Vector3> candidates = new List<Vector3>();
-            // 先搜索理想点（最高权重区域的中心）周围的位置
+            // 1 先搜索理想点（最高权重区域的中心）周围的位置
             MatchState state = DetermineMatchState(player, matchContext);
             Vector3 idealPos = ZoneProbabilitySystem.CalculateIdealPosition(role, state, myGoal, enemyGoal);
-            int layers = 3;
-            int pointsPerLayer = 8;
-            float layerWidth = 3f;
-            List<Vector3> points = GeneratePositionAround(idealPos, layers, layerWidth, pointsPerLayer);
+            List<Vector3> points = GeneratePositionAround(idealPos, 3, 3f, 8);
             candidates.AddRange(points);
             candidates.Add(currentPos);
             // 搜索靠近球4m或8m的位置
@@ -247,20 +244,17 @@ namespace BehaviorTree.Runtime
             if (state == MatchState.Defending || state == MatchState.ChasingBall)// 先考虑防守
             {
                 candidates.Add(ballPosition); // 1 考虑向球跑
-                int numPointsForGoal = 3;
-                candidates.AddRange(GenerateTwoPointsBetweenPoints(ballPosition, myGoal, numPointsForGoal)); // 2 封堵射门角度
+                candidates.AddRange(GenerateTwoPointsBetweenPoints(ballPosition, myGoal, 3)); // 2 封堵射门角度
                 Vector3 idealPos = ZoneProbabilitySystem.CalculateIdealPosition(role, state, myGoal, enemyGoal); // 区域中心位置
-                int layers = 2; float layerWidth = 3f; int pointsPerLayer = 8;
-                candidates.AddRange(GeneratePositionAround(idealPos, layers, 3f, pointsPerLayer)); // 3 考虑向理想位置或周围跑
+                candidates.AddRange(GeneratePositionAround(idealPos, 4, 3f, 8)); // 3 考虑向理想位置或周围跑
                 candidates.Add(idealPos);
                 candidates.AddRange(FindNearEnemies(idealPos, matchContext.GetOpponents(player), 3));
             }
             else if (state == MatchState.Attacking)
             {
-                candidates.Add(matchContext.GetBallHolder().transform.position); // 1 考虑向对方持球人跑
+                candidates.Add(ballPosition); //  1 考虑向球跑
                 Vector3 idealPos = ZoneProbabilitySystem.CalculateIdealPosition(role, state, myGoal, enemyGoal); // 区域中心位置
-                int layers = 2; float layerWidth = 2f; int pointsPerLayer = 8;
-                candidates.AddRange(GeneratePositionAround(idealPos, layers, layerWidth, pointsPerLayer)); // 3 考虑向理想位置或周围跑
+                candidates.AddRange(GeneratePositionAround(idealPos, 2, 6f, 8)); // 3 考虑向理想位置或周围跑
                 candidates.Add(idealPos);
                 List<Vector3> otherZonePos = ZoneProbabilitySystem.CalculateOtherZonePositions(role, state, myGoal, enemyGoal, idealPos);
                 candidates.AddRange(otherZonePos); // 4 进攻时考虑其他区域
