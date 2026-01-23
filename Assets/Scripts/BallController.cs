@@ -18,7 +18,13 @@ public class BallController : MonoBehaviour
 
     void Update()
     {
-        if (!_isMoving) return;
+        if (!_isMoving)
+        {
+            var ballHolder = MatchManager.Instance.Context.GetBallHolder();
+            if(ballHolder != null)
+                transform.position = ballHolder.transform.position;
+            return;
+        }
         
         if (MatchManager.Instance.Context.GetBallHolder() != null && 
             MatchManager.Instance.Context.GetBallHolder() != _lastKicker)

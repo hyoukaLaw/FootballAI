@@ -11,6 +11,7 @@ using Unity.VisualScripting; // 引用命名空间
 public class PlayerStats
 {
     [Header("移动属性")]
+    [Range(2f, 10f)]
     public float MovementSpeed = 2.0f;
     public float SprintMultiplier = 1.2f;
     [Header("带球属性")]
