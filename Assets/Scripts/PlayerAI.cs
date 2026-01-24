@@ -60,17 +60,7 @@ public class PlayerAI : MonoBehaviour
         _blackboard.Owner = this.gameObject; // 记录自己是谁
         _blackboard.Stats = Stats; // 传入球员属性
         _blackboard.Role = PlayerRole; // 传入角色配置
-
-
-        // 2. 注入全局上下文
-        if (MatchManager.Instance != null && MatchManager.Instance.Context != null)
-        {
-            _blackboard.MatchContext = MatchManager.Instance.Context;
-        }
-        else
-        {
-            Debug.LogError("MatchManager.Instance or Context is null!");
-        }
+        
         
         if (AIBehaviorGraph != null)
         {
@@ -113,11 +103,6 @@ public class PlayerAI : MonoBehaviour
             return;
         // 每帧运行行为树
         _tree.Tick();
-        // if (_tree.GetRootNode().GetNodeState() != NodeState.RUNNING)
-        // {
-        //     //ResetBlackboard();
-        //     _tree.GetRootNode().Reset(); // 只重置节点状态
-        // }
 
         // 更新执行路径（用于调试）
         ExecutionPath = _tree.ExecutionPath;
@@ -209,13 +194,13 @@ public class PlayerAI : MonoBehaviour
             // }
 
             // 画出移动目标
-            // if (_blackboard.MoveTarget != Vector3.zero)
-            // {
-            //     Gizmos.color = Color.yellow;
-            //     Gizmos.DrawLine(transform.position,
-            //         transform.position + (_blackboard.MoveTarget - transform.position).normalized);
-            //     Gizmos.DrawWireSphere(transform.position + (_blackboard.MoveTarget - transform.position).normalized, 0.3f);
-            // }
+            if (_blackboard.MoveTarget != Vector3.zero)
+            {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawLine(transform.position,
+                    transform.position + (_blackboard.MoveTarget - transform.position).normalized);
+                Gizmos.DrawWireSphere(transform.position + (_blackboard.MoveTarget - transform.position).normalized, 0.3f);
+            }
             // // 画出传球目标连线
             // if (_blackboard.BestPassTarget != null)
             // {
@@ -224,7 +209,7 @@ public class PlayerAI : MonoBehaviour
             //     Gizmos.DrawIcon(transform.position + Vector3.up * 2, "Pass");
             // }
 
-            DrawCandidatePositions();
+            //DrawCandidatePositions();
         }
      }
 

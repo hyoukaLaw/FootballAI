@@ -19,7 +19,7 @@ namespace BehaviorTree.Runtime
             
             GameObject ball = Blackboard.MatchContext.Ball;
             Vector3 goalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
-            BallController ballCtrl = ball.GetComponent<BallController>();
+            BallController ballCtrl = MatchManager.Instance.BallController;
             // 计算射门目标点（稍微偏离球门中心，模拟射门精度）
             Vector3 shootTarget = CalculateShootTarget(goalPos);
 

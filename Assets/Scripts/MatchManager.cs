@@ -14,6 +14,7 @@ public class MatchManager : MonoBehaviour
 
     [Header("Scene References")]
     public GameObject Ball;
+    public BallController BallController;
     // --- 新增：球门引用 ---
     public Transform RedGoal;  // 红方防守的球门（蓝方攻击目标）
     public Transform BlueGoal; // 蓝方防守的球门（红方攻击目标）
@@ -42,7 +43,7 @@ public class MatchManager : MonoBehaviour
     private float _passTimeout = 3.0f;    // 传球超时时间
 
     [Header("抢断保护")]
-    public float StealCooldownDuration = 3f; // 抢断保护期时长（秒）
+    public float StealCooldownDuration = 0f; // 抢断保护期时长（秒）
 
     [Header("事件系统")]
     public UnityEvent<int, int> OnScoreChanged; // 红方分数, 蓝方分数
@@ -52,17 +53,28 @@ public class MatchManager : MonoBehaviour
         // 初始化单例
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+        BallController = new BallController(Ball);
 
         // 初始化全局上下文
         Context = new BehaviorTree.Runtime.MatchContext();
         Context.Ball = Ball;
-        Context.BallController = Ball.GetComponent<BallController>();
+        Context.BallController = BallController;
         Context.TeamRedPlayers = TeamRedPlayers;
         Context.TeamBluePlayers = TeamBluePlayers;
         Context.RedGoal = RedGoal;
         Context.BlueGoal = BlueGoal;
         Context.Field = Field;
         ResetBall();
+        foreach(var player in TeamRedPlayers)
+        {
+            var playerAI = player.GetComponent<PlayerAI>();
+            playerAI.GetBlackboard().MatchContext = Context;
+        }
+        foreach (var player in TeamBluePlayers)
+        {
+            var playerAI = player.GetComponent<PlayerAI>();
+            playerAI.GetBlackboard().MatchContext = Context;
+        }
     }
 
     private void Update()
@@ -76,7 +88,8 @@ public class MatchManager : MonoBehaviour
 
         // 1. 计算物理状态 (谁拿着球？)
         UpdatePossessionState();
-
+        BallController.Update();
+        
         // 2. 清理过期的传球状态
         UpdatePassTargetState();
 
@@ -98,6 +111,10 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void UpdatePossessionState()
     {
+        if(BallController.GetIsMoving())
+            Context.SetBallHolder(null);
+        // 两种情况可以进行争球：1 没有持球人
+        if (Context.GetBallHolder() != null) return;
         GameObject closestPlayer = null;
         float minDistance = float.MaxValue;
 
@@ -108,11 +125,9 @@ public class MatchManager : MonoBehaviour
 
         foreach (var player in allPlayers)
         {
-            if (player == null) continue;
-
             float dist = Vector3.Distance(player.transform.position, Ball.transform.position);
             if (dist < minDistance && dist < PossessionThreshold && 
-                player != Context.BallController.GetLastKicker())
+                player != Context.BallController.GetLastKicker() && !IsStunned(player))
             {
                 minDistance = dist;
                 closestPlayer = player;
@@ -120,6 +135,11 @@ public class MatchManager : MonoBehaviour
         }
         if(closestPlayer != Context.GetBallHolder()) Debug.Log($"possession {Context.GetBallHolder()?.name}->{closestPlayer?.name}");
         Context.SetBallHolder(closestPlayer);
+    }
+
+    private bool IsStunned(GameObject player)
+    {
+        return player.GetComponent<PlayerAI>().GetBlackboard().IsStunned;
     }
 
     /// <summary>
@@ -261,7 +281,6 @@ private void OnGoalScored(string scoringTeam)
     /// <param name="currentHolder">当前持球人（被抢断者）</param>
     public void StealBall(GameObject tackler, GameObject currentHolder)
     {
-        if (tackler == null) return;
         // 1. 移动球到抢断者位置
         Ball.transform.position = tackler.transform.position;
         // 2. 更新球权

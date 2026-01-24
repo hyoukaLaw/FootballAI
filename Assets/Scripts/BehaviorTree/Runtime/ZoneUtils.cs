@@ -145,7 +145,6 @@ namespace BehaviorTree.Runtime
             
             float width = MatchManager.Instance.Context.GetFieldWidth();
             float length = Vector3.Distance(startPos, endPos);
-            Debug.Log($"ZoneRange: {leftBottom}, Width: {width}, Length: {length}");
             
             return new ZoneRange{LeftBottom = leftBottom, Width = width, Length = length};
         }

@@ -18,10 +18,8 @@ namespace BehaviorTree.Runtime
             {
                 return NodeState.FAILURE;
             }
-
             // 3. 计算与持球人的距离
             float distance = Vector3.Distance(Blackboard.Owner.transform.position, Blackboard.MatchContext.GetBallHolder().transform.position);
-
             // 4. 判断是否在常量定义的抢断范围内
             if (distance < FootballConstants.TryTackleDistance)
             {

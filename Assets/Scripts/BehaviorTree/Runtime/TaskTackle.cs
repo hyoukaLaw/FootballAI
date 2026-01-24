@@ -8,31 +8,23 @@ namespace BehaviorTree.Runtime
 
         public override NodeState Evaluate()
         {
-            Debug.Log($"Tackle {Time.realtimeSinceStartup} {Time.frameCount} {Blackboard.Owner.name}");
-            // 检查抢断保护期：如果在保护期内，不允许任何抢断
-            if (Blackboard.MatchContext != null && Blackboard.MatchContext.IsInStealCooldown)
-            {
-                return NodeState.FAILURE; // 保护期内不允许抢断
-            }
-
+            // 检查抢断保护期：如果在保护期内，不允许任何抢断 // 为什么可以自己抢断自己？？？
             // 检查必要条件
-            if (Blackboard.MatchContext == null || Blackboard.MatchContext.GetBallHolder() == null)
-                return NodeState.FAILURE; // 没有持球人，无法抢断
 
             GameObject owner = Blackboard.Owner;
             GameObject ballHolder = Blackboard.MatchContext.GetBallHolder();
 
             // 检查是否在抢断范围内
-            float tackleDistance =  ballHolder.GetComponent<PlayerAI>().Stats.TackledDistance; // 抢断有效距离
             float distanceToBallHolder = Vector3.Distance(owner.transform.position, ballHolder.transform.position);
 
             // 尝试抢断
             float tackleChance = CalculateTackleChance(owner, ballHolder);
             float random = Random.Range(0, 1f);// Random.Range(0.8f, 0.85f); // (0,1)
-            Debug.Log($"{Blackboard.Owner.name} Tackle Chance :{tackleChance}");
+            
             if(random <= tackleChance)
             {
                 // 抢断成功！
+                Debug.Log($"{Blackboard.Owner.name} Tackle Chance :{tackleChance} Ballholder:{ballHolder.name} Distance:{distanceToBallHolder} {Time.frameCount}");
                 StealBall(owner);
                 return NodeState.SUCCESS;
             }
@@ -40,7 +32,7 @@ namespace BehaviorTree.Runtime
             {
                 // 抢断失败
                 BlackboardUtils.StartStun(Blackboard, 0.5f);
-                Debug.Log($"Tackle failed {Time.realtimeSinceStartup} {Time.frameCount} {Blackboard.Owner.name}");
+                Debug.Log($"{Blackboard.Owner.name} Tackle failed :{tackleChance} Ballholder:{ballHolder.name} Distance:{distanceToBallHolder} {Time.frameCount}");
                 return NodeState.FAILURE;
             }
         }

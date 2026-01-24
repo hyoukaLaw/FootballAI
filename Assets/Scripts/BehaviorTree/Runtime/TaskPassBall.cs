@@ -18,7 +18,7 @@ namespace BehaviorTree.Runtime
 
             if (target == null) return NodeState.FAILURE;
 
-            BallController ballCtrl = ball.GetComponent<BallController>();
+            BallController ballCtrl = MatchManager.Instance.BallController;
 
             // 设置传球目标锁定（通过 Context）
             if (Blackboard.MatchContext != null)
