@@ -30,7 +30,7 @@ namespace BehaviorTree.Runtime
                 weightSpace = role.DefendPositionWeight.WeightSpace;
                 weightSafety = role.DefendPositionWeight.WeightSafety;
             }
-            float zoneScore = ZoneProbabilitySystem.CalculateNormalizedZoneScore(position, role, myGoal, enemyGoal, DetermineMatchState(player, context)) * weightZone;
+            float zoneScore = ZoneUtils.CalculateNormalizedZoneScore(position, role, myGoal, enemyGoal, DetermineMatchState(player, context)) * weightZone;
             float ballScore = CalculateBallScore(position, ballPosition) * weightBallDist;
             float goalScore = CalculateGoalScore(position, enemyGoal) * weightGoalDist;
             float markScore = CalculateMarkScore(position, role, context, myGoal, player) * weightMarking;
@@ -234,8 +234,8 @@ namespace BehaviorTree.Runtime
             List<Vector3> candidates = new List<Vector3>();
             MatchState currentState = DetermineMatchState(player, matchContext);
             RolePreferences rolePreferences = currentState == MatchState.Attacking ? role.AttackPreferences : role.DefendPreferences;
-            FieldZone zone = ZoneProbabilitySystem.FindHighestWeightZoneAndWeight(rolePreferences).zone;
-            candidates.AddRange(GenerateZoneCandidatePositions(ZoneProbabilitySystem.GetZoneRange(zone, enemyGoal, myGoal), 1f, 1f));
+            FieldZone zone = ZoneUtils.FindHighestWeightZoneAndWeight(rolePreferences).zone;
+            candidates.AddRange(GenerateZoneCandidatePositions(ZoneUtils.GetZoneRange(zone, enemyGoal, myGoal), 1f, 1f));
             candidates.AddRange(GenerateSupportCandidatePositions(player, matchContext, matchContext.GetTeammates(player)));
             candidates.AddRange(GenerateMarkCandidatePositions(player, matchContext, matchContext.GetOpponents(player)));
             candidates.AddRange(GenerateAroundBallCandidatePositions(player, ballPosition));
@@ -243,7 +243,7 @@ namespace BehaviorTree.Runtime
             return candidates;
         }
 
-        public static List<Vector3> GenerateZoneCandidatePositions(ZoneProbabilitySystem.ZoneRange zoneRange, float widthInterval, float lengthInterval)
+        public static List<Vector3> GenerateZoneCandidatePositions(ZoneUtils.ZoneRange zoneRange, float widthInterval, float lengthInterval)
         {
             List<Vector3> points = PointsGenerator.GeneratePointsInRectangle(zoneRange.LeftBottom, zoneRange.Width, zoneRange.Length, widthInterval, lengthInterval);
             return points;

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace BehaviorTree.Runtime
 {
-    public static class ZoneProbabilitySystem
+    public static class ZoneUtils
     {
         private static readonly float[] ZoneProgresses = new float[]
         {
@@ -18,7 +18,8 @@ namespace BehaviorTree.Runtime
         private static float _penaltyAreaProgresses = 0.2f;
         private static float _penaltyAreaWidthNormalized = 0.7f;
         
-        private static readonly float[] ZoneStart = new float[]{0f, 0.25f, 0.5f, 0.75f};
+        // ZoneStart 数组已被移除，改用 GetZoneStartProgress 和 GetZoneEndProgress 方法
+        // 这样可以避免硬编码数组，提供更灵活的区域计算
 
         // 根据位置计算所在的区域
         public static FieldZone GetFieldZone(Vector3 position, Vector3 myGoal, Vector3 enemyGoal)
@@ -124,14 +125,59 @@ namespace BehaviorTree.Runtime
 
         public static ZoneRange GetZoneRange(FieldZone zone, Vector3 enemyGoal, Vector3 myGoal)
         {
-            float start = ZoneStart[(int)zone];
-            float next = (int)zone + 1 < ZoneStart.Length? ZoneStart[(int)zone + 1]: 1f;
-
-            Vector3 leftBottom = new Vector3(MatchManager.Instance.Context.GetLeftBorder(), 0f,
-                MatchManager.Instance.Context.GetBackwardBorder());
+            // 计算从己方球门到敌方球门的方向和长度
+            Vector3 fieldDirection = (enemyGoal - myGoal).normalized;
+            float fieldLength = MatchManager.Instance.Context.GetFieldLength();
+            float fieldWidth = MatchManager.Instance.Context.GetFieldWidth();
+            
+            // 获取区域的起始和结束进度
+            float startProgress = GetZoneStartProgress(zone);
+            float endProgress = GetZoneEndProgress(zone);
+            
+            // 计算区域的起始和结束位置
+            Vector3 startPos = myGoal + (fieldDirection.z > 0 ? fieldDirection * (fieldLength * startProgress) : fieldDirection * (fieldLength * endProgress));
+            Vector3 endPos = myGoal + (fieldDirection.z > 0 ? fieldDirection * (fieldLength * endProgress) : fieldDirection * (fieldLength * startProgress));
+            
+            float halfWidth = MatchManager.Instance.Context.GetFieldWidth() / 2f;
+            
+            // 计算区域的左下角位置
+            Vector3 leftBottom = startPos - Vector3.right * halfWidth;
+            
             float width = MatchManager.Instance.Context.GetFieldWidth();
-            float Length = MatchManager.Instance.Context.GetFieldLength() * (next - start);
-            return new ZoneRange{LeftBottom = leftBottom, Width = width, Length = Length};
+            float length = Vector3.Distance(startPos, endPos);
+            Debug.Log($"ZoneRange: {leftBottom}, Width: {width}, Length: {length}");
+            
+            return new ZoneRange{LeftBottom = leftBottom, Width = width, Length = length};
+        }
+
+        /// <summary>
+        /// 获取区域的起始进度
+        /// </summary>
+        private static float GetZoneStartProgress(FieldZone zone)
+        {
+            switch(zone)
+            {
+                case FieldZone.OwnDefensiveZone: return 0f;
+                case FieldZone.OwnOffensiveZone: return 0.25f;
+                case FieldZone.EnemyOffensiveZone: return 0.5f;
+                case FieldZone.EnemyDefensiveZone: return 0.75f;
+                default: return 0f;
+            }
+        }
+
+        /// <summary>
+        /// 获取区域的结束进度
+        /// </summary>
+        private static float GetZoneEndProgress(FieldZone zone)
+        {
+            switch(zone)
+            {
+                case FieldZone.OwnDefensiveZone: return 0.25f;
+                case FieldZone.OwnOffensiveZone: return 0.5f;
+                case FieldZone.EnemyOffensiveZone: return 0.75f;
+                case FieldZone.EnemyDefensiveZone: return 1f;
+                default: return 0.25f;
+            }
         }
         
         public static bool IsInZone(Vector3 position, FieldZone zone, Vector3 enemyGoal, Vector3 myGoal)
@@ -143,18 +189,32 @@ namespace BehaviorTree.Runtime
             return false;
         }
         
-        public static bool IsInPenaltyArea(Vector3 position)
+        /// <summary>
+        /// 检查位置是否在指定球门的罚区内
+        /// </summary>
+        /// <param name="position">要检查的位置</param>
+        /// <param name="goalPosition">球门位置（用于确定是哪个罚区）</param>
+        /// <returns>是否在罚区内</returns>
+        public static bool IsInPenaltyArea(Vector3 position, Vector3 goalPosition)
         {
-            float length = MatchManager.Instance.Context.GetFieldLength() * _penaltyAreaProgresses;
-            float width = MatchManager.Instance.Context.GetFieldWidth() * _penaltyAreaWidthNormalized;
-            Vector3 leftBottom = new Vector3(MatchManager.Instance.Context.GetLeftBorder(), 0f,
-                MatchManager.Instance.Context.GetBackwardBorder()); // 球场的左下角
-            leftBottom += Vector3.right * (MatchManager.Instance.Context.GetFieldWidth()-width)/2f;
-            Debug.Log($"penalty area: ({leftBottom}, {width}, {length})");
-            if(position.x >= leftBottom.x && position.x <= leftBottom.x + width && 
-                position.z >= leftBottom.z && position.z <= leftBottom.z + length) 
-                return true;
-            return false;
+            float penaltyAreaDepth = MatchManager.Instance.Context.GetFieldLength() * _penaltyAreaProgresses;
+            float penaltyAreaWidth = MatchManager.Instance.Context.GetFieldWidth() * _penaltyAreaWidthNormalized;
+            if (goalPosition.z < 0)
+            {
+                Vector3 leftBottom = new Vector3(goalPosition.x - penaltyAreaWidth / 2f, 0,
+                    MatchManager.Instance.Context.GetBackwardBorder());
+                ZoneRange zoneRange = new ZoneRange(){LeftBottom = leftBottom, Width = penaltyAreaWidth, Length = penaltyAreaDepth};
+                return position.x >= zoneRange.LeftBottom.x && position.x <= zoneRange.LeftBottom.x + zoneRange.Width &&
+                    position.z >= zoneRange.LeftBottom.z && position.z <= zoneRange.LeftBottom.z + zoneRange.Length;
+            }
+            else
+            {
+                Vector3 leftBottom = new Vector3(goalPosition.x - penaltyAreaWidth / 2f, 0,
+                    MatchManager.Instance.Context.GetForwardBorder() - penaltyAreaDepth);
+                ZoneRange zoneRange = new ZoneRange(){LeftBottom = leftBottom, Width = penaltyAreaWidth, Length = penaltyAreaDepth};
+                return position.x >= zoneRange.LeftBottom.x && position.x <= zoneRange.LeftBottom.x + zoneRange.Width &&
+                       position.z >= zoneRange.LeftBottom.z && position.z <= zoneRange.LeftBottom.z + zoneRange.Length;
+            }
         }
     }
 }
