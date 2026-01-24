@@ -13,7 +13,7 @@ namespace BehaviorTree.Runtime
         {
             Vector3 curPos = Blackboard.Owner.transform.position;
             GameObject owner = Blackboard.Owner;
-            Vector3 bestPos = ContextAwareZoneCalculator.FindBestPosition(Blackboard.Role, curPos,
+            Vector3 bestPos = RoleBasedPositionScoreCalculator.FindBestPosition(Blackboard.Role, curPos,
                 Blackboard.MatchContext.GetMyGoalPosition(owner), Blackboard.MatchContext.GetEnemyGoalPosition(owner),
                 Blackboard.MatchContext.Ball.transform.position, Blackboard.MatchContext, owner,
                 Blackboard.MatchContext.GetTeammates(owner), Blackboard.MatchContext.GetOpponents(owner), Blackboard);

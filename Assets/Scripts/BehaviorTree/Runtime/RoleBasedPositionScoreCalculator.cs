@@ -5,8 +5,9 @@ using System.Text;
 
 namespace BehaviorTree.Runtime
 {
-    public static class ContextAwareZoneCalculator
+    public static class RoleBasedPositionScoreCalculator
     {
+        #region 分数计算
         public static float CalculateContextAwareScoreCommon(Vector3 position, PlayerRole role, Vector3 myGoal,
             Vector3 enemyGoal, Vector3 ballPosition, MatchContext context, GameObject player)
         {
@@ -122,6 +123,7 @@ namespace BehaviorTree.Runtime
                 return true;
             return false;
         }
+        #endregion
         
         #region 确认最好的跑位位置
         public struct PositionEvaluation
@@ -226,39 +228,6 @@ namespace BehaviorTree.Runtime
         }
         #endregion
 
-        private static MatchState DetermineMatchState(GameObject player, MatchContext context)
-        {
-            if (context == null) return MatchState.ChasingBall;
-
-            if (context.GetBallHolder() == null)
-                return MatchState.ChasingBall;
-
-            if (context.GetTeammates(player).Contains(context.GetBallHolder()))
-                return MatchState.Attacking;
-            else
-                return MatchState.Defending;
-        }
-
-        struct EnemyInfo
-        {
-            public float Distance;
-            public Vector3 Position;
-        }
-        private static List<Vector3> FindNearEnemies(Vector3 curPos, List<GameObject> enemies, int cnt)
-        {
-            List<EnemyInfo> points = new List<EnemyInfo>();
-            foreach (var enemy in enemies)
-            {
-                points.Add(new EnemyInfo
-                {
-                    Distance = Vector3.Distance(curPos, enemy.transform.position),
-                    Position = enemy.transform.position
-                });
-            }
-            points.Sort((a, b) => a.Distance.CompareTo(b.Distance));
-            return points.Take(cnt).Select(x => x.Position).ToList();
-        }
-
         public static List<Vector3> GenerateCandidatePositionsCommon(GameObject player, MatchContext matchContext,
             PlayerRole role, Vector3 currentPos, Vector3 myGoal, Vector3 enemyGoal, Vector3 ballPosition)
         {
@@ -308,6 +277,37 @@ namespace BehaviorTree.Runtime
         }
 
         # region 通用工具方法
+        private static MatchState DetermineMatchState(GameObject player, MatchContext context)
+        {
+            if (context == null) return MatchState.ChasingBall;
+
+            if (context.GetBallHolder() == null)
+                return MatchState.ChasingBall;
+
+            if (context.GetTeammates(player).Contains(context.GetBallHolder()))
+                return MatchState.Attacking;
+            else
+                return MatchState.Defending;
+        }
+        struct EnemyInfo
+        {
+            public float Distance;
+            public Vector3 Position;
+        }
+        private static List<Vector3> FindNearEnemies(Vector3 curPos, List<GameObject> enemies, int cnt)
+        {
+            List<EnemyInfo> points = new List<EnemyInfo>();
+            foreach (var enemy in enemies)
+            {
+                points.Add(new EnemyInfo
+                {
+                    Distance = Vector3.Distance(curPos, enemy.transform.position),
+                    Position = enemy.transform.position
+                });
+            }
+            points.Sort((a, b) => a.Distance.CompareTo(b.Distance));
+            return points.Take(cnt).Select(x => x.Position).ToList();
+        }
         private static bool IsClosestToBall(GameObject player, MatchContext context)
         {
             var teammates = context.GetTeammates(player);
