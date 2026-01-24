@@ -239,6 +239,7 @@ namespace BehaviorTree.Runtime
             candidates.AddRange(GenerateSupportCandidatePositions(player, matchContext, matchContext.GetTeammates(player)));
             candidates.AddRange(GenerateMarkCandidatePositions(player, matchContext, matchContext.GetOpponents(player)));
             candidates.AddRange(GenerateAroundBallCandidatePositions(player, ballPosition));
+            candidates = FilterInvalidPositions(candidates, matchContext);
             return candidates;
         }
 
@@ -277,6 +278,10 @@ namespace BehaviorTree.Runtime
         }
 
         # region 通用工具方法
+        private static List<Vector3> FilterInvalidPositions(List<Vector3> positions, MatchContext context)
+        {
+            return positions.Where(pos => context.IsInField(pos)).ToList();
+        }
         private static MatchState DetermineMatchState(GameObject player, MatchContext context)
         {
             if (context == null) return MatchState.ChasingBall;

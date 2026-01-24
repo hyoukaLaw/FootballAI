@@ -26,7 +26,7 @@ public static class FootballConstants
     public static float DribbleForwardDistance = 0.1f;    // 盘带前进距离
     public static float ForwardDetectionDistance = 3.5f;  // 前方检测距离
     public static float DetectionAngleHalf = 90f;         // 检测角度（半角）
-    public static float SidestepDistance = 3.0f;          // 侧移距离
+    public static float SidestepDistance = 2.0f;          // 侧移距离
     public static float ShootDistance = 12f;              // 射门距离
     public static float ShootAngleThreshold = 30f;        // 射门角度阈值
     public static float PassThreshold = 60f;              // 传球阈值

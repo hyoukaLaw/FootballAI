@@ -12,29 +12,47 @@ namespace BehaviorTree.Runtime
         {
             GameObject ball = Blackboard.MatchContext.Ball;
             GameObject owner = Blackboard.Owner;
-            // 1 如果当前离持球人太近，横向拉开距离
-            if (Vector3.Distance(owner.transform.position, ball.transform.position) < FootballConstants.IdealSupportDistance)
+            Vector3 potentialTarget;
+            if (Vector3.Distance(owner.transform.position, ball.transform.position) < FootballConstants.IdealSupportDistance)// 1 如果当前离持球人太近，横向拉开距离
             {
-                if(owner.transform.position.x < ball.transform.position.x)
-                    Blackboard.MoveTarget = owner.transform.position + Vector3.left * FootballConstants.LateralSpreadDistance;
-                else
-                    Blackboard.MoveTarget = owner.transform.position + Vector3.right * FootballConstants.LateralSpreadDistance;
+                potentialTarget = CalculateLateralSpreadPosition(owner, ball);
             }
-            // 2 当前在持球人后方，先向前走
-            else if (FootballUtils.IsBehind(owner, ball))
+            else if (FootballUtils.IsBehind(owner, ball))// 2 当前在持球人后方，先向前走
             {
-                Blackboard.MoveTarget = owner.transform.position + FootballUtils.GetForward(owner);
+                potentialTarget = CalculateForwardPosition(owner);
             }
-            else
+            else // 3 否则，直接往球门方向跑
             {
-                // 3 否则，直接往球门方向跑
-                Blackboard.MoveTarget = Vector3.MoveTowards(Blackboard.Owner.transform.position,
-                    Blackboard.MatchContext.GetEnemyGoalPosition(owner), FootballConstants.DecideMinStep);
+                potentialTarget = Blackboard.MatchContext.GetEnemyGoalPosition(owner);
             }
+            potentialTarget = Vector3.MoveTowards(Blackboard.Owner.transform.position,
+                potentialTarget, FootballConstants.DecideMinStep);
+            // 最终边界检查和位置优化
+            Vector3 finalTarget = Blackboard.MatchContext.IsInField(potentialTarget) ? 
+                potentialTarget : owner.transform.position;
 
-            Blackboard.MoveTarget = TeamPositionUtils.FindUnoccupiedPosition(owner, Blackboard.MoveTarget,
+            Blackboard.MoveTarget = TeamPositionUtils.FindUnoccupiedPosition(owner, finalTarget,
                 Blackboard.MatchContext.GetTeammates(owner), Blackboard.MatchContext.GetOpponents(owner));
             return NodeState.SUCCESS;
+        }
+
+        /// <summary>
+        /// 计算横向拉开接应位置
+        /// </summary>
+        private Vector3 CalculateLateralSpreadPosition(GameObject owner, GameObject ball)
+        {
+            Vector3 direction = owner.transform.position.x < ball.transform.position.x ? Vector3.left : Vector3.right;
+            Vector3 potentialTarget = owner.transform.position + direction * FootballConstants.LateralSpreadDistance;
+            return potentialTarget;
+        }
+
+        /// <summary>
+        /// 计算向前接应位置
+        /// </summary>
+        private Vector3 CalculateForwardPosition(GameObject owner)
+        {
+            Vector3 potentialTarget = owner.transform.position + FootballUtils.GetForward(owner);
+            return potentialTarget;
         }
     }
 }

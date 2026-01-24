@@ -85,18 +85,9 @@ namespace BehaviorTree.Runtime
         
         private void CalculateDribbleScoreAndTarget(out float dribbleScore, out Vector3 dribbleTarget)
         {
-            dribbleScore = 0f;
+            List<GameObject> enemiesInFront = FindEnemiesInFront();
+            dribbleScore = CalculateDribbleScore(enemiesInFront);
             dribbleTarget = Vector3.zero;
-            Vector3 enemyGoalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
-            var opponents = Blackboard.MatchContext.GetOpponents(Blackboard.Owner);
-            var enemiesInFront = FootballUtils.FindEnemiesInFront(Blackboard.Owner,
-                (enemyGoalPos - Blackboard.Owner.transform.position).normalized, opponents,
-                FootballConstants.DribbleDetectDistance, FootballConstants.DribbleDetectHalfAngle);
-            
-            if(enemiesInFront.Count == 0)
-                dribbleScore = FootballConstants.BaseDribbleScore + FootballConstants.DribbleClearBonus;
-            else
-                dribbleScore = Math.Max(FootballConstants.BaseDribbleScore - enemiesInFront.Count * FootballConstants.DribbleEnemyPenalty,0);
             GameObject closestBlockingEnemy = null;
             var goalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
             float closestDistance = float.MaxValue;
@@ -115,22 +106,48 @@ namespace BehaviorTree.Runtime
             if (closestBlockingEnemy != null)
             {
                 // 前方有阻挡，侧向移动绕过
-                Vector3 sidestepDir = Vector3.Cross(Vector3.up, dribbleDirection).normalized;
-                // 判断往左还是往右移：选择离球门更近的方向
-                Vector3 leftPos = owner.transform.position + sidestepDir;
-                Vector3 rightPos = owner.transform.position - sidestepDir;
-                float leftDistToEnemy = Vector3.Distance(leftPos, closestBlockingEnemy.transform.position);
-                float rightDistToEnemy = Vector3.Distance(rightPos, closestBlockingEnemy.transform.position);
-                dribbleTarget = leftDistToEnemy > rightDistToEnemy ? leftPos : rightPos;
-                dribbleTarget = owner.transform.position + (dribbleTarget - owner.transform.position).normalized;
+                dribbleTarget = GetSideStepTarget(dribbleDirection, owner, closestBlockingEnemy);
             }
             else
             {
                 // 前方无阻挡，直接带球
-                dribbleTarget = owner.transform.position + dribbleDirection.normalized;
+                dribbleTarget = FootballUtils.GetPositionTowards(owner.transform.position, owner.transform.position + dribbleDirection.normalized, FootballConstants.DecideMinStep);
             }
         }
+
+        public float CalculateDribbleScore(List<GameObject> enemiesInFront)
+        {
+            if(enemiesInFront.Count == 0)
+                return FootballConstants.BaseDribbleScore + FootballConstants.DribbleClearBonus;
+            else
+                return Math.Max(FootballConstants.BaseDribbleScore - enemiesInFront.Count * FootballConstants.DribbleEnemyPenalty,0);
+        }
         
+        private List<GameObject> FindEnemiesInFront()
+        {
+            Vector3 enemyGoalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
+            var opponents = Blackboard.MatchContext.GetOpponents(Blackboard.Owner);
+            return FootballUtils.FindEnemiesInFront(Blackboard.Owner,
+                (enemyGoalPos - Blackboard.Owner.transform.position).normalized, opponents,
+                FootballConstants.DribbleDetectDistance, FootballConstants.DribbleDetectHalfAngle);
+        }
+        private Vector3 GetSideStepTarget(Vector3 dribbleDirection, GameObject owner, GameObject closestBlockingEnemy)
+        {
+            // 前方有阻挡，侧向移动绕过
+            Vector3 sidestepDir = Vector3.Cross(Vector3.up, dribbleDirection);
+            Vector3 leftPos = owner.transform.position + sidestepDir * FootballConstants.SidestepDistance;
+            Vector3 rightPos = owner.transform.position - sidestepDir * FootballConstants.SidestepDistance;
+            float leftDistToEnemy = Vector3.Distance(leftPos, closestBlockingEnemy.transform.position);
+            float rightDistToEnemy = Vector3.Distance(rightPos, closestBlockingEnemy.transform.position);
+            Vector3 sidestepPos;
+            if(Blackboard.MatchContext.IsInField(leftPos) && Blackboard.MatchContext.IsInField(rightPos))
+                sidestepPos = leftDistToEnemy > rightDistToEnemy ? leftPos : rightPos;
+            else if(Blackboard.MatchContext.IsInField(leftPos)) 
+                sidestepPos = leftPos;
+            else 
+                sidestepPos = rightPos;
+            return FootballUtils.GetPositionTowards(owner.transform.position, sidestepPos, FootballConstants.DecideMinStep);
+        }
         private void CalculateClearanceScoreAndTarget(out float clearanceScore, out Vector3 clearanceTarget)
         {
             var opponents = Blackboard.MatchContext.GetOpponents(Blackboard.Owner);

@@ -164,32 +164,34 @@ namespace BehaviorTree.Runtime
             GameObject owner = Blackboard.Owner;
             if (closestBlockingEnemy != null)
             {
-                // 前方有阻挡，侧向移动绕过
-                Vector3 sidestepDir = Vector3.Cross(Vector3.up, dribbleDirection);
-
-                // 判断往左还是往右移：选择离球门更近的方向
-                Vector3 leftPos = owner.transform.position + sidestepDir * _sidestepDistance;
-                Vector3 rightPos = owner.transform.position - sidestepDir * _sidestepDistance;
-                // float leftDistToGoal = Vector3.Distance(leftPos, goalPos);
-                // float rightDistToGoal = Vector3.Distance(rightPos, goalPos);
-                float leftDistToEnemy = Vector3.Distance(leftPos, closestBlockingEnemy.transform.position);
-                float rightDistToEnemy = Vector3.Distance(rightPos, closestBlockingEnemy.transform.position);
-
-                Vector3 sidestepPos = leftDistToEnemy > rightDistToEnemy ? leftPos : rightPos;
-                potentialDribblePos = sidestepPos;
-
-                potentialDribblePos = owner.transform.position +
-                                      (potentialDribblePos - owner.transform.position).normalized;
-                Debug.Log($"Block: From {owner.transform.position} To {potentialDribblePos}");
+                // 前方有阻挡，计算侧向移动目标
+                potentialDribblePos = GetSideStepTarget(dribbleDirection, owner, closestBlockingEnemy);
             }
             else
             {
                 // 前方无阻挡，直接带球
-                potentialDribblePos = owner.transform.position + dribbleDirection.normalized;
+                potentialDribblePos = FootballUtils.GetPositionTowards(owner.transform.position, owner.transform.position + dribbleDirection.normalized, FootballConstants.DecideMinStep);
             }
             return potentialDribblePos;
         }
 
+        private Vector3 GetSideStepTarget(Vector3 dribbleDirection, GameObject owner, GameObject closestBlockingEnemy)
+        {
+            // 前方有阻挡，侧向移动绕过
+            Vector3 sidestepDir = Vector3.Cross(Vector3.up, dribbleDirection);
+            Vector3 leftPos = owner.transform.position + sidestepDir * _sidestepDistance;
+            Vector3 rightPos = owner.transform.position - sidestepDir * _sidestepDistance;
+            float leftDistToEnemy = Vector3.Distance(leftPos, closestBlockingEnemy.transform.position);
+            float rightDistToEnemy = Vector3.Distance(rightPos, closestBlockingEnemy.transform.position);
+            Vector3 sidestepPos;
+            if(Blackboard.MatchContext.IsInField(leftPos) && Blackboard.MatchContext.IsInField(rightPos))
+                 sidestepPos = leftDistToEnemy > rightDistToEnemy ? leftPos : rightPos;
+            else if(Blackboard.MatchContext.IsInField(leftPos)) 
+                sidestepPos = leftPos;
+            else 
+                sidestepPos = rightPos;
+            return FootballUtils.GetPositionTowards(owner.transform.position, sidestepPos, FootballConstants.DecideMinStep);
+        }
 // === 辅助：检查路径是否安全 ===
         private bool IsPathClear(Vector3 start, Vector3 end)
         {

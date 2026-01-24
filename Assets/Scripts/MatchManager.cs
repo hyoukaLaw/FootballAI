@@ -62,7 +62,6 @@ public class MatchManager : MonoBehaviour
         Context.RedGoal = RedGoal;
         Context.BlueGoal = BlueGoal;
         Context.Field = Field;
-        NextKickoffTeam = "Red";
         ResetBall();
     }
 

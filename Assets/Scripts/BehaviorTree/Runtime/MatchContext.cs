@@ -127,6 +127,11 @@ namespace BehaviorTree.Runtime
             return Field.transform.position.z - 10f / 2 * Field.transform.lossyScale.z; // 10f plane默认高度
         }
 
+        public bool IsInField(Vector3 pos)
+        {
+            return pos.x >= GetLeftBorder() && pos.x <= GetRightBorder() && pos.z >= GetBackwardBorder() && pos.z <= GetForwardBorder();
+        }
+
         public float GetFieldWidth()
         {
             return GetRightBorder() - GetLeftBorder();
