@@ -122,47 +122,73 @@ namespace BehaviorTree.Runtime
                 return true;
             return false;
         }
+        
+        #region 确认最好的跑位位置
+        public struct PositionEvaluation
+        {
+            public Vector3 Position;
+            public float Score;
+            public float DistanceFromCurrent;
+            public PositionEvaluation(Vector3 position, float score, float distanceFromCurrent)
+            {
+                Position = position;
+                Score = score;
+                DistanceFromCurrent = distanceFromCurrent;
+            }
+        }
+        
         public static Vector3 FindBestPosition(PlayerRole role, Vector3 currentPosition, Vector3 myGoal,
             Vector3 enemyGoal, Vector3 ballPosition, MatchContext context, GameObject player,
             List<GameObject> teammates, List<GameObject> enemies, FootballBlackboard blackboard = null)
         {
             List<Vector3> candidatePositions = GenerateCandidatePositionsCommon(player, context, 
                 role, currentPosition, myGoal, enemyGoal, ballPosition);
-            List<Vector3> bestCandidates = new List<Vector3>();
+            List<PositionEvaluation> evaluations = EvaluatePositions(candidatePositions, currentPosition, role,
+                myGoal, enemyGoal, ballPosition, context, player);
+            Vector3 bestPosition = SelectBestPosition(evaluations, currentPosition);
+            float bestScore = evaluations.Count > 0 ? evaluations.Max(e => e.Score) : float.MinValue;
+            int bestCandidatesCount = evaluations.Count(e => Mathf.Abs(e.Score - bestScore) < FootballConstants.FloatEpsilon);
+            LogAndAddDebugInfo(evaluations, player, bestScore, bestCandidatesCount, blackboard);
+            return FootballUtils.GetPositionTowards(currentPosition, bestPosition, FootballConstants.DecideMinStep);
+        }
+        
+        private static List<PositionEvaluation> EvaluatePositions(List<Vector3> positions, Vector3 currentPosition, PlayerRole role,
+            Vector3 myGoal, Vector3 enemyGoal, Vector3 ballPosition, MatchContext context, GameObject player)
+        {
+            List<PositionEvaluation> evaluations = new List<PositionEvaluation>();
+            foreach (var position in positions)
+            {
+                float score = CalculateContextAwareScoreCommon(position, role, myGoal, enemyGoal, ballPosition, context, player);
+                float distanceFromCurrent = Vector3.Distance(currentPosition, position);
+                evaluations.Add(new PositionEvaluation(position, score, distanceFromCurrent));
+            }
+            return evaluations;
+        }
+
+        private static Vector3 SelectBestPosition(List<PositionEvaluation> evaluations, Vector3 currentPosition)
+        {
             float bestScore = float.MinValue;
-            if (blackboard.DebugShowCandidates)
+            List<Vector3> bestCandidates = new List<Vector3>();
+            foreach (var evaluation in evaluations)
             {
-                blackboard.DebugCandidatePositions = new List<CandidatePosition>();
-            }
-            StringBuilder sb = new StringBuilder();
-            sb.Append($"{player.name} candidate\n");
-            foreach (var candidate in candidatePositions)
-            {
-                float score = CalculateContextAwareScoreCommon(candidate, role, myGoal, enemyGoal, ballPosition, context, player);
-                if (blackboard.DebugShowCandidates)
+                if (evaluation.Score > bestScore)
                 {
-                    blackboard.DebugCandidatePositions.Add(new CandidatePosition(candidate, score));
-                }
-                if (score > bestScore)
-                {
-                    bestScore = score;
+                    bestScore = evaluation.Score;
                     bestCandidates.Clear();
-                    bestCandidates.Add(candidate);
+                    bestCandidates.Add(evaluation.Position);
                 }
-                else if (Mathf.Abs(score - bestScore) < FootballConstants.FloatEpsilon)
+                else if (Mathf.Abs(evaluation.Score - bestScore) < FootballConstants.FloatEpsilon)
                 {
-                    bestCandidates.Add(candidate);
+                    bestCandidates.Add(evaluation.Position);
                 }
-                sb.Append($"{candidate}-{score}\n");
             }
-            Vector3 bestPosition;
-            if (bestCandidates.Count == 0) // 如果只有一个最佳点位，则选择它
+            if (bestCandidates.Count == 0)
             {
-                bestPosition = currentPosition;
+                return currentPosition;
             }
-            else // 如果有多个最佳点位，则选择最近的一个
+            else
             {
-                bestPosition = currentPosition;
+                Vector3 bestPosition = currentPosition;
                 float minDistance = float.MaxValue;
                 foreach (var candidate in bestCandidates)
                 {
@@ -173,10 +199,32 @@ namespace BehaviorTree.Runtime
                         bestPosition = candidate;
                     }
                 }
+                return bestPosition;
             }
-            Debug.Log($"{bestPosition}-{bestScore} (共{bestCandidates.Count}个最高分候选点)\n{sb}");
-            return FootballUtils.GetPositionTowards(currentPosition, bestPosition, FootballConstants.DecideMinStep);
         }
+
+        private static void LogAndAddDebugInfo(List<PositionEvaluation> evaluations, GameObject player, 
+            float bestScore, int bestCandidatesCount, FootballBlackboard blackboard)
+        {
+            if (blackboard != null && blackboard.DebugShowCandidates)
+            {
+                blackboard.DebugCandidatePositions = new List<CandidatePosition>();
+                foreach (var evaluation in evaluations)
+                {
+                    blackboard.DebugCandidatePositions.Add(new CandidatePosition(evaluation.Position, evaluation.Score));
+                }
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"{player.name} candidate\n");
+            foreach (var evaluation in evaluations)
+            {
+                sb.Append($"{evaluation.Position}-{evaluation.Score}\n");
+            }
+            Vector3 bestPosition = bestCandidatesCount > 0 ? 
+                evaluations.OrderByDescending(e => e.Score).First().Position : player.transform.position;
+            Debug.Log($"{bestPosition}-{bestScore} (共{bestCandidatesCount}个最高分候选点)\n{sb}");
+        }
+        #endregion
 
         private static MatchState DetermineMatchState(GameObject player, MatchContext context)
         {
