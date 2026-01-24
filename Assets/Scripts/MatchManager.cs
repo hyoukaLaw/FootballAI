@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BehaviorTree.Runtime;
 using UnityEngine;
 using UnityEditor; // 添加UnityEditor命名空间引用
 using UnityEngine.Events; // 添加UnityEvents命名空间引用
@@ -74,6 +75,12 @@ public class MatchManager : MonoBehaviour
         {
             var playerAI = player.GetComponent<PlayerAI>();
             playerAI.GetBlackboard().MatchContext = Context;
+        }
+        foreach (var fieldZone in typeof(FieldZone).GetEnumValues())
+        {
+            ZoneUtils.ZoneRange zoneRange = ZoneUtils.GetZoneRange((FieldZone)fieldZone,
+                Context.GetEnemyGoalPosition(TeamRedPlayers[0]), Context.GetMyGoalPosition(TeamRedPlayers[0]));
+            Debug.Log($"fieldZone: {fieldZone.ToString()} {zoneRange.LeftBottom} {zoneRange.Width} {zoneRange.Length}");
         }
     }
 

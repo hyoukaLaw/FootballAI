@@ -128,24 +128,17 @@ namespace BehaviorTree.Runtime
             // 计算从己方球门到敌方球门的方向和长度
             Vector3 fieldDirection = (enemyGoal - myGoal).normalized;
             float fieldLength = MatchManager.Instance.Context.GetFieldLength();
-            float fieldWidth = MatchManager.Instance.Context.GetFieldWidth();
-            
             // 获取区域的起始和结束进度
             float startProgress = GetZoneStartProgress(zone);
             float endProgress = GetZoneEndProgress(zone);
-            
             // 计算区域的起始和结束位置
             Vector3 startPos = myGoal + (fieldDirection.z > 0 ? fieldDirection * (fieldLength * startProgress) : fieldDirection * (fieldLength * endProgress));
             Vector3 endPos = myGoal + (fieldDirection.z > 0 ? fieldDirection * (fieldLength * endProgress) : fieldDirection * (fieldLength * startProgress));
-            
             float halfWidth = MatchManager.Instance.Context.GetFieldWidth() / 2f;
-            
             // 计算区域的左下角位置
             Vector3 leftBottom = startPos - Vector3.right * halfWidth;
-            
             float width = MatchManager.Instance.Context.GetFieldWidth();
             float length = Vector3.Distance(startPos, endPos);
-            
             return new ZoneRange{LeftBottom = leftBottom, Width = width, Length = length};
         }
 

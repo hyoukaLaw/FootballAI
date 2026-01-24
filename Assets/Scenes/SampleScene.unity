@@ -1229,11 +1229,11 @@ PrefabInstance:
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: PlayerRole
       value: 
-      objectReference: {fileID: 11400000, guid: 61879c01f38ec2f4d965710c61e797d5, type: 2}
+      objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: AIBehaviorGraph
       value: 
-      objectReference: {fileID: 11400000, guid: 7a0f95366ea078c49ab0bc10e9604056, type: 2}
+      objectReference: {fileID: 11400000, guid: df5feebe84c8f4941a13a986bba6f0d4, type: 2}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.x
       value: -6.03
@@ -1704,11 +1704,11 @@ PrefabInstance:
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: PlayerRole
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 11400000, guid: c8bbad249aa0fc1438f3907154bd209d, type: 2}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: AIBehaviorGraph
       value: 
-      objectReference: {fileID: 11400000, guid: df5feebe84c8f4941a13a986bba6f0d4, type: 2}
+      objectReference: {fileID: 11400000, guid: af73cfe54043ffe42b974e0bb28db9d0, type: 2}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.x
       value: 3.36
@@ -1795,9 +1795,13 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+      propertyPath: PlayerRole
+      value: 
+      objectReference: {fileID: 11400000, guid: 61879c01f38ec2f4d965710c61e797d5, type: 2}
+    - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: AIBehaviorGraph
       value: 
-      objectReference: {fileID: 11400000, guid: df5feebe84c8f4941a13a986bba6f0d4, type: 2}
+      objectReference: {fileID: 11400000, guid: 7a0f95366ea078c49ab0bc10e9604056, type: 2}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.x
       value: -5.3

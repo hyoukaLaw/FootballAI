@@ -194,13 +194,13 @@ public class PlayerAI : MonoBehaviour
             // }
 
             // 画出移动目标
-            if (_blackboard.MoveTarget != Vector3.zero)
-            {
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawLine(transform.position,
-                    transform.position + (_blackboard.MoveTarget - transform.position).normalized);
-                Gizmos.DrawWireSphere(transform.position + (_blackboard.MoveTarget - transform.position).normalized, 0.3f);
-            }
+            // if (_blackboard.MoveTarget != Vector3.zero)
+            // {
+            //     Gizmos.color = Color.yellow;
+            //     Gizmos.DrawLine(transform.position,
+            //         transform.position + (_blackboard.MoveTarget - transform.position).normalized);
+            //     Gizmos.DrawWireSphere(transform.position + (_blackboard.MoveTarget - transform.position).normalized, 0.3f);
+            // }
             // // 画出传球目标连线
             // if (_blackboard.BestPassTarget != null)
             // {
@@ -209,7 +209,7 @@ public class PlayerAI : MonoBehaviour
             //     Gizmos.DrawIcon(transform.position + Vector3.up * 2, "Pass");
             // }
 
-            //DrawCandidatePositions();
+            DrawCandidatePositions();
         }
      }
 

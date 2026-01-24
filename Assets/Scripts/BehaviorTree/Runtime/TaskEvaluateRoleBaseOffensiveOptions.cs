@@ -242,7 +242,9 @@ namespace BehaviorTree.Runtime
                         float distance = Vector3.Distance(blackboard.Owner.transform.position, candidate.transform.position);
                         if(distance >= FootballConstants.PassMinDistance && distance <= FootballConstants.PassMaxDistance)
                         {
-                            float score = basePassScore - FootballConstants.PassScoreDistancePenalty * Mathf.Abs(distance - mid);
+                            float safetyFactor = CalculatePassLineSafety(blackboard.Owner.transform.position,
+                                candidate.transform.position, enemyPlayers);
+                            float score = basePassScore * safetyFactor - FootballConstants.PassScoreDistancePenalty * Mathf.Abs(distance - mid);
                             if (score > passScore)
                             {
                                 passScore = score;
@@ -251,6 +253,29 @@ namespace BehaviorTree.Runtime
                         }
                     }
                 }
+            }
+            
+            public static float CalculatePassLineSafety(Vector3 start, Vector3 end, List<GameObject> enemies, float interceptThreshold = 1.5f)
+            {
+                float safetyScore = 1f; // 1.0 = 完全安全，0.0 = 极度危险
+                foreach(var enemy in enemies)
+                {
+                    // 1. 检查是否在传球方向上
+                    Vector3 passDirection = (end - start).normalized;
+                    Vector3 enemyToStart = (enemy.transform.position - start).normalized;
+                    // 如果敌人在传球反方向，跳过
+                    if(Vector3.Dot(passDirection, enemyToStart) < 0) continue;
+                    // 2. 计算到传球线段的距离
+                    float distanceToLine = FootballUtils.DistancePointToLineSegment(start, end, enemy.transform.position);
+                    // 3. 如果在线段威胁范围内，降低安全性
+                    if(distanceToLine < interceptThreshold)
+                    {
+                        // 距离越近，威胁越大
+                        float threatLevel = 1f - (distanceToLine / interceptThreshold);
+                        safetyScore -= threatLevel * 0.5f; // 单个威胁最高降低50%安全性
+                    }
+                }
+                return Mathf.Clamp01(safetyScore);
             }
         }
     }
