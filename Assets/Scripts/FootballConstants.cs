@@ -64,7 +64,7 @@ public static class FootballConstants
     public static float ShootYOffsetRange = 1.0f;         // 射门Y轴偏移范围
 
     public static float DecideMinStep = 1f; // 每一步位置移动决策的长度
-    public static float OccupiedSearchRadius = 0.5f; // 距离多远开始算是被占据
+    public static float OccupiedSearchRadius = 1f; // 距离多远开始算是被占据
     
     // TaskEvaluateRolePreferences Constants
     public static float PassMinDistance = 2f;

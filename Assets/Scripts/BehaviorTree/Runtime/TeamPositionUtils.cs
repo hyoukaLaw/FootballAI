@@ -49,7 +49,7 @@ namespace BehaviorTree.Runtime
         /// <returns></returns>
         // 找到不重叠的最佳位置
         public static Vector3 FindUnoccupiedPosition(GameObject owner, Vector3 desiredPosition,
-            List<GameObject> teammates, List<GameObject> enemies, float minDistance = 1f)
+            List<GameObject> teammates, List<GameObject> enemies, float minDistance = 1.5f)
         {
             var searchRadius = FootballConstants.OccupiedSearchRadius;
             // 1. 先检查理想位置是否可用
@@ -81,7 +81,7 @@ namespace BehaviorTree.Runtime
                     bestPosition = testPos;
                 }
             }
-            Debug.Log($"desiredPosition: {desiredPosition}, bestPosition: {bestPosition}, bestScore: {bestScore}");
+            Debug.Log($"{owner.name} desiredPosition: {desiredPosition}, bestPosition: {bestPosition}, bestScore: {bestScore}");
             return bestPosition;
         }
 
