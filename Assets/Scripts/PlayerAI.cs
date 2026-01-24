@@ -241,10 +241,10 @@ public class PlayerAI : MonoBehaviour
 
         foreach (var candidate in _blackboard.DebugCandidatePositions)
         {
-            if (candidate.TotalScore < minScore)
-                minScore = candidate.TotalScore;
-            if (candidate.TotalScore > maxScore)
-                maxScore = candidate.TotalScore;
+            if (candidate.Score < minScore)
+                minScore = candidate.Score;
+            if (candidate.Score > maxScore)
+                maxScore = candidate.Score;
         }
 
         float scoreRange = maxScore - minScore;
@@ -253,7 +253,7 @@ public class PlayerAI : MonoBehaviour
 
         foreach (var candidate in _blackboard.DebugCandidatePositions)
         {
-            float normalizedScore = (candidate.TotalScore - minScore) / scoreRange;
+            float normalizedScore = (candidate.Score - minScore) / scoreRange;
             float radius = 0.1f + normalizedScore * 0.4f;
 
             Color color;

@@ -34,23 +34,6 @@ namespace BehaviorTree.Runtime
             else if (normalizedDist < 0.75f) return FieldZone.EnemyOffensiveZone;
             else return FieldZone.EnemyDefensiveZone;
         }
-
-        // 对某个位置，计算其区域得分。先找到区域中心，计算该位置与区域中心的距离（越小分数越高）
-        public static float CalculateZonePreferenceScore(Vector3 position, PlayerRole role, Vector3 myGoal,
-            Vector3 enemyGoal, MatchState currentState)
-        {
-            RolePreferences preferences = GetPreferencesForState(role, currentState);
-            FieldZone zone = GetFieldZone(position, myGoal, enemyGoal);
-            float baseWeight = GetZoneWeight(zone, preferences);
-            Vector3 idealPosition = CalculateIdealPosition(role, currentState, myGoal, enemyGoal);
-            float distanceToIdeal = Vector3.Distance(position, idealPosition);
-            float distanceDecay = Mathf.Exp(-distanceToIdeal * preferences.DistanceDecayRate);// e^(-distance * DecayRate) = distanceDecay
-            if (distanceToIdeal > preferences.MaxZoneDeviation)
-            {
-                distanceDecay *= 0.2f;
-            }
-            return baseWeight * distanceDecay;
-        }
         
         public static float CalculateZonePreferenceScoreV2(Vector3 position, PlayerRole role, Vector3 myGoal, Vector3 enemyGoal, MatchState currentState)
         {
@@ -65,26 +48,6 @@ namespace BehaviorTree.Runtime
         {
             RolePreferences preferences = GetPreferencesForState(role, currentState);
             return CalculateZonePreferenceScoreV2(position, role, myGoal, enemyGoal, currentState)/FindHighestWeightZoneAndWeight(preferences).weight;
-        }
-
-        public static Vector3 CalculateIdealPosition(PlayerRole role, MatchState state, Vector3 myGoal, Vector3 enemyGoal)
-        {
-            RolePreferences preferences = GetPreferencesForState(role, state);
-            (FieldZone zone, float weight) highestZoneAndWeight = FindHighestWeightZoneAndWeight(preferences);
-            return CalculateZoneCenter(highestZoneAndWeight.zone, myGoal, enemyGoal);
-        }
-
-        public static List<Vector3> CalculateOtherZonePositions(PlayerRole role, MatchState state, Vector3 myGoal,
-            Vector3 enemyGoal, Vector3 idealPosition)
-        {
-            List<Vector3> positions = new List<Vector3>();
-            foreach (FieldZone zone in Enum.GetValues(typeof(FieldZone)))
-            {
-                Vector3 pos = CalculateZoneCenter(zone, myGoal, enemyGoal);
-                if(pos != idealPosition) 
-                    positions.Add(pos);
-            }
-            return positions;
         }
 
         public static (FieldZone zone, float weight) FindHighestWeightZoneAndWeight(RolePreferences preferences)
@@ -113,12 +76,9 @@ namespace BehaviorTree.Runtime
         {
             Vector3 direction = (enemyGoal - myGoal).normalized;
             float fieldLength = Vector3.Distance(myGoal, enemyGoal);
-
             float progress = GetZoneProgress(zone);
-
             Vector3 center = myGoal + direction * (fieldLength * progress);
             center.y = myGoal.y;
-
             return center;
         }
 
@@ -144,8 +104,6 @@ namespace BehaviorTree.Runtime
             }
         }
         
-        
-
         private static RolePreferences GetPreferencesForState(PlayerRole role, MatchState state)
         {
             switch (state)

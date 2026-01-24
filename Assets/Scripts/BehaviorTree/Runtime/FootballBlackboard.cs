@@ -7,16 +7,12 @@ namespace BehaviorTree.Runtime
     public class CandidatePosition
     {
         public Vector3 Position;
-        public float RoleScore;
-        public float AvoidOverlapScore;
-        public float TotalScore;
+        public float Score;
 
-        public CandidatePosition(Vector3 position, float roleScore, float avoidOverlapScore)
+        public CandidatePosition(Vector3 position, float score)
         {
             Position = position;
-            RoleScore = roleScore;
-            AvoidOverlapScore = avoidOverlapScore;
-            TotalScore = roleScore + avoidOverlapScore;
+            Score = score;
         }
     }
 
