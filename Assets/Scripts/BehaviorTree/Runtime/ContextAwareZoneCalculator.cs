@@ -7,52 +7,93 @@ namespace BehaviorTree.Runtime
 {
     public static class ContextAwareZoneCalculator
     {
-        /// <summary>
-        /// 计算感知当前态势的跑位得分
-        /// </summary>
-        public static float CalculateContextAwareScore(Vector3 position, PlayerRole role, Vector3 myGoal,
+        public static float CalculateContextAwareScoreCommon(Vector3 position, PlayerRole role, Vector3 myGoal,
             Vector3 enemyGoal, Vector3 ballPosition, MatchContext context, GameObject player)
         {
-            MatchState currentState = DetermineMatchState(player, context);
-            float zoneWeight = 50f, ballWeight = 25f, markWeight = 25f;
-            float zoneScore = ZoneProbabilitySystem.CalculateNormalizedZoneScore(position, role, myGoal, enemyGoal, currentState) * zoneWeight;
-            if (role.RoleType == PlayerRoleType.Defender)
+            float weightZone = 50f;
+            float weightBallDist = 0f, weightGoalDist = 0f, weightMarking = 0f, weightSpace = 0f, weightSafety = 0f;
+            MatchState state = DetermineMatchState(player, context);
+            if (state == MatchState.Attacking)
             {
+                weightBallDist = role.AttackPositionWeight.WeightBallDist; // 球距离
+                weightGoalDist = role.AttackPositionWeight.WeightGoalDist;
+                weightMarking = role.AttackPositionWeight.WeightMarking;
+                weightSpace = role.AttackPositionWeight.WeightSpace;
+                weightSafety = role.AttackPositionWeight.WeightSafety;
+            }
+            else if (state == MatchState.Defending)
+            {
+                weightBallDist = role.DefendPositionWeight.WeightBallDist;
+                weightGoalDist = role.DefendPositionWeight.WeightGoalDist;
+                weightMarking = role.DefendPositionWeight.WeightMarking;
+                weightSpace = role.DefendPositionWeight.WeightSpace;
+                weightSafety = role.DefendPositionWeight.WeightSafety;
+            }
+            float zoneScore = ZoneProbabilitySystem.CalculateNormalizedZoneScore(position, role, myGoal, enemyGoal, DetermineMatchState(player, context)) * weightZone;
+            float ballScore = CalculateBallScore(position, ballPosition) * weightBallDist;
+            float goalScore = CalculateGoalScore(position, enemyGoal) * weightGoalDist;
+            float markScore = CalculateMarkScore(position, role, context, myGoal, player) * weightMarking;
+            float spaceScore = CalculateSpaceScore(position, context, player) * weightSpace;
+            float safetyScore = CalculateSafetyScore(position, player, context.GetTeammates(player)) * weightSafety;
+            return Mathf.Max(0, zoneScore + ballScore + goalScore + markScore + spaceScore - safetyScore);
+        }
+        
+        public static float CalculateBallScore(Vector3 position, Vector3 ballPosition)
+        {
+            float ballDistanceBase = 30f;
+            float distanceToBall = Vector3.Distance(position, ballPosition);
+            return Mathf.Clamp01(1f - distanceToBall / ballDistanceBase);
+        }
 
-                if (currentState == MatchState.Defending)
+        public static float CalculateGoalScore(Vector3 position, Vector3 goalPosition)
+        {
+            float goalDistanceBase = 10f;
+            float distanceToGoal = Vector3.Distance(position, goalPosition);
+            return Mathf.Clamp01(1f - distanceToGoal / goalDistanceBase);
+        }
+        
+        // 新增：计算空间分 (离最近敌人越远越好)
+        private static float CalculateSpaceScore(Vector3 position, MatchContext context, GameObject player)
+        {
+            float closestDist = float.MaxValue;
+            foreach(var enemy in context.GetOpponents(player))
+            {
+                float d = Vector3.Distance(position, enemy.transform.position);
+                if(d < closestDist) closestDist = d;
+            }
+            // 假设超过 5米 就算很空了
+            return Mathf.Clamp01(closestDist / 5f);
+        }
+        
+        private static float CalculateSafetyScore(Vector3 position, GameObject player, 
+            List<GameObject> teammates)
+        {
+            float minSafeDist = 2.0f; // 扩大一点安全距离，比如2米
+            float maxOverlapDegree = 0f;
+            foreach (var teammate in teammates)
+            {
+                float dist = Vector3.Distance(position, teammate.transform.position);
+                // 只有在安全距离内才计算惩罚
+                if (dist < minSafeDist)
                 {
-                    float ballDistanceBase = 10f;
-                    float ballScore = Mathf.Clamp01((ballDistanceBase - Vector3.Distance(position, ballPosition)) / ballDistanceBase) * ballWeight;
-                    float markScore = CalculateNormalizedMarkScore(position, role, context, myGoal, player) * markWeight;
-                    return zoneScore + ballScore + markScore;
-                }
-                else
-                {
-                    float ballDistanceBase = 40f;
-                    float ballScore = Mathf.Clamp01((ballDistanceBase - Vector3.Distance(position, ballPosition)) / ballDistanceBase) * ballWeight;
-                    float markScore = CalculateNormalizedMarkScore(position, role, context, myGoal, player) * markWeight;
-                    return zoneScore + ballScore + markScore;
+                    // 距离越近，重叠程度越高
+                    float degree = 1f - (dist / minSafeDist);
+                    // 取最严重的那个重叠作为当前点的重叠分
+                    if (degree > maxOverlapDegree)
+                    {
+                        maxOverlapDegree = degree;
+                    }
                 }
             }
-            else if (role.RoleType == PlayerRoleType.Forward)
-            {
-                if (currentState == MatchState.Attacking)
-                {
-                    zoneWeight = 50f;float goalWeight = 25f, avoidEnemyWeight = 25f;
-                    zoneScore = ZoneProbabilitySystem.CalculateNormalizedZoneScore(position, role, myGoal, enemyGoal, currentState) * zoneWeight;
-                    float goalScore = CalculateNormalizedGoalScore(position, role, context, enemyGoal, player) * goalWeight;
-                    float avoidEnemyScore = CalculateNormalizedAvoidEnemyScore(position, role, context, player) * avoidEnemyWeight;
-                    return zoneScore + goalScore + avoidEnemyScore;
-                }
-                else if (currentState == MatchState.ChasingBall || currentState == MatchState.Defending)
-                {
-                    float ballDistanceBase = 40f;
-                    float ballScore = Mathf.Clamp01((ballDistanceBase - Vector3.Distance(position, ballPosition)) / ballDistanceBase) * ballWeight;
-                    float markScore = CalculateNormalizedMarkScore(position, role, context, myGoal, player) * markWeight;
-                    return zoneScore + ballScore + markScore;
-                }
-            }
-
+            return maxOverlapDegree;
+        }
+        /// <summary>
+        /// 计算感知当前态势的跑位得分，暂时弃用
+        /// </summary>
+        public static float CalculateContextScore(Vector3 position, PlayerRole role, Vector3 myGoal,
+            Vector3 enemyGoal, Vector3 ballPosition, MatchContext context, GameObject player)
+        {
+            var currentState = DetermineMatchState(player, context);
             // 以下，计算与当前比赛实情相关的bonus（进攻或防守阶段）
             float contextBonus = 0f;
             float distToBall = Vector3.Distance(position, ballPosition);
@@ -81,11 +122,10 @@ namespace BehaviorTree.Runtime
                     contextBonus += 10f * alignment;
                 }
             }
-
-            return zoneScore + contextBonus;
+            return contextBonus;
         }
 
-        private static float CalculateNormalizedMarkScore(Vector3 position, PlayerRole role, MatchContext context, Vector3 myGoal,
+        private static float CalculateMarkScore(Vector3 position, PlayerRole role, MatchContext context, Vector3 myGoal,
             GameObject player)
         {
             float scoreNormalized = 0f;
@@ -144,7 +184,7 @@ namespace BehaviorTree.Runtime
             Vector3 enemyGoal, Vector3 ballPosition, MatchContext context, GameObject player,
             List<GameObject> teammates, List<GameObject> enemies, FootballBlackboard blackboard = null)
         {
-            List<Vector3> candidatePositions = GenerateCandidatePositions(player, context, 
+            List<Vector3> candidatePositions = GenerateCandidatePositionsCommon(player, context, 
                 role, currentPosition, myGoal, enemyGoal, ballPosition);
             List<Vector3> bestCandidates = new List<Vector3>();
             float bestScore = float.MinValue;
@@ -156,7 +196,7 @@ namespace BehaviorTree.Runtime
             sb.Append($"{player.name} candidate\n");
             foreach (var candidate in candidatePositions)
             {
-                float roleScore = CalculateContextAwareScore(candidate, role, myGoal, enemyGoal, ballPosition, context, player);
+                float roleScore = CalculateContextAwareScoreCommon(candidate, role, myGoal, enemyGoal, ballPosition, context, player);
                 float avoidOverlapScore = 0f;
                 float totalScore = roleScore + avoidOverlapScore;
                 if (blackboard.DebugShowCandidates)
@@ -480,9 +520,23 @@ namespace BehaviorTree.Runtime
             return points.Take(cnt).Select(x => x.Position).ToList();
         }
 
+        public static List<Vector3> GenerateCandidatePositionsCommon(GameObject player, MatchContext matchContext,
+            PlayerRole role, Vector3 currentPos, Vector3 myGoal, Vector3 enemyGoal, Vector3 ballPosition)
+        {
+            List<Vector3> candidates = new List<Vector3>();
+            MatchState currentState = DetermineMatchState(player, matchContext);
+            RolePreferences rolePreferences = currentState == MatchState.Attacking ? role.AttackPreferences : role.DefendPreferences;
+            FieldZone zone = ZoneProbabilitySystem.FindHighestWeightZoneAndWeight(rolePreferences).zone;
+            candidates.AddRange(GenerateZoneCandidatePositions(ZoneProbabilitySystem.GetZoneRange(zone, enemyGoal, myGoal), 1f, 1f));
+            candidates.AddRange(GenerateSupportCandidatePositions(player, matchContext, matchContext.GetTeammates(player)));
+            candidates.AddRange(GenerateMarkCandidatePositions(player, matchContext, matchContext.GetOpponents(player)));
+            candidates.AddRange(GenerateAroundBallCandidatePositions(player, ballPosition));
+            return candidates;
+        }
+
         public static List<Vector3> GenerateZoneCandidatePositions(ZoneProbabilitySystem.ZoneRange zoneRange, float widthInterval, float lengthInterval)
         {
-            List<Vector3> points = new List<Vector3>();
+            List<Vector3> points = new();
             for (float z = zoneRange.LeftBottom.z; z <= zoneRange.LeftBottom.z + zoneRange.Length; z += lengthInterval)
             {
                 for (float x = zoneRange.LeftBottom.x; x <= zoneRange.LeftBottom.x + zoneRange.Width; x += widthInterval)
@@ -497,7 +551,34 @@ namespace BehaviorTree.Runtime
             }
             Debug.Log($"Zone candidate points({points.Count} {zoneRange.LeftBottom}, {zoneRange.Width}, {zoneRange.Length}): {sb} ");
             return points;
-            
+        }
+
+        public static List<Vector3> GenerateSupportCandidatePositions(GameObject player, MatchContext matchContext,
+            List<GameObject> teammates)
+        {
+            List<Vector3> candidates = new List<Vector3>();
+            foreach(var teammate in teammates)
+                if(teammate != player)
+                    candidates.AddRange(PointsGenerator.GeneratePointsAround(teammate.transform.position, 
+                        1, 5f, 8));
+            return candidates;
+        }
+
+        public static List<Vector3> GenerateMarkCandidatePositions(GameObject player, MatchContext matchContext,
+            List<GameObject> enemies)
+        {
+            List<Vector3> candidates = new List<Vector3>();
+            foreach(var enemy in enemies)
+                candidates.AddRange(PointsGenerator.GeneratePointsAround(enemy.transform.position, 
+                    3, 1f, 8));
+            return candidates;
+        }
+
+        public static List<Vector3> GenerateAroundBallCandidatePositions(GameObject player, Vector3 ballPosition)
+        {
+            List<Vector3> candidates = new List<Vector3>();
+            candidates.AddRange(PointsGenerator.GeneratePointsAround(ballPosition, 2, 1f, 8));
+            return candidates;
         }
 
         # region 通用工具方法
@@ -525,5 +606,40 @@ namespace BehaviorTree.Runtime
             return dot > 0.3f && Vector3.Distance(position, ballPos) < Vector3.Distance(goalPos, ballPos);
         }
         #endregion
+
+        public static class PointsGenerator
+        {
+            public static List<Vector3> GeneratePointsInRectangle(Vector3 leftBottom, float width, float length, float interval)
+            {
+                List<Vector3> points = new List<Vector3>();
+                for (float z = leftBottom.z; z <= leftBottom.z + length; z += interval)
+                {
+                    for (float x = leftBottom.x; x <= leftBottom.x + width; x += interval)
+                    {
+                        points.Add(new Vector3(x, 0f, z));
+                    }
+                }
+                return points;
+            }
+            
+            // 圆形生成
+            public static List<Vector3> GeneratePointsAround(Vector3 position, int layers, 
+                float layerWidth, int pointsPerLayer)
+            {
+                List<Vector3> points = new List<Vector3>();
+                for (int layer = 1; layer <= layers; layer++)
+                {
+                    float radius = layer * layerWidth;
+                    for (int i = 0; i < pointsPerLayer; i++)
+                    {
+                        float angle = (360f / pointsPerLayer) * i;
+                        Vector3 offset = Quaternion.Euler(0, angle, 0) * Vector3.forward * radius;
+                        Vector3 candidate = position + offset;
+                        points.Add(candidate);
+                    }
+                }
+                return points;
+            }
+        }
     }
 }

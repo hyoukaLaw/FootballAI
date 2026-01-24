@@ -59,6 +59,10 @@ namespace BehaviorTree.Runtime
         public RolePreferences AttackPreferences;
         public RolePreferences DefendPreferences;
         public RolePreferences ChaseBallPreferences;
+        
+        [Header("位置计算权重")]
+        public PositionWeight AttackPositionWeight;
+        public PositionWeight DefendPositionWeight;
 
         [Header("行为倾向")]
         [Range(0f, 1f)]
@@ -97,7 +101,16 @@ namespace BehaviorTree.Runtime
                 ChaseBallPreferences = new RolePreferences();
             }
         }
-
-
+        [System.Serializable]
+        public class PositionWeight
+        {
+            public float WeightBallDist = 10f;
+            public float WeightGoalDist = 10f;
+            public float WeightMarking = 10f;
+            public float WeightSpace = 10f;
+            public float WeightSafety = 10f;
+        }
     }
+
+
 }

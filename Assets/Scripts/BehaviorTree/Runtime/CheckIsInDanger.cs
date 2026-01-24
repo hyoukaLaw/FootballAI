@@ -19,8 +19,7 @@ namespace BehaviorTree.Runtime
             Vector3 myGoal = Blackboard.MatchContext.GetMyGoalPosition(Blackboard.Owner);
             Vector3 enemyGoal = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
             FieldZone preferZone = ZoneProbabilitySystem.FindHighestWeightZoneAndWeight(Blackboard.Role.DefendPreferences).zone;
-            if (IsLastDefensePlayer() && ZoneProbabilitySystem.IsInZone(Blackboard.MatchContext.Ball.transform.position, preferZone, enemyGoal, myGoal) || 
-                ZoneProbabilitySystem.IsInPenaltyArea(Blackboard.Owner.transform.position))
+            if (IsLastDefensePlayer() && ZoneProbabilitySystem.IsInZone(Blackboard.MatchContext.Ball.transform.position, preferZone, enemyGoal, myGoal))
             {
                 Debug.Log($"{Blackboard.Owner.name} is in danger");
                 return true;

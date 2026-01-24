@@ -55,7 +55,7 @@ MonoBehaviour:
   m_Name: Check Is In Danger Graph
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -248, y: 792}
+  position: {x: -280, y: 1000}
   ports:
     keys:
     - Entry
@@ -97,7 +97,7 @@ MonoBehaviour:
   m_Name: Task Calculate Move Position When Danger Graph
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -280, y: 984}
+  position: {x: -280, y: 1112}
   ports:
     keys:
     - Entry
@@ -820,7 +820,7 @@ MonoBehaviour:
   m_Name: Sequence Node Graph
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -568, y: 1032}
+  position: {x: -584, y: 1176}
   ports:
     keys:
     - Entry
@@ -923,7 +923,7 @@ MonoBehaviour:
   m_Name: Task Move To Position Graph
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -280, y: 1080}
+  position: {x: -280, y: 1208}
   ports:
     keys:
     - Entry
@@ -1150,7 +1150,7 @@ MonoBehaviour:
   m_Name: Task Move To Position Graph
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -296, y: 1272}
+  position: {x: -296, y: 1400}
   ports:
     keys:
     - Entry
@@ -1423,7 +1423,7 @@ MonoBehaviour:
   m_Name: OrganizedDefenseSeq
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -568, y: 1208}
+  position: {x: -568, y: 1336}
   ports:
     keys:
     - Entry
@@ -1511,10 +1511,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 74b6744849afca74e866104e3c2a9e08, type: 3}
-  m_Name: Task Calculate Role Based Defense Position Graph
+  m_Name: Task Calculate Role Based Position Graph
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -296, y: 1176}
+  position: {x: -296, y: 1304}
   ports:
     keys:
     - Entry
