@@ -126,6 +126,16 @@ namespace BehaviorTree.Runtime
         {
             return Field.transform.position.z - 10f / 2 * Field.transform.lossyScale.z; // 10f plane默认高度
         }
+
+        public float GetFieldWidth()
+        {
+            return GetRightBorder() - GetLeftBorder();
+        }
+        
+        public float GetFieldLength()
+        {
+            return GetForwardBorder() - GetBackwardBorder();
+        }
         
         public static float MoveSegment = 0.1f;
     }

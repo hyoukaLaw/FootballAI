@@ -259,19 +259,19 @@ public class PlayerAI : MonoBehaviour
             Color color;
             if (normalizedScore > 0.7f)
             {
-                color = Color.green;
+                color = Color.green * new Vector4(1,1,1,0.5f);
             }
             else if (normalizedScore > 0.3f)
             {
-                color = Color.yellow;
+                color = Color.yellow * new Vector4(1,1,1,0.5f);
             }
             else
             {
-                color = Color.red;
+                color = Color.red * new Vector4(1,1,1,0.5f);
             }
 
             Gizmos.color = color;
-            Gizmos.DrawWireSphere(candidate.Position, radius);
+            Gizmos.DrawWireSphere(candidate.Position, 0.5f);
         }
     }
 }

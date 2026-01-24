@@ -88,8 +88,27 @@ namespace BehaviorTree.Runtime
         private static float CalculateNormalizedMarkScore(Vector3 position, PlayerRole role, MatchContext context, Vector3 myGoal,
             GameObject player)
         {
-            float enemyDistacneBase = 5f;
+            float scoreNormalized = 0f;
+            // 只要在协防范围内，每个敌人+0.3分，如果是在敌人和球门的连线 +0.5分，或者敌人和持球人的连线，则+0.5分
+            float enemyDistanceBase = 3f, distanceThreshold = 1f;
+            float enemyMarkBonus = 0.3f;
+            float enemyStrongMarkBonus = 0.5f;
             List<GameObject> enemies = context.GetOpponents(player);
+            GameObject ballHolder = context.GetBallHolder();
+            foreach (var enemy in enemies)
+            {
+                if (enemy == ballHolder) continue;
+                float distance = Vector3.Distance(position, enemy.transform.position);
+                if (distance <= enemyDistanceBase)
+                {
+                    if (ballHolder != null && CheckIsStrongMark(position, enemy.transform.position, ballHolder.transform.position, myGoal, distanceThreshold))
+                        scoreNormalized = scoreNormalized + enemyStrongMarkBonus;
+                    else
+                        scoreNormalized = scoreNormalized + enemyMarkBonus;
+                }
+            }
+            return Mathf.Clamp01(scoreNormalized); 
+            
             List<EnemyInfo> enemiesWithDist = new();
             float normalizedMarkScore = 0f;
             int concernCount = 3;
@@ -104,12 +123,23 @@ namespace BehaviorTree.Runtime
             enemiesWithDist.Sort((a, b) => a.Distance.CompareTo(b.Distance));
             for (int i = 0; i < Mathf.Min(concernCount, enemiesWithDist.Count); i++)
             {
-                normalizedMarkScore += Mathf.Clamp01(1f - Vector3.Distance(position, enemiesWithDist[i].Position) / enemyDistacneBase);
+                normalizedMarkScore += Mathf.Clamp01(1f - Vector3.Distance(position, enemiesWithDist[i].Position) / enemyDistanceBase);
             }
             normalizedMarkScore /= concernCount;
             return normalizedMarkScore;
         }
 
+        private static bool CheckIsStrongMark(Vector3 position, Vector3 enemyPosition, Vector3 ballHolderPosition,
+            Vector3 myGoal, float distanceThreshold)
+        {
+            // 1 检查是否在敌人和球门连线上
+            if(FootballUtils.DistancePointToLineSegment(enemyPosition, myGoal, ballHolderPosition) < distanceThreshold)
+                return true;
+            // 2 检查是否在敌人和持球人的连线
+            if(FootballUtils.DistancePointToLineSegment(enemyPosition, ballHolderPosition, position) < distanceThreshold)
+                return true;
+            return false;
+        }
         public static Vector3 FindBestPosition(PlayerRole role, Vector3 currentPosition, Vector3 myGoal,
             Vector3 enemyGoal, Vector3 ballPosition, MatchContext context, GameObject player,
             List<GameObject> teammates, List<GameObject> enemies, FootballBlackboard blackboard = null)
@@ -259,8 +289,8 @@ namespace BehaviorTree.Runtime
                 candidates.Add(ballPosition); // 1 考虑向球跑
                 candidates.AddRange(GenerateTwoPointsBetweenPoints(ballPosition, myGoal, 3)); // 2 封堵射门角度
                 Vector3 idealPos = ZoneProbabilitySystem.CalculateIdealPosition(role, state, myGoal, enemyGoal); // 区域中心位置
-                candidates.AddRange(GeneratePositionAround(idealPos, 4, 3f, 8)); // 3 考虑向理想位置或周围跑
-                candidates.Add(idealPos);
+                FieldZone zone = ZoneProbabilitySystem.FindHighestWeightZoneAndWeight(role.DefendPreferences).zone;
+                candidates.AddRange(GenerateZoneCandidatePositions(ZoneProbabilitySystem.GetZoneRange(zone, enemyGoal, myGoal),1f,1f)); // 3 考虑向理想位置或周围跑
                 candidates.AddRange(FindNearEnemies(idealPos, matchContext.GetOpponents(player), 3));
             }
             else if (state == MatchState.Attacking)
@@ -448,6 +478,26 @@ namespace BehaviorTree.Runtime
             }
             points.Sort((a, b) => a.Distance.CompareTo(b.Distance));
             return points.Take(cnt).Select(x => x.Position).ToList();
+        }
+
+        public static List<Vector3> GenerateZoneCandidatePositions(ZoneProbabilitySystem.ZoneRange zoneRange, float widthInterval, float lengthInterval)
+        {
+            List<Vector3> points = new List<Vector3>();
+            for (float z = zoneRange.LeftBottom.z; z <= zoneRange.LeftBottom.z + zoneRange.Length; z += lengthInterval)
+            {
+                for (float x = zoneRange.LeftBottom.x; x <= zoneRange.LeftBottom.x + zoneRange.Width; x += widthInterval)
+                {
+                    points.Add(new Vector3(x, 0f, z));
+                }
+            }
+            StringBuilder sb = new StringBuilder();
+            foreach (var point in points)
+            {
+                sb.Append($"({point.x}, {point.z}), ");
+            }
+            Debug.Log($"Zone candidate points({points.Count} {zoneRange.LeftBottom}, {zoneRange.Width}, {zoneRange.Length}): {sb} ");
+            return points;
+            
         }
 
         # region 通用工具方法
