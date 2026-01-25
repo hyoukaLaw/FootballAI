@@ -73,7 +73,8 @@ namespace BehaviorTree.Runtime
             float maxOverlapDegree = 0f;
             foreach (var teammate in teammates)
             {
-                float dist = Vector3.Distance(position, teammate.transform.position);
+                Vector3 estimatedNextPosition = GetEstimatedNextPosition(teammate); // 跑位过程会穿插就没办法了
+                float dist = Mathf.Min(Vector3.Distance(position, teammate.transform.position), Vector3.Distance(position, estimatedNextPosition));
                 // 只有在安全距离内才计算惩罚
                 if (dist < minSafeDist)
                 {
@@ -87,6 +88,11 @@ namespace BehaviorTree.Runtime
                 }
             }
             return maxOverlapDegree;
+        }
+
+        private static Vector3 GetEstimatedNextPosition(GameObject player)
+        {
+            return player.transform.position + player.transform.forward * FootballConstants.DecideMinStep;
         }
 
         private static float CalculateMarkScore(Vector3 position, PlayerRole role, MatchContext context, Vector3 myGoal,
@@ -251,18 +257,48 @@ namespace BehaviorTree.Runtime
                     blackboard.DebugCandidatePositions.Add(new CandidatePosition(evaluation.Position, evaluation.TotalScore));
                 }
             }
-            StringBuilder sb = new StringBuilder();
-            sb.Append($"{player.name} candidate\n");
-            foreach (var evaluation in evaluations)
-            {
-                sb.Append($"{evaluation.Position}-totalScore:{evaluation.TotalScore}-" +
-                          $"ballScore:{evaluation.BallScore}-markScore{evaluation.MarkScore}-safetyScore:{evaluation.SafetyScore}\n");
-            }
+            
+            // 找出最佳评估
             PositionEvaluation bestEvaluation = evaluations.OrderByDescending(e => e.TotalScore).First();
-            if(bestEvaluation.SafetyScore > 10f)
-                Debug.Log($"{bestEvaluation.Position}-totalScore:{bestEvaluation.TotalScore}-" +
-                      $"ballScore:{bestEvaluation.BallScore}-markScore{bestEvaluation.MarkScore}-safetyScore:{bestEvaluation.SafetyScore}\n"+
-                      $" (共{bestCandidatesCount}个最高分候选点)\n{sb}");
+            if (bestEvaluation.SafetyScore < 10f) return;
+            
+            // 构建详细的日志输出
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"=== {player.name} 位置选择分析 ===");
+            sb.AppendLine($"最佳位置: {bestEvaluation.Position}");
+            sb.AppendLine($"总分: {bestEvaluation.TotalScore:F2} | 共{bestCandidatesCount}个最高分候选点");
+            sb.AppendLine($"距离当前位置: {bestEvaluation.DistanceFromCurrent:F2}米");
+            sb.AppendLine("");
+            
+            // 输出最佳位置的详细分数
+            sb.AppendLine($"--- 最佳位置详细分数 ---");
+            sb.AppendLine($"区域分: {bestEvaluation.ZoneScore:F2}");
+            sb.AppendLine($"球距离分: {bestEvaluation.BallScore:F2}");
+            sb.AppendLine($"球门距离分: {bestEvaluation.GoalScore:F2}");
+            sb.AppendLine($"盯防分: {bestEvaluation.MarkScore:F2}");
+            sb.AppendLine($"空间分: {bestEvaluation.SpaceScore:F2}");
+            sb.AppendLine($"安全分: {bestEvaluation.SafetyScore:F2}");
+            sb.AppendLine($"总分计算: {bestEvaluation.ZoneScore + bestEvaluation.BallScore + bestEvaluation.GoalScore + bestEvaluation.MarkScore + bestEvaluation.SpaceScore:F2} - {bestEvaluation.SafetyScore:F2} = {bestEvaluation.TotalScore:F2}");
+            sb.AppendLine("");
+            
+            // 安全性警告
+            if (bestEvaluation.SafetyScore > 10f)
+            {
+                sb.AppendLine($"⚠️ 警告: 安全分 {bestEvaluation.SafetyScore:F2} 过高，可能存在队友重叠风险！");
+                sb.AppendLine("");
+            }
+            
+            // 输出所有候选位置的简洁信息
+            sb.AppendLine("--- 所有候选位置 (按分数排序) ---");
+            var sortedEvaluations = evaluations.OrderByDescending(e => e.TotalScore).Take(10).ToList();
+            for (int i = 0; i < sortedEvaluations.Count; i++)
+            {
+                var eval = sortedEvaluations[i];
+                string prefix = (i == 0) ? "★" : " ";
+                sb.AppendLine($"{prefix} [{i}] 总分:{eval.TotalScore:F2} | 位置:{eval.Position} | 安全分:{eval.SafetyScore:F2} | 距离:{eval.DistanceFromCurrent:F2}米");
+            }
+            
+            Debug.Log(sb.ToString());
         }
         #endregion
 

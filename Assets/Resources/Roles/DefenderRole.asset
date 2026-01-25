@@ -40,13 +40,13 @@ MonoBehaviour:
     WeightGoalDist: 0
     WeightMarking: 5
     WeightSpace: 5
-    WeightSafety: 100
+    WeightSafety: 1000
   DefendPositionWeight:
     WeightBallDist: 25
     WeightGoalDist: 0
     WeightMarking: 25
     WeightSpace: 0
-    WeightSafety: 100
+    WeightSafety: 1000
   OffensiveBias: 0.3
   DefensiveBias: 0.8
   SupportBias: 0.5
