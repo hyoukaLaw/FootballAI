@@ -69,7 +69,27 @@ namespace BehaviorTree.Runtime
             // 假设超过 5米 就算很空了
             return Mathf.Clamp01(closestDist / 5f);
         }
-        
+
+        private static float CalculateSupportScore(Vector3 position, GameObject player, MatchContext context)
+        {
+            GameObject ballHolder = context.GetBallHolder();
+            if (ballHolder == null || ballHolder == player) return 0f;
+            float distanceToHolder = Vector3.Distance(position, ballHolder.transform.position);
+            float idealSupportDistance = 5f;
+            float maxSupportDistance = 10f;
+            float minSupportDistance = 3f;
+            if (distanceToHolder > maxSupportDistance || distanceToHolder < minSupportDistance)
+            {
+                return 0f;
+            }
+            else
+            {
+                float distanceFromIdeal = Mathf.Abs(distanceToHolder - idealSupportDistance);
+                float deviationRatio = distanceFromIdeal / (maxSupportDistance - minSupportDistance);
+                return Mathf.Clamp01(1f - deviationRatio);
+            }
+        }
+
         private static float CalculateSafetyScore(Vector3 position, List<GameObject> teammates)
         {
             float minSafeDist = 1.5f; // 降低安全距离到1.5米
