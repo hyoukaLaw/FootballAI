@@ -109,6 +109,7 @@ namespace BehaviorTree.Runtime
             public float WeightMarking = 10f;
             public float WeightSpace = 10f;
             public float WeightSafety = 10f;
+            public float WeightPressing = 10f;
         }
     }
 

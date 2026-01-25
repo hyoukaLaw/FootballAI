@@ -63,7 +63,7 @@ public static class FootballConstants
     public static float ShootXOffsetRange = 1.5f;         // 射门X轴偏移范围
     public static float ShootYOffsetRange = 1.0f;         // 射门Y轴偏移范围
 
-    public static float DecideMinStep = 0.5f; // 每一步位置移动决策的长度，太小了会一直抖动
+    public static float DecideMinStep = 0.8f; // 每一步位置移动决策的长度，太小了会一直抖动
     public static float OccupiedSearchRadius = 1f; // 距离多远开始算是被占据
     
     // TaskEvaluateRolePreferences Constants

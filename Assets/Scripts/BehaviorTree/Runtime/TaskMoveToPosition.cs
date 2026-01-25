@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BehaviorTree.Runtime
@@ -22,17 +23,24 @@ namespace BehaviorTree.Runtime
                 return NodeState.SUCCESS;
             }
             float speed = Blackboard.Stats.MovementSpeed;
-            Vector3 newPos = Vector3.MoveTowards(owner.transform.position, target, speed * Time.deltaTime);
-            FaceDirection(target, owner);
+            Vector3 intendedPos = Vector3.MoveTowards(owner.transform.position, target, speed * Time.deltaTime);
+            List<GameObject> teammates = Blackboard.MatchContext.GetTeammates(owner);
+            // 应用避让机制（独立功能，可开关）
+            Vector3 finalPosition = MovementAvoidance.ApplyAvoidance(owner, intendedPos, teammates);
+            
+            FaceDirection(finalPosition, owner);
+            owner.transform.position = finalPosition;
             
             // 检查是否被边界限制
-            Vector3 clampedPos = ClampToField(newPos, out bool wasClamped);
+            Vector3 clampedPos = ClampToField(finalPosition, out bool wasClamped);
             owner.transform.position = clampedPos;
+            
             // 如果目标位置被clamp，说明到达了边界，可以标记为成功避免卡住
             if (wasClamped)
             {
                 return NodeState.SUCCESS;
             }
+            
             return NodeState.RUNNING;
         }
 

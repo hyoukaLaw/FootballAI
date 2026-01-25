@@ -12,7 +12,7 @@ namespace BehaviorTree.Runtime
             Vector3 enemyGoal, Vector3 ballPosition, MatchContext context, GameObject player, float distanceFromCurrent)
         {
             float weightZone = 50f;
-            float weightBallDist = 0f, weightGoalDist = 0f, weightMarking = 0f, weightSpace = 0f, weightSafety = 0f;
+            float weightBallDist = 0f, weightGoalDist = 0f, weightMarking = 0f, weightSpace = 0f, weightSafety = 0f, weightPressing = 0f;
             MatchState state = DetermineMatchState(player, context);
             if (state == MatchState.Attacking)
             {
@@ -21,6 +21,7 @@ namespace BehaviorTree.Runtime
                 weightMarking = role.AttackPositionWeight.WeightMarking;
                 weightSpace = role.AttackPositionWeight.WeightSpace;
                 weightSafety = role.AttackPositionWeight.WeightSafety;
+                weightPressing = role.AttackPositionWeight.WeightPressing;
             }
             else if (state == MatchState.Defending)
             {
@@ -29,6 +30,7 @@ namespace BehaviorTree.Runtime
                 weightMarking = role.DefendPositionWeight.WeightMarking;
                 weightSpace = role.DefendPositionWeight.WeightSpace;
                 weightSafety = role.DefendPositionWeight.WeightSafety;
+                weightPressing = role.DefendPositionWeight.WeightPressing;
             }
             float zoneScore = ZoneUtils.CalculateNormalizedZoneScore(position, role, myGoal, enemyGoal, DetermineMatchState(player, context)) * weightZone;
             float ballScore = CalculateBallScore(position, ballPosition) * weightBallDist;
@@ -36,13 +38,14 @@ namespace BehaviorTree.Runtime
             float markScore = CalculateMarkScore(position, role, context, myGoal, player) * weightMarking;
             float spaceScore = CalculateSpaceScore(position, context, player) * weightSpace;
             float safetyScore = CalculateSafetyScore(position, context.GetTeammates(player)) * weightSafety;
-            float totalScore = Mathf.Max(0, zoneScore + ballScore + goalScore + markScore + spaceScore - safetyScore);
+            float pressingScore = CalculatePressingScore(position, ballPosition, myGoal, player, context.GetBallHolder(), context.GetTeammates(player)) * weightPressing;
+            float totalScore = Mathf.Max(0, zoneScore + ballScore + goalScore + markScore + spaceScore + pressingScore - safetyScore);
             return new PositionEvaluation(position, totalScore, zoneScore, ballScore, goalScore, markScore, spaceScore, safetyScore, distanceFromCurrent);
         }
         
         public static float CalculateBallScore(Vector3 position, Vector3 ballPosition)
         {
-            float ballDistanceBase = 30f;
+            float ballDistanceBase = 15f;
             float distanceToBall = Vector3.Distance(position, ballPosition);
             return Mathf.Clamp01(1f - distanceToBall / ballDistanceBase);
         }
@@ -105,6 +108,7 @@ namespace BehaviorTree.Runtime
             float stopPassBonus = 0.2f;
             float baseBonus = 0.1f;
             List<GameObject> enemies = context.GetOpponents(player);
+            List<GameObject> teammates = context.GetTeammates(player);
             GameObject ballHolder = context.GetBallHolder();
             foreach (var enemy in enemies)
             {
@@ -120,9 +124,69 @@ namespace BehaviorTree.Runtime
                         scoreNormalized = scoreNormalized + baseBonus;
                 }
             }
-            return Mathf.Clamp01(scoreNormalized); 
+            // 【方案1】基于队友位置的差异化评分
+            float differentiationBonus = CalculatePositionDifferentiation(position, player, enemies, teammates);
+            scoreNormalized += differentiationBonus;
+            return Mathf.Clamp01(scoreNormalized);
         }
 
+        /// <summary>
+        /// 计算基于队友位置的差异化奖励，避免多个后卫选择相同位置
+        /// </summary>
+        private static float CalculatePositionDifferentiation(Vector3 position, GameObject player, 
+            List<GameObject> enemies, List<GameObject> teammates)
+        {
+            float bonus = 0f;
+            foreach (var enemy in enemies)
+            {
+                // 计算我与这个敌人的距离
+                float myDistance = Vector3.Distance(position, enemy.transform.position);
+                // 计算队友与这个敌人的距离
+                float minTeammateDistance = float.MaxValue;
+                foreach (var teammate in teammates)
+                {
+                    if (teammate == player) continue;
+                    float dist = Vector3.Distance(teammate.transform.position, enemy.transform.position);
+                    if (dist < minTeammateDistance)
+                        minTeammateDistance = dist;
+                }
+                // 如果队友已经盯防这个敌人更近，我不应该重复盯防
+                if (myDistance > minTeammateDistance + 1f)  // 我比队友远1米以上
+                {
+                    bonus -= 0.1f;  // 惩罚：不要重复盯防
+                }
+                // 如果我离这个敌人更近，鼓励我盯防
+                else if (myDistance < minTeammateDistance)
+                {
+                    bonus += 0.05f;  // 奖励：我应该盯防这个敌人
+                }
+            }
+            return bonus;
+        }
+
+        private static float CalculatePressingScore(Vector3 position, Vector3 ballPosition, 
+            Vector3 myGoal, GameObject player, GameObject ballHolder, List<GameObject> teammates)
+        {
+            if (!FootballUtils.IsClosestTeammateToTarget(ballPosition, player, teammates)) return 0f;  // 只对最近的防守者生效
+            if (ballHolder == null) return 0f;
+            // 计算上抢方向：从持球人到对方球门
+            Vector3 holderToGoal = (myGoal - ballHolder.transform.position).normalized;
+            Vector3 holderToPosition = (position - ballHolder.transform.position).normalized;
+            float alignment = Vector3.Dot(holderToGoal, holderToPosition);// 上抢角度奖励：越靠近"持球人→球门"方向，奖励越高
+            if (alignment > 0f) // 只奖励正对持球人的位置（alignment > 0）
+            {
+                float distanceToHolder = Vector3.Distance(position, ballHolder.transform.position);
+                float distanceBonus = 0f;
+                if (distanceToHolder > 0.5f && distanceToHolder < 5f) // 距离奖励：0.5-5米内的位置获得奖励，保持安全距离
+                {
+                    distanceBonus = 1f - (distanceToHolder - 0.5f) / 4f;
+                }
+                // 综合评分：方向占60%，距离占40%
+                return alignment * 0.6f + distanceBonus * 0.4f;
+            }
+            return 0f;  // 背对持球人，不奖励
+        }
+        
         private static bool CheckIsStopGoal(Vector3 position, Vector3 ballHolderPosition, Vector3 myGoal,
             float distanceThreshold)
         {
@@ -260,7 +324,6 @@ namespace BehaviorTree.Runtime
             
             // 找出最佳评估
             PositionEvaluation bestEvaluation = evaluations.OrderByDescending(e => e.TotalScore).First();
-            if (bestEvaluation.SafetyScore < 10f) return;
             
             // 构建详细的日志输出
             StringBuilder sb = new StringBuilder();
