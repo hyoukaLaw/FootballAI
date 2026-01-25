@@ -30,9 +30,9 @@ MonoBehaviour:
     MaxZoneDeviation: 12
   ChaseBallPreferences:
     OwnDefensiveZoneWeight: 1
-    OwnOffensiveZoneWeight: 1
-    EnemyOffensiveZoneWeight: 4
-    EnemyDefensiveZoneWeight: 4
+    OwnOffensiveZoneWeight: 3
+    EnemyOffensiveZoneWeight: 3
+    EnemyDefensiveZoneWeight: 3
     DistanceDecayRate: 0.2
     MaxZoneDeviation: 15
   AttackPositionWeight:

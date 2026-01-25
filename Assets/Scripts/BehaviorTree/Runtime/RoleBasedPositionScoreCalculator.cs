@@ -102,27 +102,32 @@ namespace BehaviorTree.Runtime
             GameObject player)
         {
             float scoreNormalized = 0f;
-            // 只要在协防范围内，每个敌人+0.1分，如果是在持球人和球门的连线 +0.7分，或者敌人和持球人的连线，则+0.2分
             float enemyDistanceBase = 3f, distanceThreshold = 1f;
             float stopGoalBonus = 0.7f;
-            float stopPassBonus = 0.2f;
+            float stopPassBonus = 0.4f;
             float baseBonus = 0.1f;
             List<GameObject> enemies = context.GetOpponents(player);
             List<GameObject> teammates = context.GetTeammates(player);
             GameObject ballHolder = context.GetBallHolder();
+            // 危险系数参数
+            float fieldLength = MatchManager.Instance.Context.GetFieldLength();
+            float minDangerDistance = 5f;
+            float maxDangerDistance = fieldLength;
             foreach (var enemy in enemies)
             {
                 float distance = Vector3.Distance(position, enemy.transform.position);
                 if (distance <= enemyDistanceBase)
                 {
+                    float enemyToGoalDistance = Vector3.Distance(enemy.transform.position, myGoal);
+                    float dangerFactor = 1f - Mathf.Clamp01((enemyToGoalDistance - minDangerDistance) / (maxDangerDistance - minDangerDistance));
+                    dangerFactor = dangerFactor * dangerFactor;
                      if (ballHolder != enemy && ballHolder != null && CheckIsStopPass(position,
                                  enemy.transform.position, ballHolder.transform.position, distanceThreshold))
-                        scoreNormalized = scoreNormalized + stopPassBonus;
+                        scoreNormalized = scoreNormalized + stopPassBonus * (1f + dangerFactor);
                      else
                         scoreNormalized = scoreNormalized + baseBonus;
                 }
             }
-            // 【方案1】基于队友位置的差异化评分
             float differentiationBonus = CalculatePositionDifferentiation(position, player, enemies, teammates);
             scoreNormalized += differentiationBonus;
             return Mathf.Clamp01(scoreNormalized);
