@@ -537,7 +537,6 @@ MonoBehaviour:
   - {fileID: 1911970295465355901}
   - {fileID: 400217453}
   - {fileID: 664814745}
-  - {fileID: 748614073}
   TeamBluePlayers:
   - {fileID: 2090009418}
   - {fileID: 368359375}
@@ -1021,11 +1020,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!1 &748614073 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
-  m_PrefabInstance: {fileID: 1637958900}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &839189665 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
@@ -2095,7 +2089,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
