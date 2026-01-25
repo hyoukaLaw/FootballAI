@@ -23,7 +23,7 @@ namespace BehaviorTree.Runtime
                 weightSafety = role.AttackPositionWeight.WeightSafety;
                 weightPressing = role.AttackPositionWeight.WeightPressing;
             }
-            else if (state == MatchState.Defending)
+            else if (state == MatchState.Defending || state == MatchState.ChasingBall)
             {
                 weightBallDist = role.DefendPositionWeight.WeightBallDist;
                 weightGoalDist = role.DefendPositionWeight.WeightGoalDist;
@@ -47,7 +47,7 @@ namespace BehaviorTree.Runtime
         {
             float ballDistanceBase = 15f;
             float distanceToBall = Vector3.Distance(position, ballPosition);
-            return Mathf.Clamp01(1f - distanceToBall / ballDistanceBase);
+            return Mathf.Clamp01(1f - Mathf.Pow(distanceToBall / ballDistanceBase,2f));
         }
 
         public static float CalculateGoalScore(Vector3 position, Vector3 goalPosition)
@@ -156,7 +156,7 @@ namespace BehaviorTree.Runtime
                 // 如果我离这个敌人更近，鼓励我盯防
                 else if (myDistance < minTeammateDistance)
                 {
-                    bonus += 0.05f;  // 奖励：我应该盯防这个敌人
+                    bonus += 0.1f;  // 奖励：我应该盯防这个敌人
                 }
             }
             return bonus;
@@ -418,6 +418,7 @@ namespace BehaviorTree.Runtime
         public static List<Vector3> GenerateAroundBallCandidatePositions(GameObject player, Vector3 ballPosition)
         {
             List<Vector3> candidates = new List<Vector3>();
+            candidates.Add(ballPosition);
             candidates.AddRange(PointsGenerator.GeneratePointsAround(ballPosition, 2, 1f, 8));
             return candidates;
         }

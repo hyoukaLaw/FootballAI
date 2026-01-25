@@ -19,7 +19,11 @@ namespace BehaviorTree.Runtime
             Vector3 myGoal = Blackboard.MatchContext.GetMyGoalPosition(Blackboard.Owner);
             Vector3 enemyGoal = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
             FieldZone preferZone = ZoneUtils.FindHighestWeightZoneAndWeight(Blackboard.Role.DefendPreferences).zone;
-            if (IsLastDefensePlayer() && ZoneUtils.IsInZone(Blackboard.MatchContext.Ball.transform.position, preferZone, enemyGoal, myGoal))
+            Vector3 ballPos = Blackboard.MatchContext.Ball.transform.position;
+            var teammates = Blackboard.MatchContext.GetTeammates(Blackboard.Owner);
+            if (ZoneUtils.IsInZone(ballPos, preferZone, enemyGoal, myGoal) && 
+                (IsLastDefensePlayer() || FootballUtils.IsClosestTeammateToTarget(ballPos, Blackboard.Owner, teammates)) && 
+                !IsBallHolderMark(Blackboard.Owner.transform.position))
             {
                 Debug.Log($"{Blackboard.Owner.name} is in danger");
                 return true;
@@ -44,6 +48,21 @@ namespace BehaviorTree.Runtime
                 }
             }
             return isLastDefense ;
+        }
+        
+        // 是否已经有球员在持球人与球门之间
+        private bool IsBallHolderMark(Vector3 myPos)
+        {
+            var teammates = Blackboard.MatchContext.GetTeammates(Blackboard.Owner);
+            var ballPos = Blackboard.MatchContext.Ball.transform.position;
+            foreach (var mate in teammates)
+            {
+                if (mate == Blackboard.Owner) continue;
+                if (FootballUtils.DistancePointToLineSegment(ballPos, myPos, mate.transform.position) <= 1f)
+                    return true;
+            }
+
+            return false;
         }
     }
 }

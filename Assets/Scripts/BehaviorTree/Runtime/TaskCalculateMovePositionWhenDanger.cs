@@ -20,7 +20,7 @@ namespace BehaviorTree.Runtime
             // 拦截射门
             Vector3 ballHolderPos = Blackboard.MatchContext.Ball.transform.position;
             float distance = (ballHolderPos - myGoal).magnitude;
-            Vector3 pos = ballHolderPos + (myGoal - ballHolderPos).normalized * (distance * 0.2f);
+            Vector3 pos = ballHolderPos + (myGoal - ballHolderPos).normalized * FootballConstants.TryTackleDistance/2f;
             return pos;
         }
     }
