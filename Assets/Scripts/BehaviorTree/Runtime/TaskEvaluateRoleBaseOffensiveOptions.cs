@@ -232,6 +232,7 @@ namespace BehaviorTree.Runtime
                 passTarget = null;
                 var teammates = blackboard.MatchContext.GetTeammates(blackboard.Owner);
                 List<GameObject> enemyPlayers = blackboard.MatchContext.GetOpponents(blackboard.Owner);
+                Vector3 enemyGoalPos = blackboard.MatchContext.GetEnemyGoalPosition(blackboard.Owner);
                 foreach (var candidate in teammates)
                 {
                     if(FootballUtils.IsPathClear(blackboard.Owner.transform.position, 
@@ -243,7 +244,7 @@ namespace BehaviorTree.Runtime
                         if(distance >= FootballConstants.PassMinDistance && distance <= FootballConstants.PassMaxDistance)
                         {
                             float safetyFactor = CalculatePassLineSafety(blackboard.Owner.transform.position,
-                                candidate.transform.position, enemyPlayers);
+                                candidate.transform.position, enemyPlayers) * CalculatePassTargetSafety(candidate, enemyPlayers, enemyGoalPos);
                             float score = basePassScore * safetyFactor - FootballConstants.PassScoreDistancePenalty * Mathf.Abs(distance - mid);
                             if (score > passScore)
                             {
@@ -274,6 +275,22 @@ namespace BehaviorTree.Runtime
                         float threatLevel = 1f - (distanceToLine / interceptThreshold);
                         safetyScore -= threatLevel * 0.5f; // 单个威胁最高降低50%安全性
                     }
+                }
+                return Mathf.Clamp01(safetyScore);
+            }
+
+            private static float CalculatePassTargetSafety(GameObject passTarget, List<GameObject> enemies, Vector3 enemyGoalPos)
+            {
+                float safetyScore = 1f; // 1.0 = 完全安全，0.0 = 极度危险
+                float baseDistance = 2f; // 多少米以内算危险
+                foreach (var enemy in enemies)
+                {
+                    float enemyDistance = Vector3.Distance(enemy.transform.position, passTarget.transform.position);
+                    float threatLevel = Mathf.Max(0, 1 - enemyDistance / baseDistance) * 0.5f;// 单个威胁最高降低50%安全性
+                    Vector3 targetToEnemyGoal = enemyGoalPos - passTarget.transform.position;
+                    Vector3 targetToEnemy = enemy.transform.position - passTarget.transform.position;
+                    bool isEnemyInFront = Vector3.Dot(targetToEnemy, targetToEnemyGoal) > 0;
+                    safetyScore = safetyScore - threatLevel * (isEnemyInFront ? 1 : 0.5f);
                 }
                 return Mathf.Clamp01(safetyScore);
             }
