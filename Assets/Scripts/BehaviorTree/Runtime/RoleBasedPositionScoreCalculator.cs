@@ -40,7 +40,7 @@ namespace BehaviorTree.Runtime
             float safetyScore = CalculateSafetyScore(position, context.GetTeammates(player)) * weightSafety;
             float pressingScore = CalculatePressingScore(position, ballPosition, myGoal, player, context.GetBallHolder(), context.GetTeammates(player)) * weightPressing;
             float totalScore = Mathf.Max(0, zoneScore + ballScore + goalScore + markScore + spaceScore + pressingScore - safetyScore);
-            return new PositionEvaluation(position, totalScore, zoneScore, ballScore, goalScore, markScore, spaceScore, safetyScore, distanceFromCurrent);
+            return new PositionEvaluation(position, totalScore, zoneScore, ballScore, goalScore, markScore, spaceScore, safetyScore, pressingScore, distanceFromCurrent);
         }
         
         public static float CalculateBallScore(Vector3 position, Vector3 ballPosition)
@@ -115,12 +115,10 @@ namespace BehaviorTree.Runtime
                 float distance = Vector3.Distance(position, enemy.transform.position);
                 if (distance <= enemyDistanceBase)
                 {
-                    if (ballHolder == enemy && CheckIsStopGoal(position, enemy.transform.position, myGoal, distanceThreshold))
-                        scoreNormalized = scoreNormalized + stopGoalBonus;
-                    else if (ballHolder != enemy && ballHolder != null && CheckIsStopPass(position,
+                     if (ballHolder != enemy && ballHolder != null && CheckIsStopPass(position,
                                  enemy.transform.position, ballHolder.transform.position, distanceThreshold))
                         scoreNormalized = scoreNormalized + stopPassBonus;
-                    else
+                     else
                         scoreNormalized = scoreNormalized + baseBonus;
                 }
             }
@@ -167,7 +165,8 @@ namespace BehaviorTree.Runtime
         private static float CalculatePressingScore(Vector3 position, Vector3 ballPosition, 
             Vector3 myGoal, GameObject player, GameObject ballHolder, List<GameObject> teammates)
         {
-            if (!FootballUtils.IsClosestTeammateToTarget(ballPosition, player, teammates)) return 0f;  // 只对最近的防守者生效
+            if (!FootballUtils.IsClosestTeammateToTarget(ballPosition, player, teammates,0f))  // 只对最近的防守者生效
+                return 0f; 
             if (ballHolder == null) return 0f;
             // 计算上抢方向：从持球人到对方球门
             Vector3 holderToGoal = (myGoal - ballHolder.transform.position).normalized;
@@ -177,12 +176,12 @@ namespace BehaviorTree.Runtime
             {
                 float distanceToHolder = Vector3.Distance(position, ballHolder.transform.position);
                 float distanceBonus = 0f;
-                if (distanceToHolder > 0.5f && distanceToHolder < 5f) // 距离奖励：0.5-5米内的位置获得奖励，保持安全距离
+                if (distanceToHolder < 3f) // 距离奖励：0-3米内的位置获得奖励，保持安全距离
                 {
-                    distanceBonus = 1f - (distanceToHolder - 0.5f) / 4f;
+                    distanceBonus = 1f - (distanceToHolder - 0f) / 3f;
                 }
                 // 综合评分：方向占60%，距离占40%
-                return alignment * 0.6f + distanceBonus * 0.4f;
+                return alignment * 0.2f + distanceBonus * 0.8f;
             }
             return 0f;  // 背对持球人，不奖励
         }
@@ -226,10 +225,11 @@ namespace BehaviorTree.Runtime
             public float MarkScore;
             public float SpaceScore;
             public float SafetyScore;
+            public float PressingScore;
             public float TotalScore;
             public float DistanceFromCurrent;
             public PositionEvaluation(Vector3 position, float totalScore, float zoneScore, float ballScore, float goalScore, 
-                float markScore, float spaceScore, float safetyScore, float distanceFromCurrent)
+                float markScore, float spaceScore, float safetyScore, float pressingScore, float distanceFromCurrent)
             {
                 Position = position;
                 TotalScore = totalScore;
@@ -239,6 +239,7 @@ namespace BehaviorTree.Runtime
                 MarkScore = markScore;
                 SpaceScore = spaceScore;
                 SafetyScore = safetyScore;
+                PressingScore = pressingScore;
                 DistanceFromCurrent = distanceFromCurrent;
             }
         }
@@ -334,14 +335,15 @@ namespace BehaviorTree.Runtime
             sb.AppendLine("");
             
             // 输出最佳位置的详细分数
-            sb.AppendLine($"--- 最佳位置详细分数 ---");
+            sb.AppendLine("--- 最佳位置详细分数 ---");
             sb.AppendLine($"区域分: {bestEvaluation.ZoneScore:F2}");
             sb.AppendLine($"球距离分: {bestEvaluation.BallScore:F2}");
             sb.AppendLine($"球门距离分: {bestEvaluation.GoalScore:F2}");
             sb.AppendLine($"盯防分: {bestEvaluation.MarkScore:F2}");
             sb.AppendLine($"空间分: {bestEvaluation.SpaceScore:F2}");
             sb.AppendLine($"安全分: {bestEvaluation.SafetyScore:F2}");
-            sb.AppendLine($"总分计算: {bestEvaluation.ZoneScore + bestEvaluation.BallScore + bestEvaluation.GoalScore + bestEvaluation.MarkScore + bestEvaluation.SpaceScore:F2} - {bestEvaluation.SafetyScore:F2} = {bestEvaluation.TotalScore:F2}");
+            sb.AppendLine($"上抢分: {bestEvaluation.PressingScore:F2}");
+            sb.AppendLine($"总分计算: {bestEvaluation.ZoneScore + bestEvaluation.BallScore + bestEvaluation.GoalScore + bestEvaluation.MarkScore + bestEvaluation.SpaceScore + bestEvaluation.PressingScore:F2} - {bestEvaluation.SafetyScore:F2} = {bestEvaluation.TotalScore:F2}");
             sb.AppendLine("");
             
             // 安全性警告
@@ -349,6 +351,11 @@ namespace BehaviorTree.Runtime
             {
                 sb.AppendLine($"⚠️ 警告: 安全分 {bestEvaluation.SafetyScore:F2} 过高，可能存在队友重叠风险！");
                 sb.AppendLine("");
+            }
+
+            if (bestEvaluation.PressingScore > 10f)
+            {
+                sb.AppendLine($"上抢分大于10!");
             }
             
             // 输出所有候选位置的简洁信息
@@ -358,7 +365,7 @@ namespace BehaviorTree.Runtime
             {
                 var eval = sortedEvaluations[i];
                 string prefix = (i == 0) ? "★" : " ";
-                sb.AppendLine($"{prefix} [{i}] 总分:{eval.TotalScore:F2} | 位置:{eval.Position} | 安全分:{eval.SafetyScore:F2} | 距离:{eval.DistanceFromCurrent:F2}米");
+                sb.AppendLine($"{prefix} [{i}] 总分:{eval.TotalScore:F2} | 位置:{eval.Position} | 区域:{eval.ZoneScore:F1} | 球距:{eval.BallScore:F1} | 盯防:{eval.MarkScore:F1} | 上抢:{eval.PressingScore:F1} | 安全:{eval.SafetyScore:F1} | 距离:{eval.DistanceFromCurrent:F1}m");
             }
             
             Debug.Log(sb.ToString());
