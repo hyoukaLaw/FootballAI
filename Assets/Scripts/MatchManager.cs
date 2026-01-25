@@ -34,6 +34,7 @@ public class MatchManager : MonoBehaviour
     [Header("进球检测")]
     public float GoalDistance = 1.0f; // 球门判定距离
     public bool GamePaused = false; // 游戏是否暂停
+    public bool AutoGame = false; // 是否自动比赛
 
     [Header("比分系统")]
     public int RedScore = 0; // 红方得分
@@ -45,6 +46,8 @@ public class MatchManager : MonoBehaviour
 
     [Header("抢断保护")]
     public float StealCooldownDuration = 0f; // 抢断保护期时长（秒）
+
+    private float _autoResumeTimer = 0f; // 自动恢复倒计时
 
     [Header("事件系统")]
     public UnityEvent<int, int> OnScoreChanged; // 红方分数, 蓝方分数
@@ -88,6 +91,16 @@ public class MatchManager : MonoBehaviour
     {
         if (GamePaused)
         {
+            // 自动比赛模式下，倒计时5秒后自动恢复
+            if (AutoGame)
+            {
+                _autoResumeTimer += Time.deltaTime;
+                if (_autoResumeTimer >= 5f)
+                {
+                    ResumeGame();
+                    _autoResumeTimer = 0f;
+                }
+            }
             return; // 游戏暂停，不执行任何逻辑
         }
         // 更新抢断保护期计时器
@@ -239,7 +252,10 @@ private void OnGoalScored(string scoringTeam)
 
     // 暂停游戏
     GamePaused = true;
-    
+
+    // 重置自动恢复倒计时
+    _autoResumeTimer = 0f;
+
     if (Context != null)
     {
         Context.IncomingPassTarget = null;

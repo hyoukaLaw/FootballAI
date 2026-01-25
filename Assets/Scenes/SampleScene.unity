@@ -547,6 +547,7 @@ MonoBehaviour:
   PossessionThreshold: 0.8
   GoalDistance: 1
   GamePaused: 0
+  AutoGame: 1
   RedScore: 0
   BlueScore: 0
   NextKickoffTeam: Blue
