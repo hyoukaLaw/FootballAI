@@ -12,16 +12,17 @@ namespace BehaviorTree.Runtime
             Vector3 enemyGoal, Vector3 ballPosition, MatchContext context, GameObject player, float distanceFromCurrent)
         {
             float weightZone = 50f;
-            float weightBallDist = 0f, weightGoalDist = 0f, weightMarking = 0f, weightSpace = 0f, weightSafety = 0f, weightPressing = 0f;
+            float weightBallDist = 0f, weightGoalDist = 0f, weightMarking = 0f, weightSpace = 0f, weightSafety = 0f, weightPressing = 0f, weightSupport = 0f;
             MatchState state = DetermineMatchState(player, context);
             if (state == MatchState.Attacking)
             {
-                weightBallDist = role.AttackPositionWeight.WeightBallDist; // 球距离
+                weightBallDist = role.AttackPositionWeight.WeightBallDist;
                 weightGoalDist = role.AttackPositionWeight.WeightGoalDist;
                 weightMarking = role.AttackPositionWeight.WeightMarking;
                 weightSpace = role.AttackPositionWeight.WeightSpace;
                 weightSafety = role.AttackPositionWeight.WeightSafety;
                 weightPressing = role.AttackPositionWeight.WeightPressing;
+                weightSupport = role.AttackPositionWeight.WeightSupport;
             }
             else if (state == MatchState.Defending || state == MatchState.ChasingBall)
             {
@@ -31,16 +32,18 @@ namespace BehaviorTree.Runtime
                 weightSpace = role.DefendPositionWeight.WeightSpace;
                 weightSafety = role.DefendPositionWeight.WeightSafety;
                 weightPressing = role.DefendPositionWeight.WeightPressing;
+                weightSupport = role.DefendPositionWeight.WeightSupport;
             }
             float zoneScore = ZoneUtils.CalculateNormalizedZoneScore(position, role, myGoal, enemyGoal, DetermineMatchState(player, context)) * weightZone;
             float ballScore = CalculateBallScore(position, ballPosition) * weightBallDist;
             float goalScore = CalculateGoalScore(position, enemyGoal) * weightGoalDist;
             float markScore = CalculateMarkScore(position, role, context, myGoal, player) * weightMarking;
             float spaceScore = CalculateSpaceScore(position, context, player) * weightSpace;
+            float supportScore = CalculateSupportScore(position, player, context) * weightSupport;
             float safetyScore = CalculateSafetyScore(position, context.GetTeammates(player)) * weightSafety;
             float pressingScore = CalculatePressingScore(position, ballPosition, myGoal, player, context.GetBallHolder(), context.GetTeammates(player)) * weightPressing;
-            float totalScore = Mathf.Max(0, zoneScore + ballScore + goalScore + markScore + spaceScore + pressingScore - safetyScore);
-            return new PositionEvaluation(position, totalScore, zoneScore, ballScore, goalScore, markScore, spaceScore, safetyScore, pressingScore, distanceFromCurrent);
+            float totalScore = Mathf.Max(0, zoneScore + ballScore + goalScore + markScore + spaceScore + pressingScore+ supportScore - safetyScore);
+            return new PositionEvaluation(position, totalScore, zoneScore, ballScore, goalScore, markScore, spaceScore, safetyScore, pressingScore, supportScore, distanceFromCurrent);
         }
         
         public static float CalculateBallScore(Vector3 position, Vector3 ballPosition)
@@ -251,10 +254,11 @@ namespace BehaviorTree.Runtime
             public float SpaceScore;
             public float SafetyScore;
             public float PressingScore;
+            public float SupportScore;
             public float TotalScore;
             public float DistanceFromCurrent;
-            public PositionEvaluation(Vector3 position, float totalScore, float zoneScore, float ballScore, float goalScore, 
-                float markScore, float spaceScore, float safetyScore, float pressingScore, float distanceFromCurrent)
+            public PositionEvaluation(Vector3 position, float totalScore, float zoneScore, float ballScore, float goalScore,
+                float markScore, float spaceScore, float safetyScore, float pressingScore, float supportScore, float distanceFromCurrent)
             {
                 Position = position;
                 TotalScore = totalScore;
@@ -265,6 +269,7 @@ namespace BehaviorTree.Runtime
                 SpaceScore = spaceScore;
                 SafetyScore = safetyScore;
                 PressingScore = pressingScore;
+                SupportScore = supportScore;
                 DistanceFromCurrent = distanceFromCurrent;
             }
         }
@@ -366,9 +371,10 @@ namespace BehaviorTree.Runtime
             sb.AppendLine($"球门距离分: {bestEvaluation.GoalScore:F2}");
             sb.AppendLine($"盯防分: {bestEvaluation.MarkScore:F2}");
             sb.AppendLine($"空间分: {bestEvaluation.SpaceScore:F2}");
+            sb.AppendLine($"支持分: {bestEvaluation.SupportScore:F2}");
             sb.AppendLine($"安全分: {bestEvaluation.SafetyScore:F2}");
             sb.AppendLine($"上抢分: {bestEvaluation.PressingScore:F2}");
-            sb.AppendLine($"总分计算: {bestEvaluation.ZoneScore + bestEvaluation.BallScore + bestEvaluation.GoalScore + bestEvaluation.MarkScore + bestEvaluation.SpaceScore + bestEvaluation.PressingScore:F2} - {bestEvaluation.SafetyScore:F2} = {bestEvaluation.TotalScore:F2}");
+            sb.AppendLine($"总分计算: {bestEvaluation.ZoneScore + bestEvaluation.BallScore + bestEvaluation.GoalScore + bestEvaluation.MarkScore + bestEvaluation.SpaceScore + bestEvaluation.SupportScore + bestEvaluation.PressingScore:F2} - {bestEvaluation.SafetyScore:F2} = {bestEvaluation.TotalScore:F2}");
             sb.AppendLine("");
             
             // 安全性警告
@@ -390,7 +396,7 @@ namespace BehaviorTree.Runtime
             {
                 var eval = sortedEvaluations[i];
                 string prefix = (i == 0) ? "★" : " ";
-                sb.AppendLine($"{prefix} [{i}] 总分:{eval.TotalScore:F2} | 位置:{eval.Position} | 区域:{eval.ZoneScore:F1} | 球距:{eval.BallScore:F1} | 盯防:{eval.MarkScore:F1} | 上抢:{eval.PressingScore:F1} | 安全:{eval.SafetyScore:F1} | 距离:{eval.DistanceFromCurrent:F1}m");
+                sb.AppendLine($"{prefix} [{i}] 总分:{eval.TotalScore:F2} | 位置:{eval.Position} | 区域:{eval.ZoneScore:F1} | 球距:{eval.BallScore:F1} | 盯防:{eval.MarkScore:F1} | 空间:{eval.SpaceScore:F1} | 支持:{eval.SupportScore:F1} | 上抢:{eval.PressingScore:F1} | 安全:{eval.SafetyScore:F1} | 距离:{eval.DistanceFromCurrent:F1}m");
             }
             
             Debug.Log(sb.ToString());

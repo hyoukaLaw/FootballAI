@@ -46,7 +46,6 @@ public class BallController
         // --- 正常的飞行逻辑 ---
         // 2. 移动
         _ballGameObject.transform.position = Vector3.MoveTowards(_ballGameObject.transform.position, _targetPos, _speed * Time.deltaTime);
-        Debug.Log($"Ball Move To {_targetPos} {_speed}");
         // 3. 到达检测 (自然滚动停止)
         // 如果一直没人接，球滚到了终点也该停了
         if (Vector3.Distance(_ballGameObject.transform.position, _targetPos) < FootballConstants.SamePositionDistance)
