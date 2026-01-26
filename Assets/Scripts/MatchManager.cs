@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using BehaviorTree.Runtime;
 using UnityEngine;
 using UnityEditor; // 添加UnityEditor命名空间引用
@@ -103,13 +104,37 @@ public class MatchManager : MonoBehaviour
             }
             return; // 游戏暂停，不执行任何逻辑
         }
+
+        // 【方案3：动态交错执行】手动交错执行红蓝队AI
+        // 确保红队和蓝队AI交替执行，消除执行顺序导致的系统性偏见
+        int maxPlayers = Mathf.Max(TeamRedPlayers.Count, TeamBluePlayers.Count);
+        for (int i = 0; i < maxPlayers; i++)
+        {
+            // 红队AI先执行
+            if (i < TeamRedPlayers.Count)
+            {
+                var redPlayerAI = TeamRedPlayers[i].GetComponent<PlayerAI>();
+                if (redPlayerAI != null)
+                    redPlayerAI.ManualTick();
+            }
+
+            // 蓝队AI后执行
+            if (i < TeamBluePlayers.Count)
+            {
+                var bluePlayerAI = TeamBluePlayers[i].GetComponent<PlayerAI>();
+                if (bluePlayerAI != null)
+                    bluePlayerAI.ManualTick();
+            }
+        }
+
+        // MatchManager自己的逻辑（后执行，满足初始化需求）
         // 更新抢断保护期计时器
         Context.UpdateStealCooldown(Time.deltaTime);
 
         // 1. 计算物理状态 (谁拿着球？)
         UpdatePossessionState();
         BallController.Update();
-        
+
         // 2. 清理过期的传球状态
         UpdatePassTargetState();
 
@@ -128,6 +153,7 @@ public class MatchManager : MonoBehaviour
 
     /// <summary>
     /// 核心裁判逻辑：遍历所有人，找出离球最近的那个，判断是否获得球权
+    /// 修复：在距离相等时随机选择，避免红队因为遍历顺序优势而获得不公平的球权
     /// </summary>
     private void UpdatePossessionState()
     {
@@ -135,8 +161,10 @@ public class MatchManager : MonoBehaviour
             Context.SetBallHolder(null);
         // 两种情况可以进行争球：1 没有持球人
         if (Context.GetBallHolder() != null) return;
-        GameObject closestPlayer = null;
+        
+        List<GameObject> closestPlayers = new List<GameObject>();
         float minDistance = float.MaxValue;
+        float distanceTolerance = 0.001f; // 距离相等容差值
 
         // 合并所有球员进行遍历
         List<GameObject> allPlayers = new List<GameObject>();
@@ -146,13 +174,29 @@ public class MatchManager : MonoBehaviour
         foreach (var player in allPlayers)
         {
             float dist = Vector3.Distance(player.transform.position, Ball.transform.position);
-            if (dist < minDistance && dist < PossessionThreshold && 
+            if (dist < PossessionThreshold && 
                 player != Context.BallController.GetLastKicker() && !IsStunned(player))
             {
-                minDistance = dist;
-                closestPlayer = player;
+                if (dist < minDistance - distanceTolerance)
+                {
+                    minDistance = dist;
+                    closestPlayers.Clear();
+                    closestPlayers.Add(player);
+                }
+                else if (dist <= minDistance + distanceTolerance)
+                {
+                    closestPlayers.Add(player);
+                }
             }
         }
+        
+        GameObject closestPlayer = null;
+        if (closestPlayers.Count > 0)
+        {
+            // 修复：移除随机性，使用确定性选择规则
+            closestPlayer = closestPlayers.OrderBy(p => p.name).FirstOrDefault();
+        }
+
         if(closestPlayer != Context.GetBallHolder()) Debug.Log($"possession {Context.GetBallHolder()?.name}->{closestPlayer?.name}");
         Context.SetBallHolder(closestPlayer);
     }
@@ -242,13 +286,13 @@ private void OnGoalScored(string scoringTeam)
     if (scoringTeam == "Red")
     {
         RedScore++;
-        NextKickoffTeam = "Blue"; // 蓝方开球
     }
     else if (scoringTeam == "Blue")
     {
         BlueScore++;
-        NextKickoffTeam = "Red"; // 红方开球
     }
+    if((RedScore + BlueScore) % 2 == 0) NextKickoffTeam = "Red";
+    else NextKickoffTeam = "Blue";
 
     // 暂停游戏
     GamePaused = true;
@@ -270,6 +314,9 @@ private void OnGoalScored(string scoringTeam)
 
     // 通知UI更新比分显示
     UpdateScoreUI();
+    
+    if(RedScore >= 100 || BlueScore == 100)
+        EditorApplication.isPaused = true;
 }
 
     /// <summary>

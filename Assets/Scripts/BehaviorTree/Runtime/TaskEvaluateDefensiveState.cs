@@ -77,12 +77,12 @@ namespace BehaviorTree.Runtime
             if (Blackboard.MatchContext == null) return false;
             bool isLastDefense = true;
             var teammates = Blackboard.MatchContext.GetTeammates(Blackboard.Owner);
-            float goalPosX = Blackboard.MatchContext.GetMyGoalPosition(Blackboard.Owner).x;
+            float goalPosZ = Blackboard.MatchContext.GetMyGoalPosition(Blackboard.Owner).z;
             foreach (var mate in teammates)
             {
                 if (mate == Blackboard.Owner) continue;
-                if (Mathf.Abs(mate.transform.position.x - goalPosX) < 
-                    Mathf.Abs(Blackboard.Owner.transform.position.x - goalPosX))
+                if (Mathf.Abs(mate.transform.position.z - goalPosZ) <
+                    Mathf.Abs(Blackboard.Owner.transform.position.z - goalPosZ))
                 {
                     isLastDefense = false;
                     break;

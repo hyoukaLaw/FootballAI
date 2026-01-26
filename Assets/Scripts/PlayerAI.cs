@@ -99,6 +99,23 @@ public class PlayerAI : MonoBehaviour
     }
     void Update()
     {
+        // Update已被禁用，改为由MatchManager手动交错控制
+        // Debug.Log($"order Check : {name} {MatchManager.order}");
+        // MatchManager.order++;
+        // if (MatchManager.Instance.GamePaused)
+        //     return;
+        // // 每帧运行行为树
+        // _tree.Tick();
+        //
+        // // 更新执行路径（用于调试）
+        // ExecutionPath = _tree.ExecutionPath;
+    }
+
+    /// <summary>
+    /// 手动Tick方法，由MatchManager交错调用
+    /// </summary>
+    public void ManualTick()
+    {
         if (MatchManager.Instance.GamePaused)
             return;
         // 每帧运行行为树

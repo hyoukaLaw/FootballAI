@@ -41,8 +41,18 @@ namespace BehaviorTree.Runtime
         /// </summary>
         private Vector3 CalculateLateralSpreadPosition(GameObject owner, GameObject ball)
         {
-            Vector3 direction = owner.transform.position.x < ball.transform.position.x ? Vector3.left : Vector3.right;
-            Vector3 potentialTarget = owner.transform.position + direction * FootballConstants.LateralSpreadDistance;
+            // 根据进攻方向计算横向（垂直于前进方向的左右）
+            Vector3 forwardDir = FootballUtils.GetForward(owner);
+            Vector3 lateralDir = Vector3.Cross(Vector3.up, forwardDir); // 计算横向方向
+
+            // 判断向左还是向右：选择离球更远的一侧
+            Vector3 leftPos = owner.transform.position + lateralDir * FootballConstants.LateralSpreadDistance;
+            Vector3 rightPos = owner.transform.position - lateralDir * FootballConstants.LateralSpreadDistance;
+
+            float leftDistToBall = Vector3.Distance(leftPos, ball.transform.position);
+            float rightDistToBall = Vector3.Distance(rightPos, ball.transform.position);
+
+            Vector3 potentialTarget = leftDistToBall > rightDistToBall ? leftPos : rightPos;
             return potentialTarget;
         }
 
