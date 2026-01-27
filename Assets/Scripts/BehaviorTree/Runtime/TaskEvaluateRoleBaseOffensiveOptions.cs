@@ -10,22 +10,57 @@ namespace BehaviorTree.Runtime
         {
         }
 
-        // 百分制计分
-        // 后卫：优先传球，其次向前带球，压迫大就解围
-        // 传球目标：找距离合适且没压迫的人作为传球目标，3m-8m，多和少都扣分
         public override NodeState Evaluate()
         {
-            if (Blackboard.Role.RoleType == PlayerRoleType.Defender)
+            var strategy = OffensiveStrategyFactory.GetStrategy(Blackboard.Role.RoleType);
+            var action = strategy.Evaluate(Blackboard);
+            
+            ApplyActionToBlackboard(action);
+            
+            LogOffensiveEvaluation(action, strategy.StrategyName);
+            
+            return NodeState.SUCCESS;
+        }
+        
+        private void ApplyActionToBlackboard(OffensiveAction action)
+        {
+            switch (action.ActionType)
             {
-                HandleDefenderOptions();
-                return NodeState.SUCCESS;
+                case OffensiveActionType.Shoot:
+                    Blackboard.CanShoot = true;
+                    Blackboard.MoveTarget = Vector3.zero;
+                    Blackboard.BestPassTarget = null;
+                    Blackboard.ClearanceTarget = Vector3.negativeInfinity;
+                    break;
+                    
+                case OffensiveActionType.Pass:
+                    Blackboard.CanShoot = false;
+                    Blackboard.MoveTarget = Vector3.zero;
+                    Blackboard.BestPassTarget = action.PassTarget;
+                    Blackboard.ClearanceTarget = Vector3.negativeInfinity;
+                    break;
+                    
+                case OffensiveActionType.Dribble:
+                    Blackboard.CanShoot = false;
+                    Blackboard.MoveTarget = action.MoveTarget;
+                    Blackboard.BestPassTarget = null;
+                    Blackboard.ClearanceTarget = Vector3.negativeInfinity;
+                    break;
+                    
+                case OffensiveActionType.Clearance:
+                    Blackboard.CanShoot = false;
+                    Blackboard.MoveTarget = Vector3.zero;
+                    Blackboard.BestPassTarget = null;
+                    Blackboard.ClearanceTarget = action.ClearanceTarget;
+                    break;
+                    
+                case OffensiveActionType.None:
+                    Blackboard.CanShoot = false;
+                    Blackboard.MoveTarget = Vector3.zero;
+                    Blackboard.BestPassTarget = null;
+                    Blackboard.ClearanceTarget = Vector3.negativeInfinity;
+                    break;
             }
-            else if (Blackboard.Role.RoleType == PlayerRoleType.Forward)
-            {
-                HandleForwardOptions();
-                return NodeState.SUCCESS;   
-            }
-            return NodeState.FAILURE;
         }
 
         private void HandleDefenderOptions()
@@ -278,6 +313,181 @@ namespace BehaviorTree.Runtime
 
         public static class OffensiveActionCalculator
         {
+            public static PassEvaluation CalculatePassScoreAndTarget(FootballBlackboard blackboard, float basePassScore)
+            {
+                CalculatePassScoreAndTarget(out float passScore, out GameObject passTarget, out float lineSafety, 
+                    out float targetSafety, blackboard, basePassScore);
+                
+                return new PassEvaluation
+                {
+                    Score = passScore,
+                    Target = passTarget,
+                    LineSafety = lineSafety,
+                    TargetSafety = targetSafety
+                };
+            }
+            
+            public static DribbleEvaluation CalculateDribbleScoreAndTarget(FootballBlackboard blackboard)
+            {
+                float dribbleScore;
+                Vector3 dribbleTarget;
+                int enemiesInFront;
+                
+                List<GameObject> enemiesInFrontList = FindEnemiesInFront(blackboard);
+                enemiesInFront = enemiesInFrontList.Count;
+                dribbleScore = CalculateDribbleScore(enemiesInFrontList, blackboard);
+                dribbleTarget = Vector3.zero;
+                GameObject closestBlockingEnemy = null;
+                var goalPos = blackboard.MatchContext.GetEnemyGoalPosition(blackboard.Owner);
+                float closestDistance = float.MaxValue;
+                foreach (var enemy in enemiesInFrontList)
+                {
+                    float distToEnemy = Vector3.Distance(blackboard.Owner.transform.position, enemy.transform.position);
+                    if (distToEnemy < closestDistance)
+                    {
+                        closestDistance = distToEnemy;
+                        closestBlockingEnemy = enemy;
+                    }
+                }
+                Vector3 dribbleDirection = (goalPos - blackboard.Owner.transform.position).normalized;
+                dribbleDirection.y = 0;
+                if (closestBlockingEnemy != null)
+                {
+                    dribbleTarget = GetSideStepTarget(dribbleDirection, blackboard.Owner, closestBlockingEnemy, blackboard);
+                }
+                else
+                {
+                    dribbleTarget = FootballUtils.GetPositionTowards(blackboard.Owner.transform.position, blackboard.Owner.transform.position + dribbleDirection.normalized, FootballConstants.DecideMinStep);
+                }
+                
+                return new DribbleEvaluation
+                {
+                    Score = dribbleScore,
+                    Target = dribbleTarget,
+                    EnemiesInFront = enemiesInFront
+                };
+            }
+            
+            public static ClearanceEvaluation CalculateClearanceScoreAndTarget(FootballBlackboard blackboard)
+            {
+                float clearanceScore;
+                Vector3 clearanceTarget;
+                int enemiesNearClearance;
+                
+                var opponents = blackboard.MatchContext.GetOpponents(blackboard.Owner);
+                Vector3 forwardDir = FootballUtils.GetForward(blackboard.Owner);
+
+                float[] angles = { 0f, 45f, -45f };
+                float bestScore = float.MinValue;
+                Vector3 bestTarget = Vector3.zero;
+                int totalEnemiesNear = 0;
+
+                foreach (float angle in angles)
+                {
+                    float rad = angle * Mathf.Deg2Rad;
+                    Vector3 clearanceDir = Quaternion.Euler(0, rad, 0) * forwardDir;
+                    Vector3 candidateTarget = blackboard.Owner.transform.position + clearanceDir * FootballConstants.ClearanceDistance;
+                    CalculateDirectionClearanceScore(clearanceDir, candidateTarget, opponents, blackboard, out float score, out int currentEnemiesNear);
+                    if (score > bestScore)
+                    {
+                        bestScore = score;
+                        bestTarget = candidateTarget;
+                        totalEnemiesNear = currentEnemiesNear;
+                    }
+                }
+                clearanceScore = bestScore;
+                clearanceTarget = bestTarget;
+                enemiesNearClearance = totalEnemiesNear;
+                
+                return new ClearanceEvaluation
+                {
+                    Score = clearanceScore,
+                    Target = clearanceTarget,
+                    EnemiesNearCount = enemiesNearClearance
+                };
+            }
+            
+            private static List<GameObject> FindEnemiesInFront(FootballBlackboard blackboard)
+            {
+                Vector3 enemyGoalPos = blackboard.MatchContext.GetEnemyGoalPosition(blackboard.Owner);
+                var opponents = blackboard.MatchContext.GetOpponents(blackboard.Owner);
+                return FootballUtils.FindEnemiesInFront(blackboard.Owner,
+                    (enemyGoalPos - blackboard.Owner.transform.position).normalized, opponents,
+                    FootballConstants.DribbleDetectDistance, FootballConstants.DribbleDetectHalfAngle);
+            }
+            
+            private static float CalculateDribbleScore(List<GameObject> enemiesInFront, FootballBlackboard blackboard)
+            {
+                if(enemiesInFront.Count == 0)
+                    return FootballConstants.BaseDribbleScore + FootballConstants.DribbleClearBonus;
+                else
+                {
+                    float enemyCountPenalty = enemiesInFront.Count * FootballConstants.DribbleEnemyPenalty;
+                    float enemyDistancePenalty = CalculateSpacePenalty(blackboard.Owner.transform.position, enemiesInFront);
+                    float score = Math.Max(FootballConstants.BaseDribbleScore - enemyCountPenalty - enemyDistancePenalty, 0);
+                    return score;
+                }
+            }
+            
+            private static float CalculateSpacePenalty(Vector3 ownerPos, List<GameObject> nearbyEnemies)
+            {
+                if (nearbyEnemies.Count == 0) return 0;
+                float totalDistance = 0f;
+                foreach (var enemy in nearbyEnemies)
+                {
+                    totalDistance += Vector3.Distance(ownerPos, enemy.transform.position);
+                }
+                float avgDistance = totalDistance / nearbyEnemies.Count;
+                float spacePenalty = avgDistance * Mathf.Clamp01((avgDistance - 2f)/ 3f) * 10f; 
+                return spacePenalty;
+            }
+            
+            private static Vector3 GetSideStepTarget(Vector3 dribbleDirection, GameObject owner, GameObject closestBlockingEnemy, FootballBlackboard blackboard)
+            {
+                Vector3 sidestepDir = Vector3.Cross(Vector3.up, dribbleDirection);
+                Vector3 leftPos = owner.transform.position + sidestepDir * FootballConstants.SidestepDistance;
+                Vector3 rightPos = owner.transform.position - sidestepDir * FootballConstants.SidestepDistance;
+                float leftDistToEnemy = Vector3.Distance(leftPos, closestBlockingEnemy.transform.position);
+                float rightDistToEnemy = Vector3.Distance(rightPos, closestBlockingEnemy.transform.position);
+                Vector3 sidestepPos;
+                if(blackboard.MatchContext.IsInField(leftPos) && blackboard.MatchContext.IsInField(rightPos))
+                    sidestepPos = leftDistToEnemy > rightDistToEnemy ? leftPos : rightPos;
+                else if(blackboard.MatchContext.IsInField(leftPos)) 
+                    sidestepPos = leftPos;
+                else 
+                    sidestepPos = rightPos;
+                return FootballUtils.GetPositionTowards(owner.transform.position, sidestepPos, FootballConstants.DecideMinStep);
+            }
+            
+            private static void CalculateDirectionClearanceScore(Vector3 clearanceDir, Vector3 targetPos, List<GameObject> opponents, FootballBlackboard blackboard, out float score, out int enemiesNearCount)
+            {
+                Vector3 startPos = blackboard.Owner.transform.position;
+                score = FootballConstants.BaseClearanceScore;
+
+                if (!FootballUtils.IsPathClear(startPos, targetPos, opponents, FootballConstants.ClearanceBlockThreshold))
+                {
+                    score -= FootballConstants.ClearanceScoreDistancePenalty;
+                }
+
+                var enemiesNear = FootballUtils.FindNearEnemies(blackboard.Owner, opponents, FootballConstants.ClearanceDetectDistance);
+                enemiesNearCount = enemiesNear.Count;
+
+                foreach (var enemyNear in enemiesNear)
+                {
+                    Vector3 meToEnemy = (enemyNear.transform.position - startPos).normalized;
+                    float angleToEnemy = Vector3.Angle(clearanceDir, meToEnemy);
+
+                    if (angleToEnemy < 30f)
+                    {
+                        score -= FootballConstants.ClearanceScorePerEnemy * 2;
+                    }
+                    else if (angleToEnemy < 60f)
+                    {
+                        score -= FootballConstants.ClearanceScorePerEnemy;
+                    }
+                }
+            }
+
             public static void CalculatePassScoreAndTarget(out float passScore, out GameObject passTarget, out float lineSafety, 
                 out float targetSafety, FootballBlackboard blackboard, float basePassScore)
             {
@@ -445,6 +655,62 @@ namespace BehaviorTree.Runtime
             }
         }
         #endregion
+        
+        private void LogOffensiveEvaluation(OffensiveAction action, string strategyName)
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.AppendLine("========== 进攻选择评估 ==========");
+            sb.AppendLine($"球员: {Blackboard.Owner.name} | 角色: {Blackboard.Role.RoleType} | 策略: {strategyName}");
+            sb.AppendLine("----------------------------------------");
+            
+            var details = action.Details;
+            
+            sb.AppendLine("【评分详情】");
+            if (details.ShootScore > 0)
+                sb.AppendLine($"射门分: {details.ShootScore:F2}");
+            if (details.PassScore > 0)
+                sb.AppendLine($"传球分: {details.PassScore:F2} | 目标: {(action.PassTarget != null ? action.PassTarget.name : "无")}");
+            if (details.DribbleScore > 0)
+                sb.AppendLine($"带球分: {details.DribbleScore:F2} | 目标: {action.MoveTarget}");
+            if (details.ClearanceScore > 0)
+                sb.AppendLine($"解围分: {details.ClearanceScore:F2} | 目标: {action.ClearanceTarget}");
+            
+            if (Blackboard.Role.RoleType == PlayerRoleType.Defender)
+            {
+                sb.AppendLine("\n【环境分析】");
+                sb.AppendLine($"前方敌人数量: {details.EnemiesInFront}");
+                sb.AppendLine($"线路安全性: {details.LineSafety:F2}");
+                sb.AppendLine($"目标安全性: {details.TargetSafety:F2}");
+            }
+            else if (Blackboard.Role.RoleType == PlayerRoleType.Forward)
+            {
+                sb.AppendLine("\n【传球细节】");
+                sb.AppendLine($"线路安全性: {details.LineSafety:F2}");
+                sb.AppendLine($"目标安全性: {details.TargetSafety:F2}");
+                sb.AppendLine($"前方敌人数量: {details.EnemiesInFront}");
+            }
+            
+            sb.AppendLine("----------------------------------------");
+            sb.AppendLine($"【最终选择】 {GetActionTypeName(action.ActionType)} | 得分: {action.Score:F2}");
+            sb.AppendLine("======================================");
+            
+            #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log(sb.ToString());
+            #endif
+        }
+        
+        private string GetActionTypeName(OffensiveActionType actionType)
+        {
+            switch (actionType)
+            {
+                case OffensiveActionType.Shoot: return "射门";
+                case OffensiveActionType.Pass: return "传球";
+                case OffensiveActionType.Dribble: return "带球";
+                case OffensiveActionType.Clearance: return "解围";
+                default: return "无";
+            }
+        }
+        
         private void LogOffensiveEvaluation(OffensiveEvaluationLog log)
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();

@@ -315,7 +315,7 @@ private void OnGoalScored(string scoringTeam)
     // 通知UI更新比分显示
     UpdateScoreUI();
     
-    if(RedScore >= 100 || BlueScore == 100)
+    if(RedScore >= 20 || BlueScore >= 20)
         EditorApplication.isPaused = true;
 }
 
