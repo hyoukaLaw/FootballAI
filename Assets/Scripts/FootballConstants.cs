@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public static class FootballConstants
 {
@@ -46,7 +46,8 @@ public static class FootballConstants
     public static float DribbleDetectHalfAngle = 90f;
     public static float DribbleEnemyPenalty = 10f;
     public static float BaseDribbleScore = 40f;
-    public static float DribbleClearBonus = 25f;
+    public static float DribbleClearBonus = 30f;
+    public static float DribbleDistancePenalty = 20f;
     
     // TaskCalculateSupportSpot Constants
     public static float IdealSupportDistance = 4.0f;      // 理想接应距离
@@ -82,6 +83,7 @@ public static class FootballConstants
 
     public static float BaseScoreShootScore = 80f;
     public static float BasePassScoreForward = 60f;
+    public static float PassForwardDirectionBonus = 10f;
     
     // 通用常量
     public static float FloatEpsilon = 0.0001f;
