@@ -695,7 +695,7 @@ namespace BehaviorTree.Runtime
             sb.AppendLine("======================================");
             
             #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.Log(sb.ToString());
+            //Debug.Log(sb.ToString());
             #endif
         }
         

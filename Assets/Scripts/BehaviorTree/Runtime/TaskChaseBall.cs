@@ -15,7 +15,7 @@ namespace BehaviorTree.Runtime
             // 这样 TaskMoveToPosition 就会让你直接跑向球
             Blackboard.MoveTarget = Blackboard.Owner.transform.position +
                                     (ballPos - Blackboard.Owner.transform.position).normalized * FootballConstants.DecideMinStep;
-            Debug.Log($"chaseball: {Blackboard.MoveTarget} {Blackboard.MatchContext.Ball.transform.position}");
+            //Debug.Log($"chaseball: {Blackboard.MoveTarget} {Blackboard.MatchContext.Ball.transform.position}");
             // 简单的预测优化（可选）：
             // 如果你想"迎球"迎得更准，可以加上球的速度预测，跑向球未来 0.5秒 的位置
             // BallController ballCtrl = Blackboard.MatchContext.Ball.GetComponent<BallController>();

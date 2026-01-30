@@ -41,6 +41,19 @@ public class MatchManager : MonoBehaviour
     public int RedScore = 0; // 红方得分
     public int BlueScore = 0; // 蓝方得分
     public string NextKickoffTeam = "Red"; // 下一个开球队伍 ("Red" 或 "Blue")
+    
+    [Header("比赛统计系统")]
+    public int CurrentMatchNumber = 0; // 当前比赛场次
+    public int TotalMatches = 20; // 总比赛场次
+    public List<MatchResult> MatchHistory = new List<MatchResult>(); // 比赛历史记录
+    
+    // 比赛结果数据结构
+    public class MatchResult
+    {
+        public int MatchNumber;
+        public int RedFinalScore;
+        public int BlueFinalScore;
+    }
 
     [Header("传球状态")]
     private float _passTimeout = 3.0f;    // 传球超时时间
@@ -49,6 +62,7 @@ public class MatchManager : MonoBehaviour
     public float StealCooldownDuration = 0f; // 抢断保护期时长（秒）
 
     private float _autoResumeTimer = 0f; // 自动恢复倒计时
+    private bool _isMatchEndPause = false; // 标记是否是比赛结束的暂停
 
     [Header("事件系统")]
     public UnityEvent<int, int> OnScoreChanged; // 红方分数, 蓝方分数
@@ -98,7 +112,17 @@ public class MatchManager : MonoBehaviour
                 _autoResumeTimer += Time.deltaTime;
                 if (_autoResumeTimer >= 5f)
                 {
-                    ResumeGame();
+                    if (_isMatchEndPause)
+                    {
+                        // 比赛结束的暂停：开始下一场比赛
+                        StartNewMatch();
+                        _isMatchEndPause = false;
+                    }
+                    else
+                    {
+                        // 普通进球的暂停：恢复比赛
+                        ResumeGame();
+                    }
                     _autoResumeTimer = 0f;
                 }
             }
@@ -234,12 +258,12 @@ public class MatchManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 恢复游戏（供外部调用）
+    /// 恢复游戏（供外部调用，用于进球后的恢复）
     /// </summary>
     public void ResumeGame()
     {
-        //1. 归位所有红队球员
-        foreach (var player in TeamRedPlayers)
+        // 重置所有球员状态
+        foreach(var player in TeamRedPlayers)
         {
             if (player != null)
             {
@@ -248,13 +272,12 @@ public class MatchManager : MonoBehaviour
                 {
                     playerAI.ResetPosition();
                     playerAI.ResetBlackboard();
-                    playerAI.ResetBehaviorTree(); // 重置行为树所有节点状态
+                    playerAI.ResetBehaviorTree();
                 }
             }
         }
 
-        //2. 归位所有蓝队球员
-        foreach (var player in TeamBluePlayers)
+        foreach(var player in TeamBluePlayers)
         {
             if (player != null)
             {
@@ -263,15 +286,23 @@ public class MatchManager : MonoBehaviour
                 {
                     playerAI.ResetPosition();
                     playerAI.ResetBlackboard();
-                    playerAI.ResetBehaviorTree(); // 重置行为树所有节点状态
+                    playerAI.ResetBehaviorTree();
                 }
             }
         }
 
-        //3. 重置球和球权
+        // 清除传球目标
+        if (Context != null)
+        {
+            Context.IncomingPassTarget = null;
+            Context.SetPassTarget(null);
+            Context.SetStealCooldown(0f);
+        }
+
+        // 重置球和球权
         ResetBall();
 
-        //5. 恢复游戏
+        // 恢复游戏
         GamePaused = false;
 
         Debug.Log($"比赛恢复！{NextKickoffTeam}方开球，所有球员归位，球放回中心，行为树状态已重置。");
@@ -291,8 +322,16 @@ private void OnGoalScored(string scoringTeam)
     {
         BlueScore++;
     }
+    
     if((RedScore + BlueScore) % 2 == 0) NextKickoffTeam = "Red";
     else NextKickoffTeam = "Blue";
+
+    // 检查是否有队伍达到20分，如果是则结束比赛
+    if (RedScore >= 20 || BlueScore >= 20)
+    {
+        EndMatch();
+        return;
+    }
 
     // 暂停游戏
     GamePaused = true;
@@ -314,9 +353,185 @@ private void OnGoalScored(string scoringTeam)
 
     // 通知UI更新比分显示
     UpdateScoreUI();
-    
-    if(RedScore >= 20 || BlueScore >= 20)
+}
+
+/// <summary>
+/// 结束当前比赛
+/// </summary>
+private void EndMatch()
+{
+    CurrentMatchNumber++;
+
+    // 记录本场比赛结果
+    MatchResult result = new MatchResult
+    {
+        MatchNumber = CurrentMatchNumber,
+        RedFinalScore = RedScore,
+        BlueFinalScore = BlueScore
+    };
+    MatchHistory.Add(result);
+
+    Debug.Log($"===== 第{CurrentMatchNumber}场比赛结束 =====");
+    Debug.Log($"红方: {RedScore} - 蓝方: {BlueScore}");
+
+    // 检查是否达到20场比赛
+    if (CurrentMatchNumber >= TotalMatches)
+    {
+        // 输出最终统计
+        OutputMatchStatistics();
+
+        // 暂停游戏
         EditorApplication.isPaused = true;
+    }
+    else
+    {
+        // 暂停5秒后再开始下一场比赛
+        GamePaused = true;
+        _autoResumeTimer = 0f;
+        _isMatchEndPause = true;
+
+        Debug.Log($"5秒后开始第{CurrentMatchNumber + 1}场比赛...");
+    }
+}
+
+/// <summary>
+/// 开始新的比赛
+/// </summary>
+private void StartNewMatch()
+{
+    Debug.Log($"===== 开始第{CurrentMatchNumber + 1}场比赛 =====");
+    
+    // 重置比分
+    RedScore = 0;
+    BlueScore = 0;
+    NextKickoffTeam = "Red";
+    
+    // 重置比赛状态（包括球员归位、球重置等）
+    ResetMatchState();
+    
+    // 恢复游戏（只需设置GamePaused为false）
+    GamePaused = false;
+    
+    // 更新UI
+    UpdateScoreUI();
+}
+
+/// <summary>
+/// 重置比赛状态
+/// </summary>
+private void ResetMatchState()
+{
+    // 清除传球目标
+    if (Context != null)
+    {
+        Context.IncomingPassTarget = null;
+        Context.SetPassTarget(null);
+        Context.SetStealCooldown(0f);
+    }
+    
+    // 重置所有球员状态
+    foreach(var player in TeamRedPlayers)
+    {
+        var playerAI = player.GetComponent<PlayerAI>();
+        if(playerAI != null)
+        {
+            playerAI.ResetPosition();
+            playerAI.ResetBlackboard();
+            playerAI.ResetBehaviorTree();
+        }
+    }
+    
+    foreach(var player in TeamBluePlayers)
+    {
+        var playerAI = player.GetComponent<PlayerAI>();
+        if(playerAI != null)
+        {
+            playerAI.ResetPosition();
+            playerAI.ResetBlackboard();
+            playerAI.ResetBehaviorTree();
+        }
+    }
+    
+    // 重置球的位置
+    ResetBall();
+}
+
+/// <summary>
+/// 输出比赛统计信息
+/// </summary>
+private void OutputMatchStatistics()
+{
+    System.Text.StringBuilder sb = new System.Text.StringBuilder();
+    
+    sb.AppendLine("========================================");
+    sb.AppendLine("       20场比赛统计报告");
+    sb.AppendLine("========================================");
+    sb.AppendLine();
+    
+    // 输出每场比赛的比分
+    sb.AppendLine("【每场比赛比分】");
+    foreach(var result in MatchHistory)
+    {
+        sb.AppendLine($"第{result.MatchNumber}场: 红方 {result.RedFinalScore} - 蓝方 {result.BlueFinalScore}");
+    }
+    
+    sb.AppendLine();
+    
+    // 计算统计信息
+    float redTotal = 0;
+    float blueTotal = 0;
+    int redWins = 0;
+    int blueWins = 0;
+    int draws = 0;
+    
+    foreach(var result in MatchHistory)
+    {
+        redTotal += result.RedFinalScore;
+        blueTotal += result.BlueFinalScore;
+        
+        if(result.RedFinalScore > result.BlueFinalScore)
+            redWins++;
+        else if(result.BlueFinalScore > result.RedFinalScore)
+            blueWins++;
+        else
+            draws++;
+    }
+    
+    float redAverage = redTotal / MatchHistory.Count;
+    float blueAverage = blueTotal / MatchHistory.Count;
+    
+    // 输出统计信息
+    sb.AppendLine("【统计汇总】");
+    sb.AppendLine($"比赛场次: {MatchHistory.Count}");
+    sb.AppendLine();
+    sb.AppendLine($"红方平均得分: {redAverage:F2}");
+    sb.AppendLine($"蓝方平均得分: {blueAverage:F2}");
+    sb.AppendLine($"红方总进球数: {redTotal}");
+    sb.AppendLine($"蓝方总进球数: {blueTotal}");
+    sb.AppendLine();
+    sb.AppendLine($"红方胜场: {redWins}");
+    sb.AppendLine($"蓝方胜场: {blueWins}");
+    sb.AppendLine($"平局数: {draws}");
+    sb.AppendLine();
+    
+    // 计算胜负关系
+    sb.AppendLine("【胜负分析】");
+    if(redWins > blueWins)
+    {
+        sb.AppendLine($"红方表现更优，领先 {redWins - blueWins} 场");
+    }
+    else if(blueWins > redWins)
+    {
+        sb.AppendLine($"蓝方表现更优，领先 {blueWins - redWins} 场");
+    }
+    else
+    {
+        sb.AppendLine("双方平分秋色");
+    }
+    
+    sb.AppendLine("========================================");
+    
+    Debug.Log(sb.ToString());
 }
 
     /// <summary>

@@ -81,7 +81,7 @@ namespace BehaviorTree.Runtime
                     bestPosition = testPos;
                 }
             }
-            Debug.Log($"{owner.name} desiredPosition: {desiredPosition}, bestPosition: {bestPosition}, bestScore: {bestScore}");
+            //Debug.Log($"{owner.name} desiredPosition: {desiredPosition}, bestPosition: {bestPosition}, bestScore: {bestScore}");
             return bestPosition;
         }
 

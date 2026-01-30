@@ -23,8 +23,8 @@ namespace BehaviorTree.Runtime
             if (IsClosestTeammateToTarget(ballHolder.transform.position) || IsLastDefensePlayer())
             {
                 // 决策：去抢球！
-                Debug.Log($"{Blackboard.Owner.name} 防守选择：施压 IsClosestTeammateToTarget: " +
-                          $"{IsClosestTeammateToTarget(ballHolder.transform.position)}, IsLastDefensePlayer: {IsLastDefensePlayer()}");
+                //Debug.Log($"{Blackboard.Owner.name} 防守选择：施压 IsClosestTeammateToTarget: " +
+                //          $"{IsClosestTeammateToTarget(ballHolder.transform.position)}, IsLastDefensePlayer: {IsLastDefensePlayer()}");
                 // 将移动目标设为持球人位置
                 Vector3 tackleTarget = ballHolder.transform.position;
                 Blackboard.MoveTarget = Blackboard.Owner.transform.position + (tackleTarget - Blackboard.Owner.transform.position).normalized * FootballConstants.DecideMinStep;
@@ -40,7 +40,7 @@ namespace BehaviorTree.Runtime
 
             if (bestTarget != null)
             {
-                Debug.Log($"{Blackboard.Owner.name} 防守选择：盯人 {bestTarget.name}");
+                //Debug.Log($"{Blackboard.Owner.name} 防守选择：盯人 {bestTarget.name}");
                 Blackboard.MarkedPlayer = bestTarget;
                 
 

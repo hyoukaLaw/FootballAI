@@ -399,7 +399,7 @@ namespace BehaviorTree.Runtime
                 sb.AppendLine($"{prefix} [{i}] 总分:{eval.TotalScore:F2} | 位置:{eval.Position} | 区域:{eval.ZoneScore:F1} | 球距:{eval.BallScore:F1} | 盯防:{eval.MarkScore:F1} | 空间:{eval.SpaceScore:F1} | 支持:{eval.SupportScore:F1} | 上抢:{eval.PressingScore:F1} | 安全:{eval.SafetyScore:F1} | 距离:{eval.DistanceFromCurrent:F1}m");
             }
             
-            Debug.Log(sb.ToString());
+            //Debug.Log(sb.ToString());
         }
         #endregion
 
