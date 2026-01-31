@@ -59,6 +59,13 @@ public class MatchManager : MonoBehaviour
     private float _passTimeout = 3.0f;    // 传球超时时间
     private float _autoResumeTimer = 0f; // 自动恢复倒计时
     private bool _isMatchEndPause = false; // 标记是否是比赛结束的暂停
+    
+    private enum GameState { Playing, Goal, OutOfBounds }
+    private GameState _currentGameState = GameState.Playing;
+    private Vector3 _outOfBoundsPosition;
+    private GameObject _throwInPlayer; // 指定的发球球员
+    private float _throwInResumeInterval = 2f; // 界外球恢复延迟时间（秒）
+    
     private void Awake()
     {
         // 初始化单例
@@ -77,9 +84,13 @@ public class MatchManager : MonoBehaviour
         if (_gamePaused)
         {
             // 自动比赛模式下，倒计时5秒后自动恢复
-            if (AutoGame)
+            if (AutoGame  && _currentGameState == GameState.Goal)
             {
                 HandleAutoGame();
+            }
+            else if (_currentGameState == GameState.OutOfBounds)
+            {
+                HandleAutoResumeThrowIn();
             }
             return; // 游戏暂停，不执行任何逻辑
         }
@@ -88,6 +99,7 @@ public class MatchManager : MonoBehaviour
         BallController.Update(); // UpdateBall
         UpdatePassTargetState();// 2. 清理过期的传球状态
         CheckGoal();// 3. 检测进球
+        CheckBallOutOfBounds();// 4. 检测球出界
     }
     
     #region 比赛生命周期
@@ -107,6 +119,7 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void OnGoalScored(string scoringTeam)
     {
+        _currentGameState = GameState.Goal;
         // 更新比分
         if (scoringTeam == "Red")
         {
@@ -452,6 +465,125 @@ public class MatchManager : MonoBehaviour
         if (OnScoreChanged != null)
         {
             OnScoreChanged.Invoke(_redScore, _blueScore);
+        }
+    }
+    #endregion
+    
+    #region 处理出界
+    
+    /// <summary>
+    /// 检测球是否出界
+    /// </summary>
+    private void CheckBallOutOfBounds()
+    {
+        
+        if (Context.IsInField(Ball.transform.position))
+        {
+            return;
+        }
+        
+        // 球出界了
+        _currentGameState = GameState.OutOfBounds;
+        _outOfBoundsPosition = Ball.transform.position;
+        
+        // 确定发球方（最后踢球人的对方）
+        GameObject lastKicker = BallController.GetLastKicker();
+        string throwingTeam = "Red";
+        
+        if (lastKicker != null)
+        {
+            if (TeamRedPlayers.Contains(lastKicker))
+            {
+                throwingTeam = "Blue";
+            }
+            else if (TeamBluePlayers.Contains(lastKicker))
+            {
+                throwingTeam = "Red";
+            }
+        }
+        
+        // 设置发球球员
+        if (throwingTeam == "Red" && RedStartPlayer != null)
+        {
+            _throwInPlayer = RedStartPlayer;
+        }
+        else if (throwingTeam == "Blue" && BlueStartPlayer != null)
+        {
+            _throwInPlayer = BlueStartPlayer;
+        }
+        
+        // 设置球员位置
+        SetupThrowInPositions(throwingTeam);
+        
+        // 重置自动恢复计时器
+        _autoResumeTimer = 0f;
+        _gamePaused = true;
+        
+        Debug.Log($"球出界，由 {throwingTeam} 方 {_throwInPlayer?.name} 在 {_outOfBoundsPosition} 发球");
+    }
+    
+    /// <summary>
+    /// 设置界外球时的球员位置
+    /// </summary>
+    /// <param name="throwingTeam">发球队伍 ("Red" 或 "Blue")</param>
+    private void SetupThrowInPositions(string throwingTeam)
+    {
+        // 清理传球等状态
+        ResetContext();
+        
+        // 将发球球员移动到出界位置
+        if (_throwInPlayer != null)
+        {
+            _throwInPlayer.transform.position = _outOfBoundsPosition;
+        }
+        
+        // 其他球员都回初始位置
+        foreach (var player in TeamRedPlayers)
+        {
+            if (player != _throwInPlayer)
+            {
+                var playerAI = player.GetComponent<PlayerAI>();
+                if (playerAI != null)
+                {
+                    playerAI.ResetPosition();
+                    playerAI.ResetBlackboard();
+                    playerAI.ResetBehaviorTree();
+                }
+            }
+        }
+        
+        foreach (var player in TeamBluePlayers)
+        {
+            if (player != _throwInPlayer)
+            {
+                var playerAI = player.GetComponent<PlayerAI>();
+                if (playerAI != null)
+                {
+                    playerAI.ResetPosition();
+                    playerAI.ResetBlackboard();
+                    playerAI.ResetBehaviorTree();
+                }
+            }
+        }
+        
+        // 将球放在出界位置（由发球球员持有）
+        Ball.transform.position = _outOfBoundsPosition;
+        Context.SetBallHolder(_throwInPlayer);
+    }
+    
+    /// <summary>
+    /// 处理界外球自动恢复
+    /// </summary>
+    private void HandleAutoResumeThrowIn()
+    {
+        _autoResumeTimer += Time.deltaTime;
+        if (_autoResumeTimer >= _throwInResumeInterval)
+        {
+            _currentGameState = GameState.Playing;
+            _autoResumeTimer = 0f;
+            _throwInPlayer = null;
+            _gamePaused = false;
+            Debug.Log("界外球发球，比赛继续");
         }
     }
     #endregion

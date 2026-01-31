@@ -549,7 +549,7 @@ MonoBehaviour:
   PossessionThreshold: 0.8
   GoalDistance: 1
   StealCooldownDuration: 0
-  NextKickoffTeam: Blue
+  NextKickoffTeam: Red
   AutoResumeInterval: 5
   AutoGame: 1
   CurrentMatchNumber: 0

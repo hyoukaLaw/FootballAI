@@ -54,7 +54,9 @@ public class BallController
 
     public GameObject GetLastKicker()
     {
-        return _lastKicker;
+        if(_lastKickerDuration > 0f)
+            return _lastKicker;
+        return null;
     }
     
 
@@ -64,7 +66,6 @@ public class BallController
         if (_lastKickerTimer <= 0f)
         {
             _lastKickerTimer = 0f;
-            _lastKicker = null;
         }
     }
 
