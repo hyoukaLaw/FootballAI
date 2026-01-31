@@ -16,13 +16,10 @@ public class PlayerStats
     public float SprintMultiplier = 1.2f;
     [Header("带球属性")]
     public float TackledDistance = 1.6f;
-    
     [Header("传球属性")]
     public float PassingSpeed = 10f;
-    
     [Range(0.3f, 1.0f)]
     public float ShootingAccuracy = 0.7f;
-
     [Header("防守属性")]
     public float DefensiveAwareness = 1.0f;
 }
@@ -60,30 +57,16 @@ public class PlayerAI : MonoBehaviour
         _blackboard.Owner = this.gameObject; // 记录自己是谁
         _blackboard.Stats = Stats; // 传入球员属性
         _blackboard.Role = PlayerRole; // 传入角色配置
-        
-        
         if (AIBehaviorGraph != null)
         {
-            // 1. 找到图表里的根节点 (Root)
-            // 你可以写个简单的逻辑：没有 Input 连接的节点就是 Root
-            BTGraphNode rootGraphNode = FindRootNode(AIBehaviorGraph);
-
+            BTGraphNode rootGraphNode = FindRootNode(AIBehaviorGraph);//没有 Input 连接的节点就是 Root
             if (rootGraphNode != null)
             {
-                // 2. 【关键时刻】启动工厂模式
-                // 这一行代码执行完，一棵纯净的、独立的 C# 行为树就被创建出来了
                 var runtimeRoot = rootGraphNode.CreateRuntimeNode(_blackboard);
-
                 _tree = new BehaviorTree.Runtime.BehaviorTree(_blackboard);
                 _tree.SetRoot(runtimeRoot);
             }
         }
-
-        // 3. 创建树，把黑板传进去
-        //_tree = new BehaviorTree.Runtime.BehaviorTree(_blackboard);
-
-        // 4. 构建行为树结构 (这里是关键的引用传递！)
-        //_tree.SetRoot(BuildMainTree());
     }
     // 简单的找根节点工具方法
     private BTGraphNode FindRootNode(BTGraph graph)
@@ -97,48 +80,16 @@ public class PlayerAI : MonoBehaviour
         }
         return null;
     }
-    void Update()
-    {
-        // Update已被禁用，改为由MatchManager手动交错控制
-        // Debug.Log($"order Check : {name} {MatchManager.order}");
-        // MatchManager.order++;
-        // if (MatchManager.Instance.GamePaused)
-        //     return;
-        // // 每帧运行行为树
-        // _tree.Tick();
-        //
-        // // 更新执行路径（用于调试）
-        // ExecutionPath = _tree.ExecutionPath;
-    }
 
     /// <summary>
     /// 手动Tick方法，由MatchManager交错调用
     /// </summary>
     public void ManualTick()
     {
-        if (MatchManager.Instance.GamePaused)
-            return;
-        // 每帧运行行为树
         _tree.Tick();
-
-        // 更新执行路径（用于调试）
         ExecutionPath = _tree.ExecutionPath;
     }
     
-    // 辅助条件：我方是否控球？
-    private bool IsTeamControllingBall(FootballBlackboard bb)
-    {
-        // 如果球没人拿，或者球在队友脚下，或者是自己脚下
-        if (bb.MatchContext.GetBallHolder() == null) return false; // 无主球不算控球，通常进入争抢逻辑(防守端处理)
-
-        if (bb.MatchContext.GetBallHolder() == bb.Owner) return true;
-        if (bb.MatchContext.GetTeammates(this.gameObject).Contains(bb.MatchContext.GetBallHolder())) return true;
-
-        return false;
-    }
-    
-    
-     
     // === 新增：归位方法 ===
     public void ResetPosition()
     {
@@ -147,27 +98,13 @@ public class PlayerAI : MonoBehaviour
 
     public void ResetBlackboard()
     {
-        if (_blackboard == null) return;
-
-        // --- 重置个人决策数据 ---
         _blackboard.MoveTarget = Vector3.zero;
-
-        // --- 重置进攻决策数据 ---
         _blackboard.BestPassTarget = null;
         _blackboard.CanShoot = false;
-
-        // --- 重置防守决策数据 ---
         _blackboard.MarkedPlayer = null;
         _blackboard.DefensePosition = Vector3.zero;
-
-        // --- 重置状态效果 ---
         _blackboard.IsStunned = false;
         _blackboard.StunTimer = 0f;
-
-        // 注意：不重置以下字段
-        // - _blackboard.Owner (球员引用)
-        // - _blackboard.MatchContext (全局上下文)
-        // - _blackboard.Stats (球员属性)
     }
 
     public void ResetBehaviorTree()
@@ -191,6 +128,7 @@ public class PlayerAI : MonoBehaviour
         return _blackboard;
     }
     
+    #region Debug
     // Debug
     // 调试用：在 Scene 窗口画出他想去哪
     void OnDrawGizmos()
@@ -276,4 +214,5 @@ public class PlayerAI : MonoBehaviour
             Gizmos.DrawWireSphere(candidate.Position, 0.5f);
         }
     }
+    #endregion
 }

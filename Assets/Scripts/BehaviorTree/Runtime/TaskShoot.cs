@@ -14,10 +14,6 @@ namespace BehaviorTree.Runtime
 
         public override NodeState Evaluate()
         {
-            if (Blackboard.MatchContext == null || Blackboard.MatchContext.Ball == null)
-                return NodeState.FAILURE;
-            
-            GameObject ball = Blackboard.MatchContext.Ball;
             Vector3 goalPos = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
             BallController ballCtrl = MatchManager.Instance.BallController;
             // 计算射门目标点（稍微偏离球门中心，模拟射门精度）

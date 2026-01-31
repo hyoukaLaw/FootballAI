@@ -21,7 +21,7 @@ public class GameManagerUI : MonoBehaviour
             MatchManager.Instance.OnScoreChanged.AddListener(UpdateScoreDisplay);
             
             // 初始化显示
-            UpdateScoreDisplay(MatchManager.Instance.RedScore, MatchManager.Instance.BlueScore);
+            // UpdateScoreDisplay(MatchManager.Instance.RedScore, MatchManager.Instance.BlueScore);
         }
     }
 

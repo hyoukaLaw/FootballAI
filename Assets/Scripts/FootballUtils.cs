@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using BehaviorTree.Runtime;
 
 public static class FootballUtils
 {
@@ -75,7 +74,6 @@ public static class FootballUtils
                 enemiesInFront.Add(enemy);
             }
         }
-
         return enemiesInFront;
     }
     

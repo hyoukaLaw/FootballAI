@@ -44,11 +44,8 @@ public class BallController
             return;
         }
         // --- 正常的飞行逻辑 ---
-        // 2. 移动
         _ballGameObject.transform.position = Vector3.MoveTowards(_ballGameObject.transform.position, _targetPos, _speed * Time.deltaTime);
-        // 3. 到达检测 (自然滚动停止)
-        // 如果一直没人接，球滚到了终点也该停了
-        if (Vector3.Distance(_ballGameObject.transform.position, _targetPos) < FootballConstants.SamePositionDistance)
+        if (Vector3.Distance(_ballGameObject.transform.position, _targetPos) < FootballConstants.SamePositionDistance)// 3. 到达检测 (自然滚动停止)
         {
             _isMoving = false;
         }
@@ -60,7 +57,6 @@ public class BallController
         return _lastKicker;
     }
     
-   
 
     public void UpdateLastKickerReset()
     {
