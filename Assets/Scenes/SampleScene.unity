@@ -537,21 +537,23 @@ MonoBehaviour:
   - {fileID: 1911970295465355901}
   - {fileID: 400217453}
   - {fileID: 664814745}
+  - {fileID: 2130764286}
   TeamBluePlayers:
   - {fileID: 2090009418}
   - {fileID: 368359375}
   - {fileID: 1847371046}
+  - {fileID: 1915791696}
   RedStartPlayer: {fileID: 400217453}
   BlueStartPlayer: {fileID: 368359375}
   Field: {fileID: 619943738}
   PossessionThreshold: 0.8
   GoalDistance: 1
-  GamePaused: 0
-  AutoGame: 1
-  RedScore: 0
-  BlueScore: 0
-  NextKickoffTeam: Blue
   StealCooldownDuration: 0
+  NextKickoffTeam: Blue
+  AutoResumeInterval: 5
+  AutoGame: 1
+  CurrentMatchNumber: 0
+  TotalMatches: 20
   OnScoreChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -588,12 +590,16 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+      propertyPath: PlayerRole
+      value: 
+      objectReference: {fileID: 11400000, guid: abc9e4a136728a744a0e9060892783a5, type: 2}
+    - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: AIBehaviorGraph
       value: 
-      objectReference: {fileID: 11400000, guid: df5feebe84c8f4941a13a986bba6f0d4, type: 2}
+      objectReference: {fileID: 11400000, guid: cdab86a30e758c1498059107c2cb9d9f, type: 2}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.x
-      value: 7.3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.y
@@ -601,7 +607,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: InitialPosition.z
-      value: -9.9
+      value: -10
       objectReference: {fileID: 0}
     - target: {fileID: 35738991383565811, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: Stats.MovementSpeed
@@ -609,7 +615,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.y
@@ -617,7 +623,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -9.9
+      value: -10
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalRotation.w
@@ -657,7 +663,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1255,7 +1261,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 10
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1823,7 +1829,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -10
+      value: -5
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2046,7 +2052,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -7.73
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2054,7 +2060,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.45
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2090,7 +2096,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2331,6 +2337,11 @@ MonoBehaviour:
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
   m_PrefabInstance: {fileID: 1428402840}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1915791696 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+  m_PrefabInstance: {fileID: 456303881}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1938161274
 GameObject:
@@ -2643,6 +2654,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2106595324}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &2130764286 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5718606146349957468, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}
+  m_PrefabInstance: {fileID: 1637958900}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2145055449 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 337658414358645802, guid: 571fcee3adc3f264d801ed2e4b21aeec, type: 3}

@@ -10,11 +10,13 @@ namespace BehaviorTree.Runtime
 
         public override NodeState Evaluate()
         {
-            if(Blackboard.ClearanceTarget != Vector3.negativeInfinity)
+            if(float.IsNegativeInfinity(Blackboard.ClearanceTarget.x) || 
+               float.IsNegativeInfinity(Blackboard.ClearanceTarget.y) || 
+               float.IsNegativeInfinity(Blackboard.ClearanceTarget.z))
             {
-                return NodeState.SUCCESS;
+                return NodeState.FAILURE;
             }
-            return NodeState.FAILURE;
+            return NodeState.SUCCESS;
         }
     }
 }

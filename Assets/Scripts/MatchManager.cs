@@ -46,7 +46,6 @@ public class MatchManager : MonoBehaviour
     private int _redScore = 0; // 红方得分
     private int _blueScore = 0; // 蓝方得分
     
-    
     [Header("比赛统计系统")]
     [ShowInInspector] private bool _gamePaused = false; // 游戏是否暂停
     public bool AutoGame = false; // 是否自动比赛
@@ -537,31 +536,4 @@ public class MatchManager : MonoBehaviour
         Debug.Log(sb.ToString());
     }
     #endregion
-    
-    /// <summary>
-    /// 在Scene视图中显示全局信息
-    /// </summary>
-    void OnGUI()
-    {
-        // 检查是否在Scene视图中
-        if (Event.current.type == EventType.Repaint && Camera.current != null && Camera.current.orthographic)
-        {
-            // 设置文本样式
-            GUIStyle style = new GUIStyle();
-            style.normal.textColor = Color.white;
-            style.fontSize = 14;
-            style.fontStyle = FontStyle.Bold;
-            style.alignment = TextAnchor.UpperRight;
-            style.padding = new RectOffset(10, 10, 10, 10);
-
-            // 计算右上角位置
-            float width = 200f;
-            float height = 30f;
-            Rect rect = new Rect(Screen.width - width - 20, 20, width, height);
-
-            // 显示Player当前直径
-            string diameterText = "Player当前直径: 1.0";
-            GUI.Label(rect, diameterText, style);
-        }
-    }
 }
