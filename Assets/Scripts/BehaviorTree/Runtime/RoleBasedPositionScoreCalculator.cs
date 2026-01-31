@@ -126,7 +126,6 @@ namespace BehaviorTree.Runtime
         {
             float scoreNormalized = 0f;
             float enemyDistanceBase = 3f, distanceThreshold = 1f;
-            float stopGoalBonus = 0.7f;
             float stopPassBonus = 0.4f;
             float baseBonus = 0.1f;
             List<GameObject> enemies = context.GetOpponents(player);
