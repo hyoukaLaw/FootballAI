@@ -726,7 +726,7 @@ MonoBehaviour:
   m_Name: Selector Node Graph
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -1128, y: 136}
+  position: {x: -1304, y: 200}
   ports:
     keys:
     - Entry
@@ -751,6 +751,9 @@ MonoBehaviour:
         reroutePoints: []
       - fieldName: Entry
         node: {fileID: 606134686061415494}
+        reroutePoints: []
+      - fieldName: Entry
+        node: {fileID: 6299905938427137412}
         reroutePoints: []
       _direction: 1
       _connectionType: 0
@@ -902,6 +905,9 @@ MonoBehaviour:
   - {fileID: -9201278397640501960}
   - {fileID: 6116404516525004621}
   - {fileID: 6242465302689354205}
+  - {fileID: 3518647957951681629}
+  - {fileID: 6678893352604072993}
+  - {fileID: 6299905938427137412}
 --- !u!114 &28208552656871271
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1531,6 +1537,48 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
+--- !u!114 &3518647957951681629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7322b440eafa9ea4da4f59cbfcc0d586, type: 3}
+  m_Name: Task Kick Outside Graph
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -1000, y: -504}
+  ports:
+    keys:
+    - Entry
+    - Exit
+    values:
+    - _fieldName: Entry
+      _node: {fileID: 3518647957951681629}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Exit
+        node: {fileID: 6299905938427137412}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Exit
+      _node: {fileID: 3518647957951681629}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  Entry: 0
+  Exit: 0
 --- !u!114 &3644034661533564236
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1765,6 +1813,55 @@ MonoBehaviour:
   Entry: 0
   Exit: 0
   AbortType: 0
+--- !u!114 &6299905938427137412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed37a66498fc045488008517c68a9953, type: 3}
+  m_Name: StunSeq
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -1352, y: -536}
+  ports:
+    keys:
+    - Entry
+    - Exit
+    values:
+    - _fieldName: Entry
+      _node: {fileID: 6299905938427137412}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Exit
+        node: {fileID: -1525673592170635992}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Exit
+      _node: {fileID: 6299905938427137412}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Entry
+        node: {fileID: 6678893352604072993}
+        reroutePoints: []
+      - fieldName: Entry
+        node: {fileID: 3518647957951681629}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  Entry: 0
+  Exit: 0
+  AbortType: 0
 --- !u!114 &6308731643895650825
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1817,6 +1914,48 @@ MonoBehaviour:
   Entry: 0
   Exit: 0
   AbortType: 0
+--- !u!114 &6678893352604072993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32f3f8424d5d3d246a553f99e278e8f7, type: 3}
+  m_Name: Check Is Test Outside Kick Graph
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -1057.0913, y: -628.2657}
+  ports:
+    keys:
+    - Entry
+    - Exit
+    values:
+    - _fieldName: Entry
+      _node: {fileID: 6678893352604072993}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Exit
+        node: {fileID: 6299905938427137412}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Exit
+      _node: {fileID: 6678893352604072993}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  Entry: 0
+  Exit: 0
 --- !u!114 &6987147265777343714
 MonoBehaviour:
   m_ObjectHideFlags: 0

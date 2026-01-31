@@ -49,6 +49,8 @@ namespace BehaviorTree.Runtime
         public List<CandidatePosition> DebugCandidatePositions;
         public bool DebugShowCandidates = true;
 
+        public bool IsPassingOutsideBall = false;
+        public bool IsTestKickOutside = false;
     }
 
     public static class BlackboardUtils

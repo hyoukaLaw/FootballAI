@@ -531,44 +531,40 @@ public class MatchManager : MonoBehaviour
         // 清理传球等状态
         ResetContext();
         
-        // 将发球球员移动到出界位置
-        if (_throwInPlayer != null)
-        {
-            _throwInPlayer.transform.position = _outOfBoundsPosition;
-        }
-        
         // 其他球员都回初始位置
         foreach (var player in TeamRedPlayers)
         {
-            if (player != _throwInPlayer)
+            var playerAI = player.GetComponent<PlayerAI>();
+            if (playerAI != null)
             {
-                var playerAI = player.GetComponent<PlayerAI>();
-                if (playerAI != null)
-                {
-                    playerAI.ResetPosition();
-                    playerAI.ResetBlackboard();
-                    playerAI.ResetBehaviorTree();
-                }
+                playerAI.ResetPosition();
+                playerAI.ResetBlackboard();
+                playerAI.ResetBehaviorTree();
             }
+            
         }
         
         foreach (var player in TeamBluePlayers)
         {
-            if (player != _throwInPlayer)
+            var playerAI = player.GetComponent<PlayerAI>();
+            if (playerAI != null)
             {
-                var playerAI = player.GetComponent<PlayerAI>();
-                if (playerAI != null)
-                {
-                    playerAI.ResetPosition();
-                    playerAI.ResetBlackboard();
-                    playerAI.ResetBehaviorTree();
-                }
+                playerAI.ResetPosition();
+                playerAI.ResetBlackboard();
+                playerAI.ResetBehaviorTree();
             }
+            
         }
-        
+                
+        // 将发球球员移动到出界位置
+        if (_throwInPlayer != null)
+        {
+            _throwInPlayer.transform.position = FootballUtils.ClampToField(Context, _outOfBoundsPosition, out bool wasClamped);
+        }
         // 将球放在出界位置（由发球球员持有）
-        Ball.transform.position = _outOfBoundsPosition;
+        Ball.transform.position = FootballUtils.ClampToField(Context, _outOfBoundsPosition, out bool _);
         Context.SetBallHolder(_throwInPlayer);
+        _throwInPlayer.GetComponent<PlayerAI>().GetBlackboard().IsPassingOutsideBall = true;
     }
     
     /// <summary>

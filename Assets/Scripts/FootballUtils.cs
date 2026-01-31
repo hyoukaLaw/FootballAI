@@ -1,8 +1,27 @@
 using System.Collections.Generic;
+using BehaviorTree.Runtime;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public static class FootballUtils
 {
+    public static Vector3 ClampToField(MatchContext matchContext, Vector3 pos, out bool wasClamped)
+    {
+        float leftBorder = matchContext.GetLeftBorder();
+        float rightBorder = matchContext.GetRightBorder();
+        float forwardBorder = matchContext.GetForwardBorder();
+        float backwardBorder = matchContext.GetBackwardBorder();
+
+        float originalX = pos.x;
+        float originalZ = pos.z;
+
+        pos.x = Mathf.Clamp(pos.x, leftBorder, rightBorder);
+        pos.z = Mathf.Clamp(pos.z, backwardBorder, forwardBorder);
+        // 检查是否发生了clamp操作
+        wasClamped = (originalX != pos.x) || (originalZ != pos.z);
+        return pos;
+    }
+    
     public static bool IsBehind(GameObject me, GameObject target)
     {
         float enemyGoalPosZ = MatchManager.Instance.Context.GetEnemyGoalPosition(me).z;
@@ -120,6 +139,23 @@ public static class FootballUtils
             }
         }
         return closestEnemy;
+    }
+
+    public static GameObject FindClosestTeammate(GameObject owner, List<GameObject> teammates)
+    {
+        GameObject closestTeammate = null;
+        float closestDist = float.MaxValue;
+        foreach (var teammate in teammates)
+        {
+            if (teammate == owner) continue;
+            float d = Vector3.Distance(owner.transform.position, teammate.transform.position);
+            if (d < closestDist)
+            {
+                closestDist = d;
+                closestTeammate = teammate;
+            }
+        }
+        return closestTeammate;
     }
     
     public static Vector3 GetPositionTowards(Vector3 cur, Vector3 target, float maxDistance)
