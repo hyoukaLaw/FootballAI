@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace BehaviorTree.Runtime
 {
@@ -25,7 +25,7 @@ namespace BehaviorTree.Runtime
                 (IsLastDefensePlayer() || FootballUtils.IsClosestTeammateToTarget(ballPos, Blackboard.Owner, teammates)) && 
                 !IsBallHolderMark(Blackboard.Owner.transform.position))
             {
-                Debug.Log($"{Blackboard.Owner.name} is in danger");
+                MyLog.LogInfo($"{Blackboard.Owner.name} is in danger");
                 return true;
             }
             return false;

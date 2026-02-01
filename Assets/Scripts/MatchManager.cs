@@ -323,7 +323,7 @@ public class MatchManager : MonoBehaviour
         {
             ZoneUtils.ZoneRange zoneRange = ZoneUtils.GetZoneRange((FieldZone)fieldZone,
                 Context.GetEnemyGoalPosition(TeamRedPlayers[0]), Context.GetMyGoalPosition(TeamRedPlayers[0]));
-            Debug.Log($"fieldZone: {fieldZone.ToString()} {zoneRange.LeftBottom} {zoneRange.Width} {zoneRange.Length}");
+            MyLog.LogInfo($"fieldZone: {fieldZone.ToString()} {zoneRange.LeftBottom} {zoneRange.Width} {zoneRange.Length}");
         }
     }
     #endregion
@@ -425,7 +425,7 @@ public class MatchManager : MonoBehaviour
             // 移除随机性，使用确定性选择规则
             closestPlayer = closestPlayers.OrderBy(p => p.name).FirstOrDefault();
         }
-        if(closestPlayer != Context.GetBallHolder()) Debug.Log($"possession {Context.GetBallHolder()?.name}->{closestPlayer?.name}");
+        if(closestPlayer != Context.GetBallHolder()) MyLog.LogInfo($"possession {Context.GetBallHolder()?.name}->{closestPlayer?.name}");
         Context.SetBallHolder(closestPlayer);
     }
 
@@ -519,7 +519,7 @@ public class MatchManager : MonoBehaviour
         _autoResumeTimer = 0f;
         _gamePaused = true;
         
-        Debug.Log($"球出界，由 {throwingTeam} 方 {_throwInPlayer?.name} 在 {_outOfBoundsPosition} 发球");
+        MyLog.LogInfo($"球出界，由 {throwingTeam} 方 {_throwInPlayer?.name} 在 {_outOfBoundsPosition} 发球");
     }
     
     /// <summary>
@@ -579,7 +579,7 @@ public class MatchManager : MonoBehaviour
             _autoResumeTimer = 0f;
             _throwInPlayer = null;
             _gamePaused = false;
-            Debug.Log("界外球发球，比赛继续");
+            MyLog.LogInfo("界外球发球，比赛继续");
         }
     }
     #endregion
@@ -661,7 +661,7 @@ public class MatchManager : MonoBehaviour
         
         sb.AppendLine("========================================");
         
-        Debug.Log(sb.ToString());
+        MyLog.LogInfo(sb.ToString());
     }
     #endregion
 }

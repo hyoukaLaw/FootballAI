@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -51,7 +51,7 @@ namespace BehaviorTree.Graph.Editor
                 if (!string.IsNullOrEmpty(fileContent))
                 {
                     File.WriteAllText(filePath, fileContent);
-                    Debug.Log($"[Generated] {graphNodeName} at {filePath}");
+                    MyLog.LogInfo($"[Generated] {graphNodeName} at {filePath}");
                     count++;
                 }
             }
@@ -63,7 +63,7 @@ namespace BehaviorTree.Graph.Editor
             }
             else
             {
-                Debug.Log("No new nodes generated. All graph nodes are up to date.");
+                MyLog.LogInfo("No new nodes generated. All graph nodes are up to date.");
             }
         }
 
@@ -86,7 +86,7 @@ namespace BehaviorTree.Graph.Editor
             }
             else
             {
-                Debug.LogWarning($"[Skipped] {runtimeType.Name} does not have a standard constructor (Blackboard) or (Blackboard, List<Node>).");
+                MyLog.LogWarning($"[Skipped] {runtimeType.Name} does not have a standard constructor (Blackboard) or (Blackboard, List<Node>).");
                 return null;
             }
         }

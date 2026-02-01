@@ -23,7 +23,7 @@ public class BallController
         _isMoving = true;
         _lastKicker = kicker;
         _lastKickerTimer = _lastKickerDuration;
-        Debug.Log($"{_lastKicker.name} Ball KickTo {_targetPos} {_speed}");
+        MyLog.LogInfo($"{_lastKicker.name} Ball KickTo {_targetPos} {_speed}");
     }
 
     public void Update()
@@ -51,7 +51,6 @@ public class BallController
         }
     }
     
-
     public GameObject GetLastKicker()
     {
         if(_lastKickerDuration > 0f)
@@ -59,7 +58,6 @@ public class BallController
         return null;
     }
     
-
     public void UpdateLastKickerReset()
     {
         _lastKickerTimer -= Time.deltaTime;

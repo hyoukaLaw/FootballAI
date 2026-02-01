@@ -27,7 +27,7 @@ namespace BehaviorTree.Runtime
                         if (status == NodeState.FAILURE)
                         {
                             _currentIndex = 0; // 失败，重置
-                            Debug.Log($"{Blackboard.Owner.name} Abort {ChildrenNodes[_currentIndex].GetNodeTypeName()}");
+                            MyLog.LogInfo($"{Blackboard.Owner.name} Abort {ChildrenNodes[_currentIndex].GetNodeTypeName()}");
                             NodeState = NodeState.FAILURE;
                             return NodeState.FAILURE;
                         }

@@ -53,7 +53,7 @@ namespace BehaviorTree.Runtime
             // 最后是带球
             float dribbleScore = CalculateDribbleScore(out List<GameObject> enemiesInFront);
             Vector3 dribbleTarget = GetDribbleTarget(enemiesInFront, enemyGoalPosition);
-            Debug.Log($"TaskEvaluateOffensiveOptions({Blackboard.Owner.name}): " +
+            MyLog.LogInfo($"TaskEvaluateOffensiveOptions({Blackboard.Owner.name}): " +
                       $"shootScore={shootScore}(shootBlockFactor={shootBlockFactor}), bestPassScore={bestPassScore}, dribbleScore={dribbleScore}" +
                       $"bestPassTarget={bestPassTarget?.name}, dribbleTarget={dribbleTarget}");
             
