@@ -51,7 +51,6 @@ namespace BehaviorTree.Graph.Editor
                 if (!string.IsNullOrEmpty(fileContent))
                 {
                     File.WriteAllText(filePath, fileContent);
-                    MyLog.LogInfo($"[Generated] {graphNodeName} at {filePath}");
                     count++;
                 }
             }
@@ -63,7 +62,7 @@ namespace BehaviorTree.Graph.Editor
             }
             else
             {
-                MyLog.LogInfo("No new nodes generated. All graph nodes are up to date.");
+                EditorUtility.DisplayDialog("Graph Node Generator",$"No Nodes Generated","ok");
             }
         }
 

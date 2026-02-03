@@ -21,7 +21,6 @@ namespace BehaviorTree.Runtime
 
             // 踢球
             ballCtrl.KickTo(Blackboard.Owner, shootTarget, _shootPower);
-            MyLog.LogInfo($"{Blackboard.Owner.name} Shoot {Time.realtimeSinceStartup} {Time.frameCount} {shootTarget}");
             Blackboard.IsStunned = true;
             Blackboard.StunTimer = Blackboard.StunDuration;
             return NodeState.SUCCESS;

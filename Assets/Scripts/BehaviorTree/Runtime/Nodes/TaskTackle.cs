@@ -24,7 +24,6 @@ namespace BehaviorTree.Runtime
             if(random <= tackleChance)
             {
                 // 抢断成功！
-                MyLog.LogInfo($"{Blackboard.Owner.name} Tackle Chance :{tackleChance} Ballholder:{ballHolder.name} Distance:{distanceToBallHolder} {Time.frameCount}");
                 StealBall(owner);
                 return NodeState.SUCCESS;
             }
@@ -32,7 +31,6 @@ namespace BehaviorTree.Runtime
             {
                 // 抢断失败
                 BlackboardUtils.StartStun(Blackboard, 0.5f);
-                MyLog.LogInfo($"{Blackboard.Owner.name} Tackle failed :{tackleChance} Ballholder:{ballHolder.name} Distance:{distanceToBallHolder} {Time.frameCount}");
                 return NodeState.FAILURE;
             }
         }

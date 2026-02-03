@@ -123,7 +123,6 @@ namespace BehaviorTree.Runtime
                 if (finalPosition != intendedPosition)
                 {
                     string debugInfo = GetAvoidanceDebugInfo(owner, intendedPosition, finalPosition);
-                    MyLog.LogInfo($"[{Time.frameCount}帧] {owner.name}: {debugInfo}");
                 }
             #endif
         }

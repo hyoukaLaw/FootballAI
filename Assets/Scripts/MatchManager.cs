@@ -157,6 +157,7 @@ public class MatchManager : MonoBehaviour
             BlueFinalScore = _blueScore
         };
         MatchHistory.Add(result);
+        LogOneMatchResult(result);
 
         // 检查是否达到20场比赛
         if (CurrentMatchNumber >= TotalMatches)
@@ -173,6 +174,12 @@ public class MatchManager : MonoBehaviour
             _autoResumeTimer = 0f;
             _isMatchEndPause = true;
         }
+    }
+
+    private void LogOneMatchResult(MatchResult result)
+    {
+        MyLog.LogInfo($"第{result.MatchNumber}场比赛: Red {result.RedFinalScore} - Blue {result.BlueFinalScore}");
+        OutputMatchStatistics();
     }
 
     /// <summary>
@@ -518,8 +525,6 @@ public class MatchManager : MonoBehaviour
         // 重置自动恢复计时器
         _autoResumeTimer = 0f;
         _gamePaused = true;
-        
-        MyLog.LogInfo($"球出界，由 {throwingTeam} 方 {_throwInPlayer?.name} 在 {_outOfBoundsPosition} 发球");
     }
     
     /// <summary>
@@ -579,7 +584,6 @@ public class MatchManager : MonoBehaviour
             _autoResumeTimer = 0f;
             _throwInPlayer = null;
             _gamePaused = false;
-            MyLog.LogInfo("界外球发球，比赛继续");
         }
     }
     #endregion
@@ -594,7 +598,7 @@ public class MatchManager : MonoBehaviour
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         
         sb.AppendLine("========================================");
-        sb.AppendLine("       20场比赛统计报告");
+        sb.AppendLine("       比赛统计报告");
         sb.AppendLine("========================================");
         sb.AppendLine();
         

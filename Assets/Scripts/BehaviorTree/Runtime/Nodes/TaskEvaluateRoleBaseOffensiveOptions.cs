@@ -748,7 +748,7 @@ namespace BehaviorTree.Runtime
                 sb.AppendLine($"目标详情: {log.TargetDescription}");
             }
             sb.AppendLine("======================================");
-            MyLog.LogInfo(sb.ToString());
+            //MyLog.LogInfo(sb.ToString());
         }
         #endregion
     }

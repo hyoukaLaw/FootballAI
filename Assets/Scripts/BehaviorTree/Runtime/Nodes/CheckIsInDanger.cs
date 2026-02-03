@@ -25,7 +25,6 @@ namespace BehaviorTree.Runtime
                 (IsLastDefensePlayer() || FootballUtils.IsClosestTeammateToTarget(ballPos, Blackboard.Owner, teammates)) && 
                 !IsBallHolderMark(Blackboard.Owner.transform.position))
             {
-                MyLog.LogInfo($"{Blackboard.Owner.name} is in danger");
                 return true;
             }
             return false;

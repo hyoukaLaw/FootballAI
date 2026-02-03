@@ -23,7 +23,7 @@ public class BallController
         _isMoving = true;
         _lastKicker = kicker;
         _lastKickerTimer = _lastKickerDuration;
-        MyLog.LogInfo($"{_lastKicker.name} Ball KickTo {_targetPos} {_speed}");
+        //MyLog.LogInfo($"{_lastKicker.name} Ball KickTo {_targetPos} {_speed}");
     }
 
     public void Update()

@@ -49,14 +49,9 @@ namespace BehaviorTree.Runtime
                     bestPassTarget = mate;
                 }
             }
-            
             // 最后是带球
             float dribbleScore = CalculateDribbleScore(out List<GameObject> enemiesInFront);
             Vector3 dribbleTarget = GetDribbleTarget(enemiesInFront, enemyGoalPosition);
-            MyLog.LogInfo($"TaskEvaluateOffensiveOptions({Blackboard.Owner.name}): " +
-                      $"shootScore={shootScore}(shootBlockFactor={shootBlockFactor}), bestPassScore={bestPassScore}, dribbleScore={dribbleScore}" +
-                      $"bestPassTarget={bestPassTarget?.name}, dribbleTarget={dribbleTarget}");
-            
             if(shootScore > bestPassScore && shootScore > dribbleScore)
             {
                 DecideToShoot();
@@ -69,7 +64,6 @@ namespace BehaviorTree.Runtime
             {
                 DecideToDribble(dribbleTarget);
             }
-            
             return NodeState.SUCCESS;
         }
 

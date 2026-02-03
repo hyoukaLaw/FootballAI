@@ -50,8 +50,6 @@ namespace BehaviorTree.Editor
             string assetPath = $"{folderPath}/ForwardRole.asset";
             AssetDatabase.CreateAsset(preset, assetPath);
             AssetDatabase.SaveAssets();
-
-            MyLog.LogInfo($"已生成前锋角色预设: {assetPath}");
         }
 
         private static void GenerateMidfielderPreset(string folderPath)
@@ -61,8 +59,6 @@ namespace BehaviorTree.Editor
             string assetPath = $"{folderPath}/MidfielderRole.asset";
             AssetDatabase.CreateAsset(preset, assetPath);
             AssetDatabase.SaveAssets();
-
-            MyLog.LogInfo($"已生成中场角色预设: {assetPath}");
         }
 
         private static void GenerateDefenderPreset(string folderPath)
@@ -72,8 +68,6 @@ namespace BehaviorTree.Editor
             string assetPath = $"{folderPath}/DefenderRole.asset";
             AssetDatabase.CreateAsset(preset, assetPath);
             AssetDatabase.SaveAssets();
-
-            MyLog.LogInfo($"已生成后卫角色预设: {assetPath}");
         }
         
         private static void SetUpForwardPreset(PlayerRole preset)

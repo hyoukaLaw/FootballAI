@@ -55,7 +55,6 @@ namespace BehaviorTree.Runtime
                     Blackboard.MatchContext.GetTeammates(owner), Blackboard.MatchContext.GetOpponents(owner));
                 return NodeState.SUCCESS;
             }
-            MyLog.LogInfo($"{Blackboard.Owner.name} TaskEvaluateDefensiveState: Failure");
             return NodeState.FAILURE;
         }
 
