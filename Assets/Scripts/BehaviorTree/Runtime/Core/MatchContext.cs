@@ -54,7 +54,7 @@ namespace BehaviorTree.Runtime
         {
             if (IncomingPassTarget != null)
             {
-                _passTimer += Time.deltaTime;
+                _passTimer += TimeManager.Instance.GetDeltaTime();
 
                 // 超时或球已被接住，清除传球目标
                 if (_passTimer > passTimeout || ballHolder != null)

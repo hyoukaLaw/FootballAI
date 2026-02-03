@@ -14,7 +14,7 @@ namespace BehaviorTree.Runtime
             }
 
             // 更新停顿计时器
-            Blackboard.StunTimer -= Time.deltaTime;
+            Blackboard.StunTimer -= TimeManager.Instance.GetDeltaTime();
 
             if (Blackboard.StunTimer <= 0f)
             {

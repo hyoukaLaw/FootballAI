@@ -79,7 +79,7 @@ public class MatchManager : MonoBehaviour
     }
 
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (_gamePaused)
         {
@@ -361,9 +361,9 @@ public class MatchManager : MonoBehaviour
 
     private void HandleAutoGame()
     {
-        _autoResumeTimer += Time.deltaTime;
+        _autoResumeTimer += TimeManager.Instance.GetDeltaTime();
         if (_autoResumeTimer >= AutoResumeInterval)
-        {
+    {
             if (_isMatchEndPause)
             {
                 // 比赛结束的暂停：开始下一场比赛
@@ -395,7 +395,7 @@ public class MatchManager : MonoBehaviour
     private void UpdatePossessionState()
     {
         // 更新抢断保护期计时器
-        Context.UpdateStealCooldown(Time.deltaTime);
+        Context.UpdateStealCooldown(TimeManager.Instance.GetDeltaTime());
         if(BallController.GetIsMoving())
             Context.SetBallHolder(null);
         // 两种情况可以进行争球：1 没有持球人
@@ -577,9 +577,9 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void HandleAutoResumeThrowIn()
     {
-        _autoResumeTimer += Time.deltaTime;
+        _autoResumeTimer += TimeManager.Instance.GetDeltaTime();
         if (_autoResumeTimer >= _throwInResumeInterval)
-        {
+    {
             _currentGameState = GameState.Playing;
             _autoResumeTimer = 0f;
             _throwInPlayer = null;

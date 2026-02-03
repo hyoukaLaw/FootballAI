@@ -23,7 +23,7 @@ namespace BehaviorTree.Runtime
                 return NodeState.SUCCESS;
             }
             float speed = Blackboard.Stats.MovementSpeed;
-            Vector3 intendedPos = Vector3.MoveTowards(owner.transform.position, target, speed * Time.deltaTime);
+            Vector3 intendedPos = Vector3.MoveTowards(owner.transform.position, target, speed * TimeManager.Instance.GetDeltaTime());
             List<GameObject> teammates = Blackboard.MatchContext.GetTeammates(owner);
             // 应用避让机制（独立功能，可开关）
             Vector3 finalPosition = MovementAvoidance.ApplyAvoidance(owner, intendedPos, teammates);

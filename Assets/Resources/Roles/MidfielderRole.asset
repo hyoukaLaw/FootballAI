@@ -44,9 +44,9 @@ MonoBehaviour:
     WeightPressing: 0
     WeightSupport: 25
   DefendPositionWeight:
-    WeightBallDist: 0
+    WeightBallDist: 5
     WeightGoalDist: 0
-    WeightMarking: 15
+    WeightMarking: 10
     WeightSpace: 0
     WeightSafety: 0
     WeightPressing: 35

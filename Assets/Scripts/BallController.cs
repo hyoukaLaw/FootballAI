@@ -44,7 +44,7 @@ public class BallController
             return;
         }
         // --- 正常的飞行逻辑 ---
-        _ballGameObject.transform.position = Vector3.MoveTowards(_ballGameObject.transform.position, _targetPos, _speed * Time.deltaTime);
+        _ballGameObject.transform.position = Vector3.MoveTowards(_ballGameObject.transform.position, _targetPos, _speed * TimeManager.Instance.GetDeltaTime());
         if (Vector3.Distance(_ballGameObject.transform.position, _targetPos) < FootballConstants.SamePositionDistance)// 3. 到达检测 (自然滚动停止)
         {
             _isMoving = false;
@@ -60,7 +60,7 @@ public class BallController
     
     public void UpdateLastKickerReset()
     {
-        _lastKickerTimer -= Time.deltaTime;
+        _lastKickerTimer -= TimeManager.Instance.GetDeltaTime();
         if (_lastKickerTimer <= 0f)
         {
             _lastKickerTimer = 0f;
