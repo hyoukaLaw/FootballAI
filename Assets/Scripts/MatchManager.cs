@@ -14,6 +14,7 @@ public class MatchManager : MonoBehaviour
         public int MatchNumber;
         public int RedFinalScore;
         public int BlueFinalScore;
+        public List<string> ScoreChanges = new List<string>();
     }
     // --- 单例模式 (Singleton) ---
     // 方便任何地方都能访问 MatchManager.Instance
@@ -52,6 +53,7 @@ public class MatchManager : MonoBehaviour
     public int CurrentMatchNumber = 0; // 当前比赛场次
     public int TotalMatches = 20; // 总比赛场次
     public List<MatchResult> MatchHistory = new List<MatchResult>(); // 比赛历史记录
+    private List<string> _currentMatchScoreChanges = new List<string>(); // 当前比赛比分变动记录
 
     
     public UnityEvent<int, int> OnScoreChanged; // 红方分数, 蓝方分数
@@ -129,6 +131,8 @@ public class MatchManager : MonoBehaviour
         {
             _blueScore++;
         }
+        // 记录比分变动
+        _currentMatchScoreChanges.Add($"{_redScore}:{_blueScore}");
         if((_redScore + _blueScore) % 2 == 0) NextKickoffTeam = "Red";
         else NextKickoffTeam = "Blue";
         // 检查是否有队伍达到20分，如果是则结束比赛
@@ -154,7 +158,8 @@ public class MatchManager : MonoBehaviour
         {
             MatchNumber = CurrentMatchNumber,
             RedFinalScore = _redScore,
-            BlueFinalScore = _blueScore
+            BlueFinalScore = _blueScore,
+            ScoreChanges = new List<string>(_currentMatchScoreChanges)
         };
         MatchHistory.Add(result);
         LogOneMatchResult(result);
@@ -178,7 +183,15 @@ public class MatchManager : MonoBehaviour
 
     private void LogOneMatchResult(MatchResult result)
     {
-        MyLog.LogInfo($"第{result.MatchNumber}场比赛: Red {result.RedFinalScore} - Blue {result.BlueFinalScore}");
+        string log = $"第{result.MatchNumber}场比赛: Red {result.RedFinalScore} - Blue {result.BlueFinalScore}";
+        if (result.ScoreChanges.Count > 0)
+        {
+            foreach (var scoreChange in result.ScoreChanges)
+            {
+                log += $"\n{scoreChange}";
+            }
+        }
+        MyLog.LogInfo(log);
         OutputMatchStatistics();
     }
 
@@ -191,6 +204,7 @@ public class MatchManager : MonoBehaviour
         _redScore = 0;
         _blueScore = 0;
         NextKickoffTeam = "Red";
+        _currentMatchScoreChanges.Clear();
         // 重置比赛状态（包括球员归位、球重置等）
         ResetMatchState();
         // 恢复游戏（只需设置GamePaused为false）
