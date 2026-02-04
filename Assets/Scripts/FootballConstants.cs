@@ -71,7 +71,7 @@ public static class FootballConstants
     public static float PassMinDistance = 2f;
     public static float PassMaxDistance = 10f;
     public static float PassBlockThreshold = 1f;
-    public static float BasePassScoreDefender = 80f;
+    public static float BasePassScoreDefender = 60f;
     public static float PassScoreDistancePenalty = 5f;
     public static float BaseClearanceScore = 30f;
     public static float ClearanceScorePerEnemy = 10f;
@@ -82,8 +82,10 @@ public static class FootballConstants
     public static float ClearKickSpeed = 20f;
 
     public static float BaseScoreShootScore = 80f;
-    public static float BasePassScoreForward = 60f;
+    public static float BasePassScoreForward = 40f;
     public static float PassForwardDirectionBonus = 10f;
+
+    public static float BasePassScoreMidfielder = 60f;
     
     // 通用常量
     public static float FloatEpsilon = 0.0001f;

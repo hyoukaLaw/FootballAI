@@ -29,7 +29,7 @@ namespace BehaviorTree.Runtime
                         // RUNNING 代表：StunSeq 虽然没把整套动作做完，但它已经在运行了（比如正在晕），所以必须马上切过去。
                         if (status == NodeState.SUCCESS || status == NodeState.RUNNING)
                         {
-                            MyLog.LogInfo($"{Blackboard.Owner.name} Abort {ChildrenNodes[_currentIndex].GetNodeTypeName()}");
+                            //MyLog.LogInfo($"{Blackboard.Owner.name} Abort {ChildrenNodes[_currentIndex].GetNodeTypeName()}");
                             // 1. 杀掉旧的（当前正在运行的低优先级节点）
                             ChildrenNodes[_currentIndex].OnEnd();
                             // 2. 处理新的状态

@@ -78,7 +78,7 @@ namespace BehaviorTree.Runtime
             GameObject ballHolder = context.GetBallHolder();
             if (ballHolder == null || ballHolder == player) return 0f;
             float distanceToHolder = Vector3.Distance(position, ballHolder.transform.position);
-            float idealSupportDistance = 5f;
+            float idealSupportDistance =6f;
             float maxSupportDistance = 10f;
             float minSupportDistance = 3f;
             if (distanceToHolder > maxSupportDistance || distanceToHolder < minSupportDistance)
@@ -126,7 +126,7 @@ namespace BehaviorTree.Runtime
         {
             float scoreNormalized = 0f;
             float enemyDistanceBase = 3f, distanceThreshold = 1f;
-            float stopPassBonus = 0.4f;
+            float stopPassBonus = 0.5f;
             float baseBonus = 0.1f;
             List<GameObject> enemies = context.GetOpponents(player);
             List<GameObject> teammates = context.GetTeammates(player);

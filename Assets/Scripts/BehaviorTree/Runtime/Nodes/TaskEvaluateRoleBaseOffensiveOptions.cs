@@ -537,7 +537,7 @@ namespace BehaviorTree.Runtime
                 return directionBonus;
             }
             
-            public static float CalculatePassLineSafety(Vector3 start, Vector3 end, List<GameObject> enemies, float interceptThreshold = 1.5f)
+            public static float CalculatePassLineSafety(Vector3 start, Vector3 end, List<GameObject> enemies, float interceptThreshold = 3f)
             {
                 float safetyScore = 1f; // 1.0 = 完全安全，0.0 = 极度危险
                 foreach(var enemy in enemies)
@@ -571,7 +571,7 @@ namespace BehaviorTree.Runtime
                     Vector3 targetToEnemyGoal = enemyGoalPos - passTarget.transform.position;
                     Vector3 targetToEnemy = enemy.transform.position - passTarget.transform.position;
                     bool isEnemyInFront = Vector3.Dot(targetToEnemy, targetToEnemyGoal) > 0;
-                    safetyScore = safetyScore - threatLevel * (isEnemyInFront ? 1 : 0.5f);
+                    safetyScore = safetyScore - threatLevel * (isEnemyInFront ? 1 : 0.75f);
                 }
                 return Mathf.Clamp01(safetyScore);
             }

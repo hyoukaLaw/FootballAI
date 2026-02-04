@@ -10,7 +10,7 @@ namespace BehaviorTree.Runtime
     {
         protected override float GetBasePassScore()
         {
-            return FootballConstants.BasePassScore;
+            return FootballConstants.BasePassScoreMidfielder;
         }
 
         protected override bool ShouldConsiderShoot()
