@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using BehaviorTree.Graph;
 using UnityEngine;
 using BehaviorTree.Runtime;
@@ -135,8 +136,8 @@ public class PlayerAI : MonoBehaviour
     {
         if (_blackboard != null)
         {
-            // // === 持球范围可视化 ===
-            // if (_blackboard.MatchContext != null && 
+            // === 持球范围可视化 ===
+            // if (_blackboard.MatchContext != null &&
             //     _blackboard.MatchContext.BallHolder == _blackboard.Owner)
             // {
             //     // 持球范围（淡黄色，1.0m）
@@ -147,8 +148,8 @@ public class PlayerAI : MonoBehaviour
             //     Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.5f);
             //     Gizmos.DrawWireSphere(transform.position, Stats.TackledDistance);
             // }
-
-            // 画出移动目标
+            //
+            // // 画出移动目标
             // if (_blackboard.MoveTarget != Vector3.zero)
             // {
             //     Gizmos.color = Color.yellow;
@@ -176,42 +177,17 @@ public class PlayerAI : MonoBehaviour
         if (_blackboard.DebugCandidatePositions.Count == 0)
             return;
 
-        float minScore = float.MaxValue;
-        float maxScore = float.MinValue;
+        float maxScore = _blackboard.DebugCandidatePositions.Max(c => c.Score);
 
         foreach (var candidate in _blackboard.DebugCandidatePositions)
         {
-            if (candidate.Score < minScore)
-                minScore = candidate.Score;
-            if (candidate.Score > maxScore)
-                maxScore = candidate.Score;
-        }
-
-        float scoreRange = maxScore - minScore;
-        if (scoreRange < 0.0001f)
-            scoreRange = 1f;
-
-        foreach (var candidate in _blackboard.DebugCandidatePositions)
-        {
-            float normalizedScore = (candidate.Score - minScore) / scoreRange;
-            float radius = 0.1f + normalizedScore * 0.4f;
-
-            Color color;
-            if (normalizedScore > 0.7f)
+            if (Mathf.Abs(candidate.Score - maxScore) < FootballConstants.FloatEpsilon)
             {
-                color = Color.green * new Vector4(1,1,1,0.5f);
+                Gizmos.color = Color.green * new Vector4(1, 1, 1, 0.5f);
+                Gizmos.DrawWireSphere(candidate.Position, 0.5f);
+                Gizmos.color = new Color(0, 1, 0, 0.3f);
+                Gizmos.DrawSphere(candidate.Position, 0.3f);
             }
-            else if (normalizedScore > 0.3f)
-            {
-                color = Color.yellow * new Vector4(1,1,1,0.5f);
-            }
-            else
-            {
-                color = Color.red * new Vector4(1,1,1,0.5f);
-            }
-
-            Gizmos.color = color;
-            Gizmos.DrawWireSphere(candidate.Position, 0.5f);
         }
     }
     #endregion
