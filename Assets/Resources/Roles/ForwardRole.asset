@@ -22,10 +22,10 @@ MonoBehaviour:
     DistanceDecayRate: 0.15
     MaxZoneDeviation: 10
   DefendPreferences:
-    OwnDefensiveZoneWeight: 0
-    OwnOffensiveZoneWeight: 0
-    EnemyOffensiveZoneWeight: 5
-    EnemyDefensiveZoneWeight: 5
+    OwnDefensiveZoneWeight: 2
+    OwnOffensiveZoneWeight: 2
+    EnemyOffensiveZoneWeight: 3
+    EnemyDefensiveZoneWeight: 1
     DistanceDecayRate: 0.1
     MaxZoneDeviation: 12
   ChaseBallPreferences:
@@ -40,7 +40,7 @@ MonoBehaviour:
     WeightGoalDist: 25
     WeightMarking: 0
     WeightSpace: 10
-    WeightSafety: 1000
+    WeightSafety: 150
     WeightPressing: 0
     WeightSupport: 10
   DefendPositionWeight:
@@ -48,7 +48,7 @@ MonoBehaviour:
     WeightGoalDist: 0
     WeightMarking: 0
     WeightSpace: 0
-    WeightSafety: 1000
+    WeightSafety: 200
     WeightPressing: 0
     WeightSupport: 10
   OffensiveBias: 0.8

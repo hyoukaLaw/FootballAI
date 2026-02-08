@@ -46,7 +46,7 @@ public static class FootballConstants
     public static float DribbleDetectHalfAngle = 90f;
     public static float DribbleEnemyPenalty = 10f;
     public static float BaseDribbleScore = 40f;
-    public static float DribbleClearBonus = 30f;
+    public static float DribbleClearBonus = 24f;
     public static float DribbleDistancePenalty = 20f;
     
     // TaskCalculateSupportSpot Constants
@@ -66,14 +66,31 @@ public static class FootballConstants
 
     public static float DecideMinStep = 0.8f; // 每一步位置移动决策的长度，太小了会一直抖动
     public static float OccupiedSearchRadius = 1f; // 距离多远开始算是被占据
+    public static float CandidateTeammateSafeDistance = 1.0f; // 候选点与队友移动轨迹的最小安全距离
+    public static float CandidatePredictedOverlapThreshold = 0.3f; // 候选点与队友预测位置重叠阈值
+    public static float CandidateDeduplicateGridSize = 0.2f; // 候选点去重网格尺寸
+
+    // RoleBasedPositionScoreCalculator - Marking score tuning
+    public static float MarkingEnemyDistanceBase = 3.5f;
+    public static float MarkingStopPassDistanceThreshold = 0.9f;
+    public static float MarkingStopPassBonus = 0.6f;
+    public static float MarkingBaseBonus = 0.05f;
+
+    // Defender danger bias tuning (for dribble/clearance decision)
+    public static float DefenderDangerGoalDistance = 12f;
+    public static float DefenderDangerSidelineDistance = 2.2f;
+    public static float DefenderDangerEnemyRadius = 3f;
+    public static float DefenderDangerEnemyCountForMax = 2f;
+    public static float DefenderDribbleDangerPenalty = 35f;
+    public static float DefenderClearanceDangerBonus = 40f;
     
     // TaskEvaluateRolePreferences Constants
     public static float PassMinDistance = 2f;
-    public static float PassMaxDistance = 10f;
-    public static float PassBlockThreshold = 1f;
-    public static float BasePassScoreDefender = 60f;
-    public static float PassScoreDistancePenalty = 5f;
-    public static float BaseClearanceScore = 30f;
+    public static float PassMaxDistance = 12f;
+    public static float PassBlockThreshold = 0.85f;
+    public static float BasePassScoreDefender = 62f;
+    public static float PassScoreDistancePenalty = 3.5f;
+    public static float BaseClearanceScore = 45f;
     public static float ClearanceScorePerEnemy = 10f;
     public static float ClearanceBlockThreshold = 1.5f;
     public static float ClearanceScoreDistancePenalty = 50f;
@@ -82,10 +99,10 @@ public static class FootballConstants
     public static float ClearKickSpeed = 20f;
 
     public static float BaseScoreShootScore = 80f;
-    public static float BasePassScoreForward = 40f;
+    public static float BasePassScoreForward = 55f;
     public static float PassForwardDirectionBonus = 10f;
 
-    public static float BasePassScoreMidfielder = 60f;
+    public static float BasePassScoreMidfielder = 68f;
     
     // 通用常量
     public static float FloatEpsilon = 0.0001f;

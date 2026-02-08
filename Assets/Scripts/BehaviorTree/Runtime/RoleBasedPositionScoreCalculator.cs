@@ -40,7 +40,7 @@ namespace BehaviorTree.Runtime
             float markScore = CalculateMarkScore(position, role, context, myGoal, player) * weightMarking;
             float spaceScore = CalculateSpaceScore(position, context, player) * weightSpace;
             float supportScore = CalculateSupportScore(position, player, context) * weightSupport;
-            float safetyScore = CalculateSafetyScore(position, context.GetTeammates(player)) * weightSafety;
+            float safetyScore = CalculateSafetyScore(position, player, context.GetTeammates(player)) * weightSafety;
             float pressingScore = CalculatePressingScore(position, ballPosition, myGoal, player, context.GetBallHolder(), context.GetTeammates(player)) * weightPressing;
             float totalScore = Mathf.Max(0, zoneScore + ballScore + goalScore + markScore + spaceScore + pressingScore+ supportScore - safetyScore);
             return new PositionEvaluation(position, totalScore, zoneScore, ballScore, goalScore, markScore, spaceScore, safetyScore, pressingScore, supportScore, distanceFromCurrent);
@@ -93,12 +93,13 @@ namespace BehaviorTree.Runtime
             }
         }
 
-        private static float CalculateSafetyScore(Vector3 position, List<GameObject> teammates)
+        private static float CalculateSafetyScore(Vector3 position, GameObject player, List<GameObject> teammates)
         {
             float minSafeDist = 1.5f; // 降低安全距离到1.5米
             float maxOverlapDegree = 0f;
             foreach (var teammate in teammates)
             {
+                if (teammate == player) continue;
                 Vector3 estimatedNextPosition = GetEstimatedNextPosition(teammate); // 跑位过程会穿插就没办法了
                 float dist = Mathf.Min(Vector3.Distance(position, teammate.transform.position), Vector3.Distance(position, estimatedNextPosition));
                 // 只有在安全距离内才计算惩罚
@@ -125,9 +126,10 @@ namespace BehaviorTree.Runtime
             GameObject player)
         {
             float scoreNormalized = 0f;
-            float enemyDistanceBase = 3f, distanceThreshold = 1f;
-            float stopPassBonus = 0.5f;
-            float baseBonus = 0.1f;
+            float enemyDistanceBase = FootballConstants.MarkingEnemyDistanceBase;
+            float distanceThreshold = FootballConstants.MarkingStopPassDistanceThreshold;
+            float stopPassBonus = FootballConstants.MarkingStopPassBonus;
+            float baseBonus = FootballConstants.MarkingBaseBonus;
             List<GameObject> enemies = context.GetOpponents(player);
             List<GameObject> teammates = context.GetTeammates(player);
             GameObject ballHolder = context.GetBallHolder();
@@ -333,7 +335,8 @@ namespace BehaviorTree.Runtime
             candidates.AddRange(GenerateSupportCandidatePositions(player, matchContext, matchContext.GetTeammates(player)));
             candidates.AddRange(GenerateMarkCandidatePositions(player, matchContext, matchContext.GetOpponents(player)));
             candidates.AddRange(GenerateAroundBallCandidatePositions(player, ballPosition));
-            candidates = FilterOverlappingPositions(candidates, player, matchContext.GetTeammates(player), 1.2f);
+            candidates = DeduplicateCandidatePositions(candidates, FootballConstants.CandidateDeduplicateGridSize);
+            candidates = FilterOverlappingPositions(candidates, player, matchContext.GetTeammates(player), FootballConstants.CandidateTeammateSafeDistance);
             candidates = FilterInvalidPositions(candidates, matchContext);
             return candidates;
         }
@@ -379,7 +382,7 @@ namespace BehaviorTree.Runtime
             return positions.Where(pos => context.IsInField(pos)).ToList();
         }
 
-        private static List<Vector3> FilterOverlappingPositions(List<Vector3> candidates, 
+        private static List<Vector3> FilterOverlappingPositions(List<Vector3> candidates,
             GameObject player, List<GameObject> teammates, float safeDistance)
         {
             List<Vector3> safeCandidates = new List<Vector3>();
@@ -389,13 +392,23 @@ namespace BehaviorTree.Runtime
                 bool isOverlapping = false;
                 foreach (var teammate in teammates)
                 {
-                    if (Vector3.Distance(candidate, teammate.transform.position) < safeDistance)
+                    if (teammate == player) continue;
+                    Vector3 candidateNextMove = (candidate - player.transform.position).magnitude < FootballConstants.DecideMinStep ?
+                        candidate:
+                        player.transform.position + (candidate - player.transform.position).normalized * FootballConstants.DecideMinStep;
+                    if (FootballUtils.IsOverlappingWithPlayerMovement(candidateNextMove, teammate, safeDistance))
+                    {
+                        isOverlapping = true;
+                        break;
+                    }
+
+                    if ((candidateNextMove - FootballUtils.PredictNextPosition(teammate)).magnitude < FootballConstants.CandidatePredictedOverlapThreshold)
                     {
                         isOverlapping = true;
                         break;
                     }
                 }
-                
+
                 if (!isOverlapping)
                 {
                     safeCandidates.Add(candidate);
@@ -406,12 +419,36 @@ namespace BehaviorTree.Runtime
             if (safeCandidates.Count == 0)
             {
                 safeCandidates = candidates
-                    .OrderBy(c => teammates.Min(t => Vector3.Distance(c, t.transform.position)))
+                    .OrderByDescending(c =>
+                    {
+                        var teammateDistances = teammates.Where(t => t != player).Select(t => Vector3.Distance(c, t.transform.position));
+                        return teammateDistances.Any() ? teammateDistances.Min() : float.MaxValue;
+                    })
                     .Take(5)
                     .ToList();
             }
-            
             return safeCandidates;
+        }
+
+        private static List<Vector3> DeduplicateCandidatePositions(List<Vector3> candidates, float gridSize)
+        {
+            if (gridSize <= 0f)
+                return candidates;
+
+            Dictionary<Vector2Int, Vector3> unique = new Dictionary<Vector2Int, Vector3>();
+            foreach (var candidate in candidates)
+            {
+                Vector2Int key = new Vector2Int(
+                    Mathf.RoundToInt(candidate.x / gridSize),
+                    Mathf.RoundToInt(candidate.z / gridSize)
+                );
+                if (!unique.ContainsKey(key))
+                {
+                    unique[key] = candidate;
+                }
+            }
+
+            return unique.Values.ToList();
         }
         private static MatchState DetermineMatchState(GameObject player, MatchContext context)
         {
@@ -565,7 +602,7 @@ namespace BehaviorTree.Runtime
                 sb.AppendLine($"{prefix} [{i}] 总分:{eval.TotalScore:F2} | 位置:{eval.Position} | 区域:{eval.ZoneScore:F1} | 球距:{eval.BallScore:F1} | 盯防:{eval.MarkScore:F1} | 空间:{eval.SpaceScore:F1} | 支持:{eval.SupportScore:F1} | 上抢:{eval.PressingScore:F1} | 安全:{eval.SafetyScore:F1} | 距离:{eval.DistanceFromCurrent:F1}m");
             }
             
-            //Debug.Log(sb.ToString());
+            MyLog.LogInfo(sb.ToString());
         }
         #endregion
     }

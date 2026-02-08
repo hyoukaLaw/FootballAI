@@ -178,7 +178,8 @@ public static class FootballUtils
         PlayerAI playerAI = player.GetComponent<PlayerAI>();
         float speed = playerAI?.Stats.MovementSpeed ?? 2f;
         float deltaTime = TimeManager.Instance.GetDeltaTime();
-        return player.transform.position + FootballConstants.DecideMinStep * moveDirection;
+        float stepDistance = Mathf.Min(FootballConstants.DecideMinStep, speed * deltaTime);
+        return player.transform.position + stepDistance * moveDirection;
     }
 
     public static bool IsOverlappingWithPlayerMovement(Vector3 candidate, GameObject teammate, float safeDistance)

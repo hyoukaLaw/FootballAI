@@ -396,6 +396,11 @@ namespace BehaviorTree.Runtime
                     }
                 }
                 clearanceScore = bestScore;
+                if (blackboard.Role.RoleType == PlayerRoleType.Defender)
+                {
+                    float danger = CalculateDefenderDanger(blackboard);
+                    clearanceScore += danger * FootballConstants.DefenderClearanceDangerBonus;
+                }
                 clearanceTarget = bestTarget;
                 enemiesNearClearance = totalEnemiesNear;
                 
@@ -418,15 +423,48 @@ namespace BehaviorTree.Runtime
             
             private static float CalculateDribbleScore(List<GameObject> enemiesInFront, FootballBlackboard blackboard)
             {
-                if(enemiesInFront.Count == 0)
-                    return FootballConstants.BaseDribbleScore + FootballConstants.DribbleClearBonus;
+                float score;
+                if (enemiesInFront.Count == 0)
+                {
+                    score = FootballConstants.BaseDribbleScore + FootballConstants.DribbleClearBonus;
+                }
                 else
                 {
                     float enemyCountPenalty = enemiesInFront.Count * FootballConstants.DribbleEnemyPenalty;
                     float enemyDistancePenalty = CalculateSpacePenalty(blackboard.Owner.transform.position, enemiesInFront);
-                    float score = Math.Max(FootballConstants.BaseDribbleScore - enemyCountPenalty - enemyDistancePenalty, 0);
-                    return score;
+                    score = Math.Max(FootballConstants.BaseDribbleScore - enemyCountPenalty - enemyDistancePenalty, 0);
                 }
+
+                if (blackboard.Role.RoleType == PlayerRoleType.Defender)
+                {
+                    float danger = CalculateDefenderDanger(blackboard);
+                    score -= danger * FootballConstants.DefenderDribbleDangerPenalty;
+                }
+
+                return Mathf.Max(score, 0f);
+            }
+
+            private static float CalculateDefenderDanger(FootballBlackboard blackboard)
+            {
+                Vector3 ownerPos = blackboard.Owner.transform.position;
+                float distanceToMyGoal = Vector3.Distance(ownerPos, blackboard.MatchContext.GetMyGoalPosition(blackboard.Owner));
+                float goalDanger = 1f - Mathf.Clamp01(distanceToMyGoal / FootballConstants.DefenderDangerGoalDistance);
+
+                float distanceToSideline = Mathf.Min(
+                    Mathf.Abs(ownerPos.x - blackboard.MatchContext.GetLeftBorder()),
+                    Mathf.Abs(blackboard.MatchContext.GetRightBorder() - ownerPos.x)
+                );
+                float sidelineDanger = 1f - Mathf.Clamp01(distanceToSideline / FootballConstants.DefenderDangerSidelineDistance);
+
+                var opponents = blackboard.MatchContext.GetOpponents(blackboard.Owner);
+                int nearbyEnemyCount = FootballUtils.FindNearEnemies(
+                    blackboard.Owner,
+                    opponents,
+                    FootballConstants.DefenderDangerEnemyRadius
+                ).Count;
+                float pressureDanger = Mathf.Clamp01(nearbyEnemyCount / FootballConstants.DefenderDangerEnemyCountForMax);
+
+                return Mathf.Clamp01(Mathf.Max(goalDanger, Mathf.Max(sidelineDanger, pressureDanger)));
             }
             
             private static float CalculateSpacePenalty(Vector3 ownerPos, List<GameObject> nearbyEnemies)

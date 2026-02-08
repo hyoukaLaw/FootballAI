@@ -36,11 +36,11 @@ MonoBehaviour:
     DistanceDecayRate: 0.15
     MaxZoneDeviation: 18
   AttackPositionWeight:
-    WeightBallDist: 0
+    WeightBallDist: 8
     WeightGoalDist: 5
     WeightMarking: 0
-    WeightSpace: 20
-    WeightSafety: 1000
+    WeightSpace: 12
+    WeightSafety: 150
     WeightPressing: 0
     WeightSupport: 25
   DefendPositionWeight:
@@ -48,7 +48,7 @@ MonoBehaviour:
     WeightGoalDist: 0
     WeightMarking: 25
     WeightSpace: 0
-    WeightSafety: 1000
+    WeightSafety: 200
     WeightPressing: 20
     WeightSupport: 0
   OffensiveBias: 0.5

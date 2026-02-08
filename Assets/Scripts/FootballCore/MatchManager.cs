@@ -97,6 +97,7 @@ public class MatchManager : MonoBehaviour
             return; // 游戏暂停，不执行任何逻辑
         }
         UpdatePlayerAI();
+        LogBlueTeammateOverlapErrors();
         UpdatePossessionState();// 1. 计算物理状态 (谁拿着球？)
         BallController.Update(); // UpdateBall
         UpdatePassTargetState();// 2. 清理过期的传球状态
@@ -291,20 +292,28 @@ public class MatchManager : MonoBehaviour
     public void ResetBall()
     {
         Ball.transform.position = Vector3.zero;
+        BallController.ResetMotionState();
+
+        GameObject kickoffPlayer = null;
         if (NextKickoffTeam == "Red" && RedStartPlayer != null)
         {
             RedStartPlayer.transform.position = Vector3.zero;
+            kickoffPlayer = RedStartPlayer;
         }
         else if (NextKickoffTeam == "Blue" && BlueStartPlayer != null)
         {
             BlueStartPlayer.transform.position = Vector3.zero;
+            kickoffPlayer = BlueStartPlayer;
         }
+
+        Context.SetBallHolder(kickoffPlayer);
     }
 
     private void ResetContext()
     {
         Context.IncomingPassTarget = null;
         Context.SetPassTarget(null);
+        Context.SetBallHolder(null);
         Context.SetStealCooldown(0f);
     }
 
@@ -369,6 +378,26 @@ public class MatchManager : MonoBehaviour
                 var bluePlayerAI = TeamBluePlayers[i].GetComponent<PlayerAI>();
                 if (bluePlayerAI != null)
                     bluePlayerAI.ManualTick();
+            }
+        }
+    }
+
+    private void LogBlueTeammateOverlapErrors()
+    {
+        const float minDistance = 0.5f;
+        for (int i = 0; i < TeamBluePlayers.Count; i++)
+        {
+            GameObject playerA = TeamBluePlayers[i];
+            if (playerA == null) continue;
+            for (int j = i + 1; j < TeamBluePlayers.Count; j++)
+            {
+                GameObject playerB = TeamBluePlayers[j];
+                if (playerB == null) continue;
+                float distance = Vector3.Distance(playerA.transform.position, playerB.transform.position);
+                if (distance < minDistance)
+                {
+                    MyLog.LogError($"[BlueOverlap] {playerA.name} and {playerB.name} distance={distance:F3} (< {minDistance:F1})");
+                }
             }
         }
     }

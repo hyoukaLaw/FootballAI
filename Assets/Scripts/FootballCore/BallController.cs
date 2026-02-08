@@ -83,6 +83,12 @@ public class BallController
         }
     }
 
+    public void ResetMotionState()
+    {
+        _isMoving = false;
+        _targetPos = _ballGameObject != null ? _ballGameObject.transform.position : Vector3.zero;
+    }
+
     public bool GetIsMoving()
     {
         return _isMoving;
