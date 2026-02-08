@@ -171,4 +171,21 @@ public static class FootballUtils
             return cur + dir * maxDistance;
         }
     }
+
+    public static Vector3 PredictNextPosition(GameObject player)
+    {
+        Vector3 moveDirection = player.transform.forward;
+        PlayerAI playerAI = player.GetComponent<PlayerAI>();
+        float speed = playerAI?.Stats.MovementSpeed ?? 2f;
+        float deltaTime = TimeManager.Instance.GetDeltaTime();
+        return player.transform.position + FootballConstants.DecideMinStep * moveDirection;
+    }
+
+    public static bool IsOverlappingWithPlayerMovement(Vector3 candidate, GameObject teammate, float safeDistance)
+    {
+        Vector3 currentPos = teammate.transform.position;
+        Vector3 predictedPos = PredictNextPosition(teammate);
+        float distanceToMovementLine = DistancePointToLineSegment(currentPos, predictedPos, candidate);
+        return distanceToMovementLine < safeDistance;
+    }
 }
