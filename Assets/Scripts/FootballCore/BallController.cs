@@ -51,15 +51,31 @@ public class BallController
         }
     }
     
+    /// <summary>
+    /// 返回历史上最后一次触球的球员。
+    /// 该值不会因为保护计时超时而清空，用于出界/判罚等需要追溯最后触球人的场景。
+    /// </summary>
     public GameObject GetLastKicker()
     {
-        if(_lastKickerDuration > 0f)
+        return _lastKicker;
+    }
+
+    /// <summary>
+    /// 返回处于保护窗口内的最后触球球员。
+    /// 仅当最近触球计时器仍大于0时返回，用于短时间内避免立即重新判定为持球人。
+    /// </summary>
+    public GameObject GetRecentKicker()
+    {
+        if (_lastKickerTimer > 0f)
             return _lastKicker;
         return null;
     }
     
     public void UpdateLastKickerReset()
     {
+        if (_lastKickerTimer <= 0f)
+            return;
+
         _lastKickerTimer -= TimeManager.Instance.GetDeltaTime();
         if (_lastKickerTimer <= 0f)
         {

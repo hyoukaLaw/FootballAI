@@ -426,7 +426,7 @@ public class MatchManager : MonoBehaviour
         foreach (var player in allPlayers)
         {
             float dist = Vector3.Distance(player.transform.position, Ball.transform.position);
-            if (dist < PossessionThreshold && player != Context.BallController.GetLastKicker() && !IsStunned(player))
+            if (dist < PossessionThreshold && player != Context.BallController.GetRecentKicker() && !IsStunned(player))
             {
                 if (dist < minDistance - distanceTolerance)
                 {
