@@ -10,6 +10,7 @@ namespace BehaviorTree.Runtime
         {
             GameObject owner = Blackboard.Owner;
             GameObject ballHolder = Blackboard.MatchContext.GetBallHolder();
+
             float tackleChance = CalculateTackleChance(owner, ballHolder);
             
             if(tackleChance >= 0.5f)

@@ -589,7 +589,7 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
-  AbortType: 0
+  AbortType: 1
 --- !u!114 &-1439331990471321106
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace BehaviorTree.Runtime
@@ -264,9 +263,27 @@ namespace BehaviorTree.Runtime
             List<PositionEvaluation> evaluations = EvaluatePositions(candidatePositions, currentPosition, role,
                 myGoal, enemyGoal, ballPosition, context, player);
             Vector3 bestPosition = SelectBestPosition(evaluations, currentPosition);
-            float bestScore = evaluations.Count > 0 ? evaluations.Max(e => e.TotalScore) : float.MinValue;
-            int bestCandidatesCount = evaluations.Count(e => Mathf.Abs(e.TotalScore - bestScore) < FootballConstants.FloatEpsilon);
-            LogAndAddDebugInfo(evaluations, player, bestScore, bestCandidatesCount, blackboard);
+            if (blackboard != null)
+            {
+                blackboard.DebugHasSelectedPosition = evaluations.Count > 0;
+                blackboard.DebugSelectedPosition = bestPosition;
+            }
+            float bestScore = float.MinValue;
+            int bestCandidatesCount = 0;
+            for (int i = 0; i < evaluations.Count; i++)
+            {
+                float score = evaluations[i].TotalScore;
+                if (score > bestScore + FootballConstants.FloatEpsilon)
+                {
+                    bestScore = score;
+                    bestCandidatesCount = 1;
+                }
+                else if (Mathf.Abs(score - bestScore) < FootballConstants.FloatEpsilon)
+                {
+                    bestCandidatesCount++;
+                }
+            }
+            //LogAndAddDebugInfo(evaluations, player, bestScore, bestCandidatesCount, blackboard);
             return FootballUtils.GetPositionTowards(currentPosition, bestPosition, FootballConstants.DecideMinStep);
         }
         
@@ -379,7 +396,16 @@ namespace BehaviorTree.Runtime
         # region 通用工具方法
         private static List<Vector3> FilterInvalidPositions(List<Vector3> positions, MatchContext context)
         {
-            return positions.Where(pos => context.IsInField(pos)).ToList();
+            List<Vector3> filtered = new List<Vector3>(positions.Count);
+            for (int i = 0; i < positions.Count; i++)
+            {
+                Vector3 pos = positions[i];
+                if (context.IsInField(pos))
+                {
+                    filtered.Add(pos);
+                }
+            }
+            return filtered;
         }
 
         private static List<Vector3> FilterOverlappingPositions(List<Vector3> candidates,
@@ -418,16 +444,42 @@ namespace BehaviorTree.Runtime
             // 如果所有候选点都重叠，保留重叠最轻的5个
             if (safeCandidates.Count == 0)
             {
-                safeCandidates = candidates
-                    .OrderByDescending(c =>
-                    {
-                        var teammateDistances = teammates.Where(t => t != player).Select(t => Vector3.Distance(c, t.transform.position));
-                        return teammateDistances.Any() ? teammateDistances.Min() : float.MaxValue;
-                    })
-                    .Take(5)
-                    .ToList();
+                List<Vector3> sortedCandidates = new List<Vector3>(candidates);
+                sortedCandidates.Sort((a, b) =>
+                {
+                    float minDistA = CalculateMinDistanceToTeammates(a, teammates, player);
+                    float minDistB = CalculateMinDistanceToTeammates(b, teammates, player);
+                    return minDistB.CompareTo(minDistA);
+                });
+
+                int count = Mathf.Min(5, sortedCandidates.Count);
+                safeCandidates = new List<Vector3>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    safeCandidates.Add(sortedCandidates[i]);
+                }
             }
             return safeCandidates;
+        }
+
+        private static float CalculateMinDistanceToTeammates(Vector3 candidate, List<GameObject> teammates, GameObject player)
+        {
+            float minDistance = float.MaxValue;
+            bool hasValidTeammate = false;
+            for (int i = 0; i < teammates.Count; i++)
+            {
+                GameObject teammate = teammates[i];
+                if (teammate == null || teammate == player) continue;
+
+                hasValidTeammate = true;
+                float distance = Vector3.Distance(candidate, teammate.transform.position);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                }
+            }
+
+            return hasValidTeammate ? minDistance : float.MaxValue;
         }
 
         private static List<Vector3> DeduplicateCandidatePositions(List<Vector3> candidates, float gridSize)
@@ -448,7 +500,13 @@ namespace BehaviorTree.Runtime
                 }
             }
 
-            return unique.Values.ToList();
+            List<Vector3> deduplicated = new List<Vector3>(unique.Count);
+            foreach (var pair in unique)
+            {
+                deduplicated.Add(pair.Value);
+            }
+
+            return deduplicated;
         }
         private static MatchState DetermineMatchState(GameObject player, MatchContext context)
         {
@@ -479,7 +537,14 @@ namespace BehaviorTree.Runtime
                 });
             }
             points.Sort((a, b) => a.Distance.CompareTo(b.Distance));
-            return points.Take(cnt).Select(x => x.Position).ToList();
+            int takeCount = Mathf.Min(cnt, points.Count);
+            List<Vector3> result = new List<Vector3>(takeCount);
+            for (int i = 0; i < takeCount; i++)
+            {
+                result.Add(points[i].Position);
+            }
+
+            return result;
         }
         private static bool IsClosestToBall(GameObject player, MatchContext context)
         {
@@ -557,7 +622,14 @@ namespace BehaviorTree.Runtime
             }
             
             // 找出最佳评估
-            PositionEvaluation bestEvaluation = evaluations.OrderByDescending(e => e.TotalScore).First();
+            PositionEvaluation bestEvaluation = evaluations[0];
+            for (int i = 1; i < evaluations.Count; i++)
+            {
+                if (evaluations[i].TotalScore > bestEvaluation.TotalScore)
+                {
+                    bestEvaluation = evaluations[i];
+                }
+            }
             
             // 构建详细的日志输出
             StringBuilder sb = new StringBuilder();
@@ -594,7 +666,12 @@ namespace BehaviorTree.Runtime
             
             // 输出所有候选位置的简洁信息
             sb.AppendLine("--- 所有候选位置 (按分数排序) ---");
-            var sortedEvaluations = evaluations.OrderByDescending(e => e.TotalScore).Take(10).ToList();
+            List<PositionEvaluation> sortedEvaluations = new List<PositionEvaluation>(evaluations);
+            sortedEvaluations.Sort((a, b) => b.TotalScore.CompareTo(a.TotalScore));
+            if (sortedEvaluations.Count > 10)
+            {
+                sortedEvaluations.RemoveRange(10, sortedEvaluations.Count - 10);
+            }
             for (int i = 0; i < sortedEvaluations.Count; i++)
             {
                 var eval = sortedEvaluations[i];
@@ -602,7 +679,7 @@ namespace BehaviorTree.Runtime
                 sb.AppendLine($"{prefix} [{i}] 总分:{eval.TotalScore:F2} | 位置:{eval.Position} | 区域:{eval.ZoneScore:F1} | 球距:{eval.BallScore:F1} | 盯防:{eval.MarkScore:F1} | 空间:{eval.SpaceScore:F1} | 支持:{eval.SupportScore:F1} | 上抢:{eval.PressingScore:F1} | 安全:{eval.SafetyScore:F1} | 距离:{eval.DistanceFromCurrent:F1}m");
             }
             
-            MyLog.LogInfo(sb.ToString());
+            //MyLog.LogInfo(sb.ToString());
         }
         #endregion
     }

@@ -47,7 +47,9 @@ namespace BehaviorTree.Runtime
 
         // --- 调试数据 ---
         public List<CandidatePosition> DebugCandidatePositions;
-        public bool DebugShowCandidates = true;
+        public bool DebugShowCandidates = false;
+        public bool DebugHasSelectedPosition = false;
+        public Vector3 DebugSelectedPosition = Vector3.zero;
 
         public bool IsPassingOutsideBall = false;
         public bool IsTestKickOutside = false;

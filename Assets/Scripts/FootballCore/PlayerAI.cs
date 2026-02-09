@@ -106,6 +106,8 @@ public class PlayerAI : MonoBehaviour
         _blackboard.DefensePosition = Vector3.zero;
         _blackboard.IsStunned = false;
         _blackboard.StunTimer = 0f;
+        _blackboard.DebugHasSelectedPosition = false;
+        _blackboard.DebugSelectedPosition = Vector3.zero;
     }
 
     public void ResetBehaviorTree()
@@ -171,24 +173,16 @@ public class PlayerAI : MonoBehaviour
 
     private void DrawCandidatePositions()
     {
-        if (!_blackboard.DebugShowCandidates || _blackboard.DebugCandidatePositions == null)
+        if (!_blackboard.DebugShowCandidates)
             return;
 
-        if (_blackboard.DebugCandidatePositions.Count == 0)
+        if (!_blackboard.DebugHasSelectedPosition)
             return;
 
-        float maxScore = _blackboard.DebugCandidatePositions.Max(c => c.Score);
-
-        foreach (var candidate in _blackboard.DebugCandidatePositions)
-        {
-            if (Mathf.Abs(candidate.Score - maxScore) < FootballConstants.FloatEpsilon)
-            {
-                Gizmos.color = Color.green * new Vector4(1, 1, 1, 0.5f);
-                Gizmos.DrawWireSphere(candidate.Position, 0.5f);
-                Gizmos.color = new Color(0, 1, 0, 0.3f);
-                Gizmos.DrawSphere(candidate.Position, 0.3f);
-            }
-        }
+        Gizmos.color = Color.green * new Vector4(1, 1, 1, 0.5f);
+        Gizmos.DrawWireSphere(_blackboard.DebugSelectedPosition, 0.5f);
+        Gizmos.color = new Color(0, 1, 0, 0.3f);
+        Gizmos.DrawSphere(_blackboard.DebugSelectedPosition, 0.3f);
     }
     #endregion
 }

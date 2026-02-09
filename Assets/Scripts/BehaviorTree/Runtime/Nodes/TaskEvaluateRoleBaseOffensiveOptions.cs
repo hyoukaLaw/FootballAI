@@ -540,29 +540,55 @@ namespace BehaviorTree.Runtime
                 Vector3 ownerPosition = blackboard.Owner.transform.position;
                 foreach (var candidate in teammates)
                 {
+                    if (candidate == null || candidate == blackboard.Owner) continue;
                     Vector3 candidatePos = candidate.transform.position;
-                    if(FootballUtils.IsPathClear(ownerPosition, candidatePos, enemyPlayers, FootballConstants.PassBlockThreshold))
+                    float distance = Vector3.Distance(ownerPosition, candidatePos);
+                    if(distance < FootballConstants.PassMinDistance || distance > FootballConstants.PassMaxDistance)
+                        continue;
+
+                    if(!FootballUtils.IsPathClear(ownerPosition, candidatePos, enemyPlayers, FootballConstants.PassBlockThreshold))
+                        continue;
+
+                    // 具象过滤1：接球点附近敌人过近/过多，直接跳过
+                    if (!IsReceiverSpaceSafe(candidatePos, enemyPlayers))
+                        continue;
+
+                    float currentLineSafety = CalculatePassLineSafety(ownerPosition, candidatePos, enemyPlayers);
+                    float currentTargetSafety = CalculatePassTargetSafety(candidate, enemyPlayers, enemyGoalPos);
+                    float safetyFactor = currentLineSafety * currentTargetSafety;
+                    float directionScore = CalculatePassDirectionScore(blackboard, candidate, enemyGoalPos);
+                    float score = basePassScore * safetyFactor - 
+                        FootballConstants.PassScoreDistancePenalty * Mathf.Abs(distance - mid) + 
+                        directionScore;
+
+                    if (score > passScore)
                     {
-                        float distance = Vector3.Distance(ownerPosition, candidatePos);
-                        if(distance >= FootballConstants.PassMinDistance && distance <= FootballConstants.PassMaxDistance)
-                        { 
-                            float currentLineSafety = CalculatePassLineSafety(ownerPosition, candidatePos, enemyPlayers);
-                            float currentTargetSafety = CalculatePassTargetSafety(candidate, enemyPlayers, enemyGoalPos);
-                            float safetyFactor = currentLineSafety * currentTargetSafety;
-                            float directionScore = CalculatePassDirectionScore(blackboard, candidate, enemyGoalPos);
-                            float score = basePassScore * safetyFactor - 
-                                FootballConstants.PassScoreDistancePenalty * Mathf.Abs(distance - mid) + 
-                                directionScore;
-                            if (score > passScore)
-                            {
-                                passScore = score;
-                                passTarget = candidate;
-                                lineSafety = currentLineSafety;
-                                targetSafety = currentTargetSafety;
-                            }
-                        }
+                        passScore = score;
+                        passTarget = candidate;
+                        lineSafety = currentLineSafety;
+                        targetSafety = currentTargetSafety;
                     }
                 }
+            }
+
+            private static bool IsReceiverSpaceSafe(Vector3 receiverPos, List<GameObject> enemies)
+            {
+                float nearestEnemyDistance = float.MaxValue;
+                for (int i = 0; i < enemies.Count; i++)
+                {
+                    GameObject enemy = enemies[i];
+                    if (enemy == null) continue;
+                    float distance = Vector3.Distance(receiverPos, enemy.transform.position);
+                    if (distance < nearestEnemyDistance)
+                    {
+                        nearestEnemyDistance = distance;
+                    }
+                }
+
+                if (nearestEnemyDistance < FootballConstants.PassTargetMinEnemyDistance)
+                    return false;
+
+                return true;
             }
 
             private static float CalculatePassDirectionScore(FootballBlackboard blackboard, GameObject candidate, Vector3 enemyGoalPos)

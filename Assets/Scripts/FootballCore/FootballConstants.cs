@@ -87,7 +87,8 @@ public static class FootballConstants
     // TaskEvaluateRolePreferences Constants
     public static float PassMinDistance = 2f;
     public static float PassMaxDistance = 12f;
-    public static float PassBlockThreshold = 0.85f;
+    public static float PassBlockThreshold = 1.0f;
+    public static float PassTargetMinEnemyDistance = 1.4f;
     public static float BasePassScoreDefender = 62f;
     public static float PassScoreDistancePenalty = 3.5f;
     public static float BaseClearanceScore = 45f;
@@ -102,7 +103,7 @@ public static class FootballConstants
     public static float BasePassScoreForward = 55f;
     public static float PassForwardDirectionBonus = 10f;
 
-    public static float BasePassScoreMidfielder = 68f;
+    public static float BasePassScoreMidfielder = 64f;
     
     // 通用常量
     public static float FloatEpsilon = 0.0001f;
