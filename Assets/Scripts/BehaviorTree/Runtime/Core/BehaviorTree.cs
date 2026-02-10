@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BehaviorTree.Runtime
@@ -31,19 +32,29 @@ namespace BehaviorTree.Runtime
         // 每帧由外部控制器调用
         public void Tick()
         {
-            if (_rootNode != null)
+            if (_rootNode == null)
+                return;
+
+            _rootNode.Execute();
+            UpdateExecutionPath();
+        }
+
+        private void UpdateExecutionPath()
+        {
+            if (!RuntimeDebugSettings.ShouldTraceExecutionPath())
             {
-                _rootNode.Execute();
-                // 更新执行路径
-                var pathList = new System.Collections.Generic.List<string>();
-                FindExecutionPath(_rootNode, pathList);
-                ExecutionPath = pathList.Count > 0 ? string.Join(" → ", pathList) : "None";
+                ExecutionPath = "Disabled";
+                return;
             }
+
+            List<string> pathList = new List<string>();
+            FindExecutionPath(_rootNode, pathList);
+            ExecutionPath = pathList.Count > 0 ? string.Join(" → ", pathList) : "None";
         }
 
         // 查找执行路径（追踪当前执行的节点）
 // ... existing code ...
-        private void FindExecutionPath(Node node, System.Collections.Generic.List<string> path)
+        private void FindExecutionPath(Node node, List<string> path)
         {
             // 1. 安全检查：如果该节点这一帧压根没被 Execute 调用，直接不记录
             // 这能过滤掉 Sequence 中 _currentIndex 之前的那些已经成功的“历史节点”

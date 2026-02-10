@@ -14,11 +14,8 @@ namespace BehaviorTree.Runtime
         {
             var strategy = OffensiveStrategyFactory.GetStrategy(Blackboard.Role.RoleType);
             var action = strategy.Evaluate(Blackboard);
-            
             ApplyActionToBlackboard(action);
-            
             LogOffensiveEvaluation(action, strategy.StrategyName);
-            
             return NodeState.SUCCESS;
         }
         

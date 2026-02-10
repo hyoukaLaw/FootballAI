@@ -1,10 +1,11 @@
 using System.Collections.Generic;
-using System.Linq;
 using BehaviorTree.Runtime;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using UnityEditor; // 添加UnityEditor命名空间引用
 using UnityEngine.Events; // 添加UnityEvents命名空间引用
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class MatchManager : MonoBehaviour
 {
@@ -67,6 +68,7 @@ public class MatchManager : MonoBehaviour
     private Vector3 _outOfBoundsPosition;
     private GameObject _throwInPlayer; // 指定的发球球员
     private float _throwInResumeInterval = 2f; // 界外球恢复延迟时间（秒）
+    private float _blueOverlapDiagnosticsTimer = 0f;
     
     private void Awake()
     {
@@ -97,7 +99,7 @@ public class MatchManager : MonoBehaviour
             return; // 游戏暂停，不执行任何逻辑
         }
         UpdatePlayerAI();
-        LogBlueTeammateOverlapErrors();
+        UpdateBlueOverlapDiagnostics();
         UpdatePossessionState();// 1. 计算物理状态 (谁拿着球？)
         BallController.Update(); // UpdateBall
         UpdatePassTargetState();// 2. 清理过期的传球状态
@@ -171,7 +173,9 @@ public class MatchManager : MonoBehaviour
             // 输出最终统计
             OutputMatchStatistics();
             // 暂停游戏
+#if UNITY_EDITOR
             EditorApplication.isPaused = true;
+#endif
         }
         else
         {
@@ -353,8 +357,26 @@ public class MatchManager : MonoBehaviour
         {
             ZoneUtils.ZoneRange zoneRange = ZoneUtils.GetZoneRange((FieldZone)fieldZone,
                 Context.GetEnemyGoalPosition(TeamRedPlayers[0]), Context.GetMyGoalPosition(TeamRedPlayers[0]));
-            MyLog.LogInfo($"fieldZone: {fieldZone.ToString()} {zoneRange.LeftBottom} {zoneRange.Width} {zoneRange.Length}");
+            LogFieldZoneInfo((FieldZone)fieldZone, zoneRange);
         }
+    }
+
+    private void LogFieldZoneInfo(FieldZone zone, ZoneUtils.ZoneRange zoneRange)
+    {
+        MyLog.LogInfo($"fieldZone: {zone} {zoneRange.LeftBottom} {zoneRange.Width} {zoneRange.Length}");
+    }
+
+    private void LogPossessionChange(GameObject previousHolder, GameObject newHolder)
+    {
+        if (previousHolder == newHolder)
+            return;
+
+        MyLog.LogInfo($"possession {previousHolder?.name}->{newHolder?.name}");
+    }
+
+    private void LogBlueOverlapError(GameObject playerA, GameObject playerB, float distance, float minDistance)
+    {
+        MyLog.LogError($"[BlueOverlap] {playerA.name} and {playerB.name} distance={distance:F3} (< {minDistance:F1})");
     }
     #endregion
     
@@ -382,6 +404,19 @@ public class MatchManager : MonoBehaviour
         }
     }
 
+    private void UpdateBlueOverlapDiagnostics()
+    {
+        if (!RuntimeDebugSettings.EnableBlueOverlapDiagnostics)
+            return;
+
+        _blueOverlapDiagnosticsTimer += TimeManager.Instance.GetDeltaTime();
+        if (_blueOverlapDiagnosticsTimer < RuntimeDebugSettings.BlueOverlapDiagnosticInterval)
+            return;
+
+        _blueOverlapDiagnosticsTimer = 0f;
+        LogBlueTeammateOverlapErrors();
+    }
+
     private void LogBlueTeammateOverlapErrors()
     {
         const float minDistance = 0.5f;
@@ -396,7 +431,7 @@ public class MatchManager : MonoBehaviour
                 float distance = Vector3.Distance(playerA.transform.position, playerB.transform.position);
                 if (distance < minDistance)
                 {
-                    MyLog.LogError($"[BlueOverlap] {playerA.name} and {playerB.name} distance={distance:F3} (< {minDistance:F1})");
+                    LogBlueOverlapError(playerA, playerB, distance, minDistance);
                 }
             }
         }
@@ -448,35 +483,48 @@ public class MatchManager : MonoBehaviour
         float minDistance = float.MaxValue;
         float distanceTolerance = 0.001f; // 距离相等容差值
 
-        // 合并所有球员进行遍历
-        List<GameObject> allPlayers = new List<GameObject>();
-        allPlayers.AddRange(TeamRedPlayers);
-        allPlayers.AddRange(TeamBluePlayers);
-        foreach (var player in allPlayers)
-        {
-            float dist = Vector3.Distance(player.transform.position, Ball.transform.position);
-            if (dist < PossessionThreshold && player != Context.BallController.GetRecentKicker() && !IsStunned(player))
-            {
-                if (dist < minDistance - distanceTolerance)
-                {
-                    minDistance = dist;
-                    closestPlayers.Clear();
-                    closestPlayers.Add(player);
-                }
-                else if (dist <= minDistance + distanceTolerance)
-                {
-                    closestPlayers.Add(player);
-                }
-            }
-        }
+        AddClosestPlayers(TeamRedPlayers, closestPlayers, ref minDistance, distanceTolerance);
+        AddClosestPlayers(TeamBluePlayers, closestPlayers, ref minDistance, distanceTolerance);
+
         GameObject closestPlayer = null;
         if (closestPlayers.Count > 0)
         {
-            // 移除随机性，使用确定性选择规则
-            closestPlayer = closestPlayers.OrderBy(p => p.name).FirstOrDefault();
+            closestPlayer = closestPlayers[0];
+            for (int i = 1; i < closestPlayers.Count; i++)
+            {
+                GameObject candidate = closestPlayers[i];
+                if (string.CompareOrdinal(candidate.name, closestPlayer.name) < 0)
+                {
+                    closestPlayer = candidate;
+                }
+            }
         }
-        if(closestPlayer != Context.GetBallHolder()) MyLog.LogInfo($"possession {Context.GetBallHolder()?.name}->{closestPlayer?.name}");
+        LogPossessionChange(Context.GetBallHolder(), closestPlayer);
         Context.SetBallHolder(closestPlayer);
+    }
+
+    private void AddClosestPlayers(List<GameObject> players, List<GameObject> closestPlayers, ref float minDistance, float distanceTolerance)
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            GameObject player = players[i];
+            if (player == null) continue;
+
+            float dist = Vector3.Distance(player.transform.position, Ball.transform.position);
+            if (dist >= PossessionThreshold || player == Context.BallController.GetRecentKicker() || IsStunned(player))
+                continue;
+
+            if (dist < minDistance - distanceTolerance)
+            {
+                minDistance = dist;
+                closestPlayers.Clear();
+                closestPlayers.Add(player);
+            }
+            else if (dist <= minDistance + distanceTolerance)
+            {
+                closestPlayers.Add(player);
+            }
+        }
     }
 
     private bool IsStunned(GameObject player)

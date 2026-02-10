@@ -2,11 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using BehaviorTree.Graph;
 using UnityEngine;
 using BehaviorTree.Runtime;
-using Unity.VisualScripting; // 引用命名空间
 
 [System.Serializable]
 public class PlayerStats
@@ -58,6 +56,7 @@ public class PlayerAI : MonoBehaviour
         _blackboard.Owner = this.gameObject; // 记录自己是谁
         _blackboard.Stats = Stats; // 传入球员属性
         _blackboard.Role = PlayerRole; // 传入角色配置
+        _blackboard.DebugShowCandidates = RuntimeDebugSettings.EnableCandidateVisualization;
         if (AIBehaviorGraph != null)
         {
             BTGraphNode rootGraphNode = FindRootNode(AIBehaviorGraph);//没有 Input 连接的节点就是 Root
@@ -88,7 +87,12 @@ public class PlayerAI : MonoBehaviour
     public void ManualTick()
     {
         _tree.Tick();
-        ExecutionPath = _tree.ExecutionPath;
+        UpdateExecutionPathDebugText();
+    }
+
+    private void UpdateExecutionPathDebugText()
+    {
+        ExecutionPath = RuntimeDebugSettings.ShouldTraceExecutionPath() ? _tree.ExecutionPath : "Disabled";
     }
     
     // === 新增：归位方法 ===
