@@ -7,6 +7,35 @@ using UnityEngine.Events; // 添加UnityEvents命名空间引用
 using UnityEditor;
 #endif
 
+public enum MatchGameState
+{
+    Playing,
+    Goal,
+    OutOfBounds
+}
+
+public class MatchRuntimeState
+{
+    #region Bool State
+    public bool GamePaused = false;
+    public bool IsMatchEndPause = false;
+    #endregion
+
+    #region Timer State
+    public float AutoResumeTimer = 0f;
+    public float BlueOverlapDiagnosticsTimer = 0f;
+    #endregion
+
+    #region Phase State
+    public MatchGameState CurrentGameState = MatchGameState.Playing;
+    #endregion
+
+    #region ThrowIn State
+    public Vector3 OutOfBoundsPosition = Vector3.zero;
+    public GameObject ThrowInPlayer;
+    #endregion
+}
+
 public class MatchManager : MonoBehaviour
 {
     // 比赛结果数据结构
@@ -43,36 +72,28 @@ public class MatchManager : MonoBehaviour
     public float StealCooldownDuration = 0f; // 抢断保护期时长（秒）
     public string NextKickoffTeam = "Red"; // 下一个开球队伍 ("Red" 或 "Blue")
     public float AutoResumeInterval = 5f;
+    public float ThrowInResumeInterval = 2f; // 界外球恢复延迟时间（秒）
+    public float PassTimeout = 3.0f;    // 传球超时时间
     
     [Header("比分系统")]
     private int _redScore = 0; // 红方得分
     private int _blueScore = 0; // 蓝方得分
     
     [Header("比赛统计系统")]
-    [ShowInInspector] private bool _gamePaused = false; // 游戏是否暂停
     public bool AutoGame = false; // 是否自动比赛
     public int CurrentMatchNumber = 0; // 当前比赛场次
     public int TotalMatches = 20; // 总比赛场次
+    [ShowInInspector] private MatchRuntimeState _runtimeState = new MatchRuntimeState();
     public List<MatchResult> MatchHistory = new List<MatchResult>(); // 比赛历史记录
     private List<string> _currentMatchScoreChanges = new List<string>(); // 当前比赛比分变动记录
-
     
     public UnityEvent<int, int> OnScoreChanged; // 红方分数, 蓝方分数
-
-    private float _passTimeout = 3.0f;    // 传球超时时间
-    private float _autoResumeTimer = 0f; // 自动恢复倒计时
-    private bool _isMatchEndPause = false; // 标记是否是比赛结束的暂停
     
-    private enum GameState { Playing, Goal, OutOfBounds }
-    private GameState _currentGameState = GameState.Playing;
-    private Vector3 _outOfBoundsPosition;
-    private GameObject _throwInPlayer; // 指定的发球球员
-    private float _throwInResumeInterval = 2f; // 界外球恢复延迟时间（秒）
-    private float _blueOverlapDiagnosticsTimer = 0f;
     private MatchStatsSystem _matchStatsSystem;
     private MatchFlowSystem _matchFlowSystem;
     private PossessionRefereeSystem _possessionRefereeSystem;
     
+    #region Unity 生命周期
     private void Awake()
     {
         // 初始化单例
@@ -91,14 +112,14 @@ public class MatchManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (_gamePaused)
+        if (_runtimeState.GamePaused)
         {
             // 自动比赛模式下，倒计时5秒后自动恢复
-            if (AutoGame  && _currentGameState == GameState.Goal)
+            if (AutoGame  && _runtimeState.CurrentGameState == MatchGameState.Goal)
             {
                 HandleAutoGame();
             }
-            else if (_currentGameState == GameState.OutOfBounds)
+            else if (_runtimeState.CurrentGameState == MatchGameState.OutOfBounds)
             {
                 HandleAutoResumeThrowIn();
             }
@@ -112,6 +133,7 @@ public class MatchManager : MonoBehaviour
         CheckGoal();// 3. 检测进球
         CheckBallOutOfBounds();// 4. 检测球出界
     }
+    #endregion
     
     #region 比赛生命周期
     /// <summary>
@@ -120,7 +142,7 @@ public class MatchManager : MonoBehaviour
     public void ResumeGame()
     {
         _matchFlowSystem.ResumeGame(TeamRedPlayers, TeamBluePlayers, Context, Ball, BallController, NextKickoffTeam,
-            RedStartPlayer, BlueStartPlayer, ref _gamePaused);
+            RedStartPlayer, BlueStartPlayer, ref _runtimeState.GamePaused);
     }
 
     /// <summary>
@@ -128,7 +150,7 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void OnGoalScored(string scoringTeam)
     {
-        _currentGameState = GameState.Goal;
+        _runtimeState.CurrentGameState = MatchGameState.Goal;
         _matchStatsSystem.AddGoal(scoringTeam, ref _redScore, ref _blueScore, _currentMatchScoreChanges);
         if ((_redScore + _blueScore) % 2 == 0) NextKickoffTeam = "Red";
         else NextKickoffTeam = "Blue";
@@ -137,7 +159,7 @@ public class MatchManager : MonoBehaviour
             EndMatch();
             return;
         }
-        _matchFlowSystem.BeginGoalPause(ref _gamePaused, ref _autoResumeTimer);
+        _matchFlowSystem.BeginGoalPause(ref _runtimeState.GamePaused, ref _runtimeState.AutoResumeTimer);
         _matchStatsSystem.UpdateScoreUI(_redScore, _blueScore);
     }
 
@@ -158,7 +180,7 @@ public class MatchManager : MonoBehaviour
         }
         else
         {
-            _matchFlowSystem.BeginMatchEndPause(ref _gamePaused, ref _autoResumeTimer, ref _isMatchEndPause);
+            _matchFlowSystem.BeginMatchEndPause(ref _runtimeState.GamePaused, ref _runtimeState.AutoResumeTimer, ref _runtimeState.IsMatchEndPause);
         }
     }
 
@@ -173,7 +195,7 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void StartNewMatch()
     {
-        _matchFlowSystem.StartNewMatch(ResetScoreForNewMatch, ResetMatchState, ref _gamePaused);
+        _matchFlowSystem.StartNewMatch(ResetScoreForNewMatch, ResetMatchState, ref _runtimeState.GamePaused);
         _matchStatsSystem.UpdateScoreUI(_redScore, _blueScore);
     }
 
@@ -239,34 +261,6 @@ public class MatchManager : MonoBehaviour
     {
         _matchStatsSystem.InitScoreEvent(_redScore, _blueScore);
     }
-    
-    private void LogZoneInfo()
-    {
-        foreach (var fieldZone in typeof(FieldZone).GetEnumValues())
-        {
-            ZoneUtils.ZoneRange zoneRange = ZoneUtils.GetZoneRange((FieldZone)fieldZone,
-                Context.GetEnemyGoalPosition(TeamRedPlayers[0]), Context.GetMyGoalPosition(TeamRedPlayers[0]));
-            LogFieldZoneInfo((FieldZone)fieldZone, zoneRange);
-        }
-    }
-
-    private void LogFieldZoneInfo(FieldZone zone, ZoneUtils.ZoneRange zoneRange)
-    {
-        MyLog.LogInfo($"fieldZone: {zone} {zoneRange.LeftBottom} {zoneRange.Width} {zoneRange.Length}");
-    }
-
-    private void LogPossessionChange(GameObject previousHolder, GameObject newHolder)
-    {
-        if (previousHolder == newHolder)
-            return;
-
-        MyLog.LogInfo($"possession {previousHolder?.name}->{newHolder?.name}");
-    }
-
-    private void LogBlueOverlapError(GameObject playerA, GameObject playerB, float distance, float minDistance)
-    {
-        MyLog.LogError($"[BlueOverlap] {playerA.name} and {playerB.name} distance={distance:F3} (< {minDistance:F1})");
-    }
     #endregion
     
     #region 更新过程
@@ -298,11 +292,11 @@ public class MatchManager : MonoBehaviour
         if (!RuntimeDebugSettings.EnableBlueOverlapDiagnostics)
             return;
 
-        _blueOverlapDiagnosticsTimer += TimeManager.Instance.GetDeltaTime();
-        if (_blueOverlapDiagnosticsTimer < RuntimeDebugSettings.BlueOverlapDiagnosticInterval)
+        _runtimeState.BlueOverlapDiagnosticsTimer += TimeManager.Instance.GetDeltaTime();
+        if (_runtimeState.BlueOverlapDiagnosticsTimer < RuntimeDebugSettings.BlueOverlapDiagnosticInterval)
             return;
 
-        _blueOverlapDiagnosticsTimer = 0f;
+        _runtimeState.BlueOverlapDiagnosticsTimer = 0f;
         LogBlueTeammateOverlapErrors();
     }
 
@@ -328,8 +322,8 @@ public class MatchManager : MonoBehaviour
 
     private void HandleAutoGame()
     {
-        _matchFlowSystem.HandleAutoGame(TimeManager.Instance.GetDeltaTime(), AutoResumeInterval, ref _autoResumeTimer,
-            ref _isMatchEndPause, StartNewMatch, ResumeGame);
+        _matchFlowSystem.HandleAutoGame(TimeManager.Instance.GetDeltaTime(), AutoResumeInterval, ref _runtimeState.AutoResumeTimer,
+            ref _runtimeState.IsMatchEndPause, StartNewMatch, ResumeGame);
     }
 
     /// <summary>
@@ -338,7 +332,7 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void UpdatePassTargetState()
     {
-        _possessionRefereeSystem.UpdatePassTargetState(Context, _passTimeout);
+        _possessionRefereeSystem.UpdatePassTargetState(Context, PassTimeout);
     }
 
     /// <summary>
@@ -374,13 +368,13 @@ public class MatchManager : MonoBehaviour
     private void CheckBallOutOfBounds()
     {
         if (!_possessionRefereeSystem.TryHandleBallOutOfBounds(Context, Ball, TeamRedPlayers, TeamBluePlayers,
-                RedStartPlayer, BlueStartPlayer, out _outOfBoundsPosition, out string _, out _throwInPlayer))
+                RedStartPlayer, BlueStartPlayer, out _runtimeState.OutOfBoundsPosition, out string _, out _runtimeState.ThrowInPlayer))
             return;
-        _currentGameState = GameState.OutOfBounds;
+        _runtimeState.CurrentGameState = MatchGameState.OutOfBounds;
         _matchFlowSystem.ResetContext(Context);
         _matchFlowSystem.ResetPlayers(TeamRedPlayers, TeamBluePlayers);
-        _possessionRefereeSystem.SetupThrowInPositions(Context, Ball, _throwInPlayer, _outOfBoundsPosition);
-        _matchFlowSystem.BeginGoalPause(ref _gamePaused, ref _autoResumeTimer);
+        _possessionRefereeSystem.SetupThrowInPositions(Context, Ball, _runtimeState.ThrowInPlayer, _runtimeState.OutOfBoundsPosition);
+        _matchFlowSystem.BeginGoalPause(ref _runtimeState.GamePaused, ref _runtimeState.AutoResumeTimer);
     }
     
     /// <summary>
@@ -388,15 +382,15 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void HandleAutoResumeThrowIn()
     {
-        _matchFlowSystem.HandleAutoResumeThrowIn(TimeManager.Instance.GetDeltaTime(), _throwInResumeInterval,
-            ref _autoResumeTimer, ResumeFromThrowIn);
+        _matchFlowSystem.HandleAutoResumeThrowIn(TimeManager.Instance.GetDeltaTime(), ThrowInResumeInterval,
+            ref _runtimeState.AutoResumeTimer, ResumeFromThrowIn);
     }
 
     private void ResumeFromThrowIn()
     {
-        _currentGameState = GameState.Playing;
-        _throwInPlayer = null;
-        _gamePaused = false;
+        _runtimeState.CurrentGameState = MatchGameState.Playing;
+        _runtimeState.ThrowInPlayer = null;
+        _runtimeState.GamePaused = false;
     }
     #endregion
     
@@ -413,6 +407,34 @@ public class MatchManager : MonoBehaviour
             return;
         }
         MyLog.LogInfo(_matchStatsSystem.BuildMatchStatisticsReport(MatchHistory));
+    }
+    
+    private void LogZoneInfo()
+    {
+        foreach (var fieldZone in typeof(FieldZone).GetEnumValues())
+        {
+            ZoneUtils.ZoneRange zoneRange = ZoneUtils.GetZoneRange((FieldZone)fieldZone,
+                Context.GetEnemyGoalPosition(TeamRedPlayers[0]), Context.GetMyGoalPosition(TeamRedPlayers[0]));
+            LogFieldZoneInfo((FieldZone)fieldZone, zoneRange);
+        }
+    }
+
+    private void LogFieldZoneInfo(FieldZone zone, ZoneUtils.ZoneRange zoneRange)
+    {
+        MyLog.LogInfo($"fieldZone: {zone} {zoneRange.LeftBottom} {zoneRange.Width} {zoneRange.Length}");
+    }
+
+    private void LogPossessionChange(GameObject previousHolder, GameObject newHolder)
+    {
+        if (previousHolder == newHolder)
+            return;
+
+        MyLog.LogInfo($"possession {previousHolder?.name}->{newHolder?.name}");
+    }
+
+    private void LogBlueOverlapError(GameObject playerA, GameObject playerB, float distance, float minDistance)
+    {
+        MyLog.LogError($"[BlueOverlap] {playerA.name} and {playerB.name} distance={distance:F3} (< {minDistance:F1})");
     }
     #endregion
 }
