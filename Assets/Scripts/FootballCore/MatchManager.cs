@@ -71,6 +71,7 @@ public class MatchManager : MonoBehaviour
     private float _blueOverlapDiagnosticsTimer = 0f;
     private MatchStatsSystem _matchStatsSystem;
     private MatchFlowSystem _matchFlowSystem;
+    private PossessionRefereeSystem _possessionRefereeSystem;
     
     private void Awake()
     {
@@ -80,6 +81,7 @@ public class MatchManager : MonoBehaviour
         BallController = new BallController(Ball);
         _matchStatsSystem = new MatchStatsSystem(OnScoreChanged);
         _matchFlowSystem = new MatchFlowSystem();
+        _possessionRefereeSystem = new PossessionRefereeSystem();
         InitContext();
         ResetBall();
         InitScoreEvent();
@@ -117,7 +119,8 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     public void ResumeGame()
     {
-        _matchFlowSystem.ResumeGame(ResetPlayers, ResetContext, ResetBall, ref _gamePaused);
+        _matchFlowSystem.ResumeGame(TeamRedPlayers, TeamBluePlayers, Context, Ball, BallController, NextKickoffTeam,
+            RedStartPlayer, BlueStartPlayer, ref _gamePaused);
     }
 
     /// <summary>
@@ -135,7 +138,7 @@ public class MatchManager : MonoBehaviour
             return;
         }
         _matchFlowSystem.BeginGoalPause(ref _gamePaused, ref _autoResumeTimer);
-        UpdateScoreUI();
+        _matchStatsSystem.UpdateScoreUI(_redScore, _blueScore);
     }
 
     /// <summary>
@@ -170,7 +173,8 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void StartNewMatch()
     {
-        _matchFlowSystem.StartNewMatch(ResetScoreForNewMatch, ResetMatchState, UpdateScoreUI, ref _gamePaused);
+        _matchFlowSystem.StartNewMatch(ResetScoreForNewMatch, ResetMatchState, ref _gamePaused);
+        _matchStatsSystem.UpdateScoreUI(_redScore, _blueScore);
     }
 
     private void ResetScoreForNewMatch()
@@ -184,25 +188,13 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void ResetMatchState()
     {
-        ResetContext();
-        ResetPlayers();
-        // 重置球的位置
+        _matchFlowSystem.ResetContext(Context);
+        _matchFlowSystem.ResetPlayers(TeamRedPlayers, TeamBluePlayers);
         ResetBall();
     }
     #endregion
 
     #region 比赛中的操作
-    /// <summary>
-    /// 触发抢断保护期，防止抢断后立即被反抢
-    /// </summary>
-    public void TriggerStealCooldown()
-    {
-        if (Context != null)
-        {
-            Context.SetStealCooldown(StealCooldownDuration);
-        }
-    }
-
     /// <summary>
     /// 执行抢断动作：统一管理球权转移和相关状态更新
     /// </summary>
@@ -210,23 +202,7 @@ public class MatchManager : MonoBehaviour
     /// <param name="currentHolder">当前持球人（被抢断者）</param>
     public void StealBall(GameObject tackler, GameObject currentHolder)
     {
-        // 1. 移动球到抢断者位置
-        Ball.transform.position = tackler.transform.position;
-        // 2. 更新球权
-        Context.SetBallHolder(tackler);
-        // 3. 触发抢断保护期
-        TriggerStealCooldown();
-        // 4. 让被抢断者停顿
-        if (currentHolder != null)
-        {
-            var holderAI = currentHolder.GetComponent<PlayerAI>();
-            if (holderAI?.GetBlackboard() != null)
-            {
-                var bb = holderAI.GetBlackboard();
-                bb.IsStunned = true;
-                bb.StunTimer = bb.StunDuration;
-            }
-        }
+        _possessionRefereeSystem.StealBall(Context, Ball, tackler, currentHolder, StealCooldownDuration);
     }
     #endregion
 
@@ -256,55 +232,7 @@ public class MatchManager : MonoBehaviour
     
     public void ResetBall()
     {
-        Ball.transform.position = Vector3.zero;
-        BallController.ResetMotionState();
-
-        GameObject kickoffPlayer = null;
-        if (NextKickoffTeam == "Red" && RedStartPlayer != null)
-        {
-            RedStartPlayer.transform.position = Vector3.zero;
-            kickoffPlayer = RedStartPlayer;
-        }
-        else if (NextKickoffTeam == "Blue" && BlueStartPlayer != null)
-        {
-            BlueStartPlayer.transform.position = Vector3.zero;
-            kickoffPlayer = BlueStartPlayer;
-        }
-
-        Context.SetBallHolder(kickoffPlayer);
-    }
-
-    private void ResetContext()
-    {
-        Context.IncomingPassTarget = null;
-        Context.SetPassTarget(null);
-        Context.SetBallHolder(null);
-        Context.SetStealCooldown(0f);
-    }
-
-    private void ResetPlayers()
-    {
-        // 重置所有球员状态
-        foreach(var player in TeamRedPlayers)
-        {
-            var playerAI = player.GetComponent<PlayerAI>();
-            if(playerAI != null)
-            {
-                playerAI.ResetPosition();
-                playerAI.ResetBlackboard();
-                playerAI.ResetBehaviorTree();
-            }
-        }
-        foreach(var player in TeamBluePlayers)
-        {
-            var playerAI = player.GetComponent<PlayerAI>();
-            if(playerAI != null)
-            {
-                playerAI.ResetPosition();
-                playerAI.ResetBlackboard();
-                playerAI.ResetBehaviorTree();
-            }
-        }
+        _matchFlowSystem.ResetBall(Ball, BallController, NextKickoffTeam, RedStartPlayer, BlueStartPlayer, Context);
     }
 
     private void InitScoreEvent()
@@ -410,7 +338,7 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void UpdatePassTargetState()
     {
-        Context.UpdatePassTarget(_passTimeout, Context.GetBallHolder());
+        _possessionRefereeSystem.UpdatePassTargetState(Context, _passTimeout);
     }
 
     /// <summary>
@@ -419,59 +347,7 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void UpdatePossessionState()
     {
-        // 更新抢断保护期计时器
-        Context.UpdateStealCooldown(TimeManager.Instance.GetDeltaTime());
-        if(BallController.GetIsMoving())
-            Context.SetBallHolder(null);
-        // 两种情况可以进行争球：1 没有持球人
-        if (Context.GetBallHolder() != null) return;
-        
-        List<GameObject> closestPlayers = new List<GameObject>();
-        float minDistance = float.MaxValue;
-        float distanceTolerance = 0.001f; // 距离相等容差值
-
-        AddClosestPlayers(TeamRedPlayers, closestPlayers, ref minDistance, distanceTolerance);
-        AddClosestPlayers(TeamBluePlayers, closestPlayers, ref minDistance, distanceTolerance);
-
-        GameObject closestPlayer = null;
-        if (closestPlayers.Count > 0)
-        {
-            closestPlayer = closestPlayers[0];
-            for (int i = 1; i < closestPlayers.Count; i++)
-            {
-                GameObject candidate = closestPlayers[i];
-                if (string.CompareOrdinal(candidate.name, closestPlayer.name) < 0)
-                {
-                    closestPlayer = candidate;
-                }
-            }
-        }
-        LogPossessionChange(Context.GetBallHolder(), closestPlayer);
-        Context.SetBallHolder(closestPlayer);
-    }
-
-    private void AddClosestPlayers(List<GameObject> players, List<GameObject> closestPlayers, ref float minDistance, float distanceTolerance)
-    {
-        for (int i = 0; i < players.Count; i++)
-        {
-            GameObject player = players[i];
-            if (player == null) continue;
-
-            float dist = Vector3.Distance(player.transform.position, Ball.transform.position);
-            if (dist >= PossessionThreshold || player == Context.BallController.GetRecentKicker() || IsStunned(player))
-                continue;
-
-            if (dist < minDistance - distanceTolerance)
-            {
-                minDistance = dist;
-                closestPlayers.Clear();
-                closestPlayers.Add(player);
-            }
-            else if (dist <= minDistance + distanceTolerance)
-            {
-                closestPlayers.Add(player);
-            }
-        }
+        _possessionRefereeSystem.UpdatePossessionState(Context, Ball, PossessionThreshold, IsStunned, LogPossessionChange);
     }
 
     private bool IsStunned(GameObject player)
@@ -485,30 +361,9 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void CheckGoal()
     {
-        Vector3 ballPos = Ball.transform.position;
-        // 检测红方球门（蓝方进攻）
-        float distToRedGoal = Vector3.Distance(ballPos, RedGoal.position);
-        if (distToRedGoal < GoalDistance)
-        {
-            OnGoalScored("Blue"); // 蓝方进球
-            return;
-        }
-        // 检测蓝方球门（红方进攻）
-        float distToBlueGoal = Vector3.Distance(ballPos, BlueGoal.position);
-        if (distToBlueGoal < GoalDistance)
-        {
-            OnGoalScored("Red"); // 红方进球
-            return;
-        }
+        _possessionRefereeSystem.CheckGoal(Ball, RedGoal, BlueGoal, GoalDistance, OnGoalScored);
     }
     
-    /// <summary>
-    /// 更新比分显示UI
-    /// </summary>
-    private void UpdateScoreUI()
-    {
-        _matchStatsSystem.UpdateScoreUI(_redScore, _blueScore);
-    }
     #endregion
     
     #region 处理出界
@@ -518,93 +373,14 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void CheckBallOutOfBounds()
     {
-        
-        if (Context.IsInField(Ball.transform.position))
-        {
+        if (!_possessionRefereeSystem.TryHandleBallOutOfBounds(Context, Ball, TeamRedPlayers, TeamBluePlayers,
+                RedStartPlayer, BlueStartPlayer, out _outOfBoundsPosition, out string _, out _throwInPlayer))
             return;
-        }
-        
-        // 球出界了
         _currentGameState = GameState.OutOfBounds;
-        _outOfBoundsPosition = Ball.transform.position;
-        
-        // 确定发球方（最后踢球人的对方）
-        GameObject lastKicker = BallController.GetLastKicker();
-        string throwingTeam = "Red";
-        
-        if (lastKicker != null)
-        {
-            if (TeamRedPlayers.Contains(lastKicker))
-            {
-                throwingTeam = "Blue";
-            }
-            else if (TeamBluePlayers.Contains(lastKicker))
-            {
-                throwingTeam = "Red";
-            }
-        }
-        
-        // 设置发球球员
-        if (throwingTeam == "Red" && RedStartPlayer != null)
-        {
-            _throwInPlayer = RedStartPlayer;
-        }
-        else if (throwingTeam == "Blue" && BlueStartPlayer != null)
-        {
-            _throwInPlayer = BlueStartPlayer;
-        }
-        
-        // 设置球员位置
-        SetupThrowInPositions(throwingTeam);
-        
-        // 重置自动恢复计时器
-        _autoResumeTimer = 0f;
-        _gamePaused = true;
-    }
-    
-    /// <summary>
-    /// 设置界外球时的球员位置
-    /// </summary>
-    /// <param name="throwingTeam">发球队伍 ("Red" 或 "Blue")</param>
-    private void SetupThrowInPositions(string throwingTeam)
-    {
-        // 清理传球等状态
-        ResetContext();
-        
-        // 其他球员都回初始位置
-        foreach (var player in TeamRedPlayers)
-        {
-            var playerAI = player.GetComponent<PlayerAI>();
-            if (playerAI != null)
-            {
-                playerAI.ResetPosition();
-                playerAI.ResetBlackboard();
-                playerAI.ResetBehaviorTree();
-            }
-            
-        }
-        
-        foreach (var player in TeamBluePlayers)
-        {
-            var playerAI = player.GetComponent<PlayerAI>();
-            if (playerAI != null)
-            {
-                playerAI.ResetPosition();
-                playerAI.ResetBlackboard();
-                playerAI.ResetBehaviorTree();
-            }
-            
-        }
-                
-        // 将发球球员移动到出界位置
-        if (_throwInPlayer != null)
-        {
-            _throwInPlayer.transform.position = FootballUtils.ClampToField(Context, _outOfBoundsPosition, out bool wasClamped);
-        }
-        // 将球放在出界位置（由发球球员持有）
-        Ball.transform.position = FootballUtils.ClampToField(Context, _outOfBoundsPosition, out bool _);
-        Context.SetBallHolder(_throwInPlayer);
-        _throwInPlayer.GetComponent<PlayerAI>().GetBlackboard().IsPassingOutsideBall = true;
+        _matchFlowSystem.ResetContext(Context);
+        _matchFlowSystem.ResetPlayers(TeamRedPlayers, TeamBluePlayers);
+        _possessionRefereeSystem.SetupThrowInPositions(Context, Ball, _throwInPlayer, _outOfBoundsPosition);
+        _matchFlowSystem.BeginGoalPause(ref _gamePaused, ref _autoResumeTimer);
     }
     
     /// <summary>
