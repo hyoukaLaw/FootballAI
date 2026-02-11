@@ -69,6 +69,8 @@ public class MatchManager : MonoBehaviour
     private GameObject _throwInPlayer; // 指定的发球球员
     private float _throwInResumeInterval = 2f; // 界外球恢复延迟时间（秒）
     private float _blueOverlapDiagnosticsTimer = 0f;
+    private MatchStatsSystem _matchStatsSystem;
+    private MatchFlowSystem _matchFlowSystem;
     
     private void Awake()
     {
@@ -76,6 +78,8 @@ public class MatchManager : MonoBehaviour
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
         BallController = new BallController(Ball);
+        _matchStatsSystem = new MatchStatsSystem(OnScoreChanged);
+        _matchFlowSystem = new MatchFlowSystem();
         InitContext();
         ResetBall();
         InitScoreEvent();
@@ -113,10 +117,7 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     public void ResumeGame()
     {
-        ResetPlayers();
-        ResetContext();
-        ResetBall();// 重置球和球权
-        _gamePaused = false;// 恢复游戏
+        _matchFlowSystem.ResumeGame(ResetPlayers, ResetContext, ResetBall, ref _gamePaused);
     }
 
     /// <summary>
@@ -125,28 +126,15 @@ public class MatchManager : MonoBehaviour
     private void OnGoalScored(string scoringTeam)
     {
         _currentGameState = GameState.Goal;
-        // 更新比分
-        if (scoringTeam == "Red")
-        {
-            _redScore++;
-        }
-        else if (scoringTeam == "Blue")
-        {
-            _blueScore++;
-        }
-        // 记录比分变动
-        _currentMatchScoreChanges.Add($"{_redScore}:{_blueScore}");
-        if((_redScore + _blueScore) % 2 == 0) NextKickoffTeam = "Red";
+        _matchStatsSystem.AddGoal(scoringTeam, ref _redScore, ref _blueScore, _currentMatchScoreChanges);
+        if ((_redScore + _blueScore) % 2 == 0) NextKickoffTeam = "Red";
         else NextKickoffTeam = "Blue";
-        // 检查是否有队伍达到20分，如果是则结束比赛
         if (_redScore >= 20 || _blueScore >= 20)
         {
             EndMatch();
             return;
         }
-        _gamePaused = true;// 暂停游戏
-        _autoResumeTimer = 0f;// 重置自动恢复倒计时
-        // 通知UI更新比分显示
+        _matchFlowSystem.BeginGoalPause(ref _gamePaused, ref _autoResumeTimer);
         UpdateScoreUI();
     }
 
@@ -155,48 +143,25 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void EndMatch()
     {
-        CurrentMatchNumber++;
-        // 记录本场比赛结果
-        MatchResult result = new MatchResult
-        {
-            MatchNumber = CurrentMatchNumber,
-            RedFinalScore = _redScore,
-            BlueFinalScore = _blueScore,
-            ScoreChanges = new List<string>(_currentMatchScoreChanges)
-        };
-        MatchHistory.Add(result);
+        MatchResult result = _matchStatsSystem.BuildMatchResultAndTrack(ref CurrentMatchNumber, _redScore, _blueScore,
+            _currentMatchScoreChanges, MatchHistory);
         LogOneMatchResult(result);
-
-        // 检查是否达到20场比赛
         if (CurrentMatchNumber >= TotalMatches)
         {
-            // 输出最终统计
             OutputMatchStatistics();
-            // 暂停游戏
 #if UNITY_EDITOR
             EditorApplication.isPaused = true;
 #endif
         }
         else
         {
-            // 暂停5秒后再开始下一场比赛
-            _gamePaused = true;
-            _autoResumeTimer = 0f;
-            _isMatchEndPause = true;
+            _matchFlowSystem.BeginMatchEndPause(ref _gamePaused, ref _autoResumeTimer, ref _isMatchEndPause);
         }
     }
 
     private void LogOneMatchResult(MatchResult result)
     {
-        string log = $"第{result.MatchNumber}场比赛: Red {result.RedFinalScore} - Blue {result.BlueFinalScore}";
-        if (result.ScoreChanges.Count > 0)
-        {
-            foreach (var scoreChange in result.ScoreChanges)
-            {
-                log += $"\n{scoreChange}";
-            }
-        }
-        MyLog.LogInfo(log);
+        MyLog.LogInfo(_matchStatsSystem.BuildOneMatchResultLog(result));
         OutputMatchStatistics();
     }
 
@@ -205,17 +170,13 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void StartNewMatch()
     {
-        // 重置比分
-        _redScore = 0;
-        _blueScore = 0;
+        _matchFlowSystem.StartNewMatch(ResetScoreForNewMatch, ResetMatchState, UpdateScoreUI, ref _gamePaused);
+    }
+
+    private void ResetScoreForNewMatch()
+    {
+        _matchStatsSystem.ResetForNewMatch(ref _redScore, ref _blueScore, _currentMatchScoreChanges);
         NextKickoffTeam = "Red";
-        _currentMatchScoreChanges.Clear();
-        // 重置比赛状态（包括球员归位、球重置等）
-        ResetMatchState();
-        // 恢复游戏（只需设置GamePaused为false）
-        _gamePaused = false;
-        // 更新UI
-        UpdateScoreUI();
     }
 
     /// <summary>
@@ -348,7 +309,7 @@ public class MatchManager : MonoBehaviour
 
     private void InitScoreEvent()
     {
-        OnScoreChanged?.Invoke(0, 0);
+        _matchStatsSystem.InitScoreEvent(_redScore, _blueScore);
     }
     
     private void LogZoneInfo()
@@ -439,22 +400,8 @@ public class MatchManager : MonoBehaviour
 
     private void HandleAutoGame()
     {
-        _autoResumeTimer += TimeManager.Instance.GetDeltaTime();
-        if (_autoResumeTimer >= AutoResumeInterval)
-    {
-            if (_isMatchEndPause)
-            {
-                // 比赛结束的暂停：开始下一场比赛
-                StartNewMatch();
-                _isMatchEndPause = false;
-            }
-            else
-            {
-                // 普通进球的暂停：恢复比赛
-                ResumeGame();
-            }
-            _autoResumeTimer = 0f;
-        }
+        _matchFlowSystem.HandleAutoGame(TimeManager.Instance.GetDeltaTime(), AutoResumeInterval, ref _autoResumeTimer,
+            ref _isMatchEndPause, StartNewMatch, ResumeGame);
     }
 
     /// <summary>
@@ -560,10 +507,7 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void UpdateScoreUI()
     {
-        if (OnScoreChanged != null)
-        {
-            OnScoreChanged.Invoke(_redScore, _blueScore);
-        }
+        _matchStatsSystem.UpdateScoreUI(_redScore, _blueScore);
     }
     #endregion
     
@@ -668,14 +612,15 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void HandleAutoResumeThrowIn()
     {
-        _autoResumeTimer += TimeManager.Instance.GetDeltaTime();
-        if (_autoResumeTimer >= _throwInResumeInterval)
+        _matchFlowSystem.HandleAutoResumeThrowIn(TimeManager.Instance.GetDeltaTime(), _throwInResumeInterval,
+            ref _autoResumeTimer, ResumeFromThrowIn);
+    }
+
+    private void ResumeFromThrowIn()
     {
-            _currentGameState = GameState.Playing;
-            _autoResumeTimer = 0f;
-            _throwInPlayer = null;
-            _gamePaused = false;
-        }
+        _currentGameState = GameState.Playing;
+        _throwInPlayer = null;
+        _gamePaused = false;
     }
     #endregion
     
@@ -686,77 +631,12 @@ public class MatchManager : MonoBehaviour
     /// </summary>
     private void OutputMatchStatistics()
     {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        
-        sb.AppendLine("========================================");
-        sb.AppendLine("       比赛统计报告");
-        sb.AppendLine("========================================");
-        sb.AppendLine();
-        
-        // 输出每场比赛的比分
-        sb.AppendLine("【每场比赛比分】");
-        foreach(var result in MatchHistory)
+        if (MatchHistory.Count == 0)
         {
-            sb.AppendLine($"第{result.MatchNumber}场: 红方 {result.RedFinalScore} - 蓝方 {result.BlueFinalScore}");
+            MyLog.LogInfo("比赛统计报告: 暂无比赛数据");
+            return;
         }
-        
-        sb.AppendLine();
-        
-        // 计算统计信息
-        float redTotal = 0;
-        float blueTotal = 0;
-        int redWins = 0;
-        int blueWins = 0;
-        int draws = 0;
-        
-        foreach(var result in MatchHistory)
-        {
-            redTotal += result.RedFinalScore;
-            blueTotal += result.BlueFinalScore;
-            
-            if(result.RedFinalScore > result.BlueFinalScore)
-                redWins++;
-            else if(result.BlueFinalScore > result.RedFinalScore)
-                blueWins++;
-            else
-                draws++;
-        }
-        
-        float redAverage = redTotal / MatchHistory.Count;
-        float blueAverage = blueTotal / MatchHistory.Count;
-        
-        // 输出统计信息
-        sb.AppendLine("【统计汇总】");
-        sb.AppendLine($"比赛场次: {MatchHistory.Count}");
-        sb.AppendLine();
-        sb.AppendLine($"红方平均得分: {redAverage:F2}");
-        sb.AppendLine($"蓝方平均得分: {blueAverage:F2}");
-        sb.AppendLine($"红方总进球数: {redTotal}");
-        sb.AppendLine($"蓝方总进球数: {blueTotal}");
-        sb.AppendLine();
-        sb.AppendLine($"红方胜场: {redWins}");
-        sb.AppendLine($"蓝方胜场: {blueWins}");
-        sb.AppendLine($"平局数: {draws}");
-        sb.AppendLine();
-        
-        // 计算胜负关系
-        sb.AppendLine("【胜负分析】");
-        if(redWins > blueWins)
-        {
-            sb.AppendLine($"红方表现更优，领先 {redWins - blueWins} 场");
-        }
-        else if(blueWins > redWins)
-        {
-            sb.AppendLine($"蓝方表现更优，领先 {blueWins - redWins} 场");
-        }
-        else
-        {
-            sb.AppendLine("双方平分秋色");
-        }
-        
-        sb.AppendLine("========================================");
-        
-        MyLog.LogInfo(sb.ToString());
+        MyLog.LogInfo(_matchStatsSystem.BuildMatchStatisticsReport(MatchHistory));
     }
     #endregion
 }
