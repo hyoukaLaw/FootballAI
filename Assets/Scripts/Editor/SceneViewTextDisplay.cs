@@ -1,5 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using FootballAI.FootballCore;
 
 // 自定义编辑器脚本，用于在Scene窗口中显示文本信息
 [ExecuteInEditMode]

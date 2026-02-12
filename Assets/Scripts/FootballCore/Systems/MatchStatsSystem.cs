@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine.Events;
 
+namespace FootballAI.FootballCore
+{
 public class MatchStatsSystem
 {
     private readonly UnityEvent<int, int> _onScoreChanged;
@@ -114,4 +116,5 @@ public class MatchStatsSystem
         sb.AppendLine("========================================");
         return sb.ToString();
     }
+}
 }

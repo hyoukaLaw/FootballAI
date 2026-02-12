@@ -6,6 +6,8 @@ using BehaviorTree.Graph;
 using UnityEngine;
 using BehaviorTree.Runtime;
 
+namespace FootballAI.FootballCore
+{
 [System.Serializable]
 public class PlayerStats
 {
@@ -189,4 +191,5 @@ public class PlayerAI : MonoBehaviour
         Gizmos.DrawSphere(_blackboard.DebugSelectedPosition, 0.3f);
     }
     #endregion
+}
 }

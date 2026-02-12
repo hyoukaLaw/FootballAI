@@ -1,6 +1,7 @@
 using BehaviorTree.Runtime;
 using UnityEditor;
 using UnityEngine;
+using FootballAI.FootballCore;
 
 [CustomEditor(typeof(PlayerAI))]
 public class PlayerAIInspector : Editor

@@ -1,5 +1,7 @@
 using UnityEngine;
 
+namespace FootballAI.FootballCore
+{
 public class TimeManager
 {
     private static TimeManager _instance;
@@ -17,4 +19,5 @@ public class TimeManager
     {
         return Time.deltaTime;
     }
+}
 }

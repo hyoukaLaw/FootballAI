@@ -3,6 +3,8 @@ using BehaviorTree.Runtime;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
+namespace FootballAI.FootballCore
+{
 public static class FootballUtils
 {
     public static Vector3 ClampToField(MatchContext matchContext, Vector3 pos, out bool wasClamped)
@@ -189,4 +191,5 @@ public static class FootballUtils
         float distanceToMovementLine = DistancePointToLineSegment(currentPos, predictedPos, candidate);
         return distanceToMovementLine < safeDistance;
     }
+}
 }

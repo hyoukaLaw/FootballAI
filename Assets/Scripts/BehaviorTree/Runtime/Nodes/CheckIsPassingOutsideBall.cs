@@ -1,4 +1,6 @@
-﻿namespace BehaviorTree.Runtime
+using FootballAI.FootballCore;
+
+namespace BehaviorTree.Runtime
 {
     public class CheckIsPassingOutsideBall:ConditionalNode
     {

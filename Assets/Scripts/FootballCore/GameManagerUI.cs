@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+namespace FootballAI.FootballCore
+{
 public class GameManagerUI : MonoBehaviour
 {
     [Header("UI References")]
@@ -54,4 +56,5 @@ public class GameManagerUI : MonoBehaviour
             MatchManager.Instance.OnScoreChanged.RemoveListener(UpdateScoreDisplay);
         }
     }
+}
 }

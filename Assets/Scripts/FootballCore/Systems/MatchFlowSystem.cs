@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using BehaviorTree.Runtime;
 
+namespace FootballAI.FootballCore
+{
 public class MatchFlowSystem
 {
     public void ResumeGame(List<GameObject> teamRedPlayers, List<GameObject> teamBluePlayers, MatchContext context,
@@ -107,4 +109,5 @@ public class MatchFlowSystem
             playerAI.ResetBehaviorTree();
         }
     }
+}
 }

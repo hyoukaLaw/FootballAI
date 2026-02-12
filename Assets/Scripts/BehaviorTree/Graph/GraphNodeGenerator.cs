@@ -6,6 +6,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using BehaviorTree.Runtime;
+using FootballAI.FootballCore;
 
 namespace BehaviorTree.Graph.Editor
 {

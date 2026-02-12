@@ -1,5 +1,7 @@
 using UnityEngine;
 
+namespace FootballAI.FootballCore
+{
 public static class FootballConstants
 {
     #region CoreTuning
@@ -115,4 +117,5 @@ public static class FootballConstants
     public static float DefaultTargetSpeed = 2.0f;
     public static float CommonBlockThreshold = 1f;
     #endregion
+}
 }

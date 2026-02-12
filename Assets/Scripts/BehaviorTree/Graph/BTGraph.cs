@@ -3,6 +3,7 @@ using UnityEngine;
 using XNode;
 using BehaviorTree.Runtime;
 using Node = BehaviorTree.Runtime.Node; // 引用运行时命名空间
+using FootballAI.FootballCore;
 namespace BehaviorTree.Graph
 {
     [CreateAssetMenu(fileName = "New Football BT", menuName = "AI/Football BT Graph")]

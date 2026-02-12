@@ -1,5 +1,7 @@
 using UnityEngine;
 
+namespace FootballAI.FootballCore
+{
 public static class MyLog
 {
     private static float _lastInfoLogTime = float.NegativeInfinity;
@@ -45,4 +47,5 @@ public static class MyLog
         lastLogTime = now;
         return true;
     }
+}
 }

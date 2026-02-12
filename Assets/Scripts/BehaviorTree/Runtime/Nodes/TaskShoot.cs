@@ -1,4 +1,5 @@
 using UnityEngine;
+using FootballAI.FootballCore;
 
 namespace BehaviorTree.Runtime
 {
@@ -32,20 +33,6 @@ namespace BehaviorTree.Runtime
         private Vector3 CalculateShootTarget(Vector3 goalPos)
         {
             return goalPos; // 暂时不考虑射到别的地方
-            // 基础目标：球门中心
-            Vector3 target = goalPos;
-
-            // 根据射门准确率添加随机偏移
-            float accuracy = Blackboard.Stats.ShootingAccuracy;
-
-            // 偏移范围（球门假设为3x2米的范围）
-            float xOffset = (FootballConstants.ShootAccuracyBase - accuracy) * Random.Range(-FootballConstants.ShootXOffsetRange, FootballConstants.ShootXOffsetRange);
-            float yOffset = (FootballConstants.ShootAccuracyBase - accuracy) * Random.Range(-FootballConstants.ShootYOffsetRange, FootballConstants.ShootYOffsetRange);
-
-            target.x += xOffset;
-            target.y += yOffset;
-
-            return target;
         }
     }
 }

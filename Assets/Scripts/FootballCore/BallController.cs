@@ -1,5 +1,7 @@
 using UnityEngine;
 
+namespace FootballAI.FootballCore
+{
 public class BallController
 {
     private Vector3 _targetPos;
@@ -93,4 +95,5 @@ public class BallController
     {
         return _isMoving;
     }
+}
 }

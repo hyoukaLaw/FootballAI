@@ -1,3 +1,5 @@
+namespace FootballAI.FootballCore
+{
 public enum LogLevel
 {
     Info = 0,
@@ -22,4 +24,5 @@ public static class RuntimeDebugSettings
     {
         return EnableExecutionPathTracing;
     }
+}
 }

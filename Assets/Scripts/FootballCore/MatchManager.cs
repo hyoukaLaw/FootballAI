@@ -7,6 +7,8 @@ using UnityEngine.Events; // 添加UnityEvents命名空间引用
 using UnityEditor;
 #endif
 
+namespace FootballAI.FootballCore
+{
 public enum MatchGameState
 {
     Playing,
@@ -437,4 +439,5 @@ public class MatchManager : MonoBehaviour
         MyLog.LogError($"[BlueOverlap] {playerA.name} and {playerB.name} distance={distance:F3} (< {minDistance:F1})");
     }
     #endregion
+}
 }

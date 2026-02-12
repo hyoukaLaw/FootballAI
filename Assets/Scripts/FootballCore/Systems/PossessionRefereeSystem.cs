@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using BehaviorTree.Runtime;
 
+namespace FootballAI.FootballCore
+{
 public class PossessionRefereeSystem
 {
     private readonly List<GameObject> _closestPlayersBuffer = new List<GameObject>();
@@ -131,4 +133,5 @@ public class PossessionRefereeSystem
         }
         return closestPlayer;
     }
+}
 }
