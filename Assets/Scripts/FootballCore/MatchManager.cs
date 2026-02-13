@@ -3,9 +3,6 @@ using BehaviorTree.Runtime;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events; // 添加UnityEvents命名空间引用
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace FootballAI.FootballCore
 {
@@ -38,7 +35,7 @@ public class MatchRuntimeState
     #endregion
 }
 
-public class MatchManager : MonoBehaviour
+public partial class MatchManager : MonoBehaviour
 {
     // 比赛结果数据结构
     public class MatchResult
@@ -176,9 +173,9 @@ public class MatchManager : MonoBehaviour
         if (CurrentMatchNumber >= TotalMatches)
         {
             OutputMatchStatistics();
-#if UNITY_EDITOR
-            EditorApplication.isPaused = true;
-#endif
+            #if UNITY_EDITOR
+            PauseEditorPlayMode();
+            #endif
         }
         else
         {
@@ -410,6 +407,13 @@ public class MatchManager : MonoBehaviour
         }
         MyLog.LogInfo(_matchStatsSystem.BuildMatchStatisticsReport(MatchHistory));
     }
+
+#if !UNITY_EDITOR
+    private static void PauseEditorPlayMode()
+    {
+        // Runtime no-op. Editor implementation lives in MatchManager.Editor.cs.
+    }
+#endif
     
     private void LogZoneInfo()
     {

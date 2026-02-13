@@ -137,59 +137,27 @@ public class PlayerAI : MonoBehaviour
         return _blackboard;
     }
     
+#if UNITY_EDITOR
     #region Debug
-    // Debug
-    // 调试用：在 Scene 窗口画出他想去哪
     void OnDrawGizmos()
     {
-        if (_blackboard != null)
-        {
-            // === 持球范围可视化 ===
-            // if (_blackboard.MatchContext != null &&
-            //     _blackboard.MatchContext.BallHolder == _blackboard.Owner)
-            // {
-            //     // 持球范围（淡黄色，1.0m）
-            //     Gizmos.color = new Color(1f, 1f, 0.5f, 0.5f);
-            //     Gizmos.DrawWireSphere(transform.position, 1.0f);
-            //
-            //     // 抢断范围（红色，1.6m）
-            //     Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.5f);
-            //     Gizmos.DrawWireSphere(transform.position, Stats.TackledDistance);
-            // }
-            //
-            // // 画出移动目标
-            // if (_blackboard.MoveTarget != Vector3.zero)
-            // {
-            //     Gizmos.color = Color.yellow;
-            //     Gizmos.DrawLine(transform.position,
-            //         transform.position + (_blackboard.MoveTarget - transform.position).normalized);
-            //     Gizmos.DrawWireSphere(transform.position + (_blackboard.MoveTarget - transform.position).normalized, 0.3f);
-            // }
-            // // 画出传球目标连线
-            // if (_blackboard.BestPassTarget != null)
-            // {
-            //     Gizmos.color = Color.green;
-            //     Gizmos.DrawLine(transform.position, _blackboard.BestPassTarget.transform.position);
-            //     Gizmos.DrawIcon(transform.position + Vector3.up * 2, "Pass");
-            // }
-
-            DrawCandidatePositions();
-        }
-     }
+        if (_blackboard == null)
+            return;
+        DrawCandidatePositions();
+    }
 
     private void DrawCandidatePositions()
     {
         if (!_blackboard.DebugShowCandidates)
             return;
-
         if (!_blackboard.DebugHasSelectedPosition)
             return;
-
         Gizmos.color = Color.green * new Vector4(1, 1, 1, 0.5f);
         Gizmos.DrawWireSphere(_blackboard.DebugSelectedPosition, 0.5f);
         Gizmos.color = new Color(0, 1, 0, 0.3f);
         Gizmos.DrawSphere(_blackboard.DebugSelectedPosition, 0.3f);
     }
     #endregion
+#endif
 }
 }

@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using Sirenix.OdinInspector.Editor;
 using UnityEngine;
-using FootballAI.FootballCore;
 
 namespace BehaviorTree.Runtime
 {
