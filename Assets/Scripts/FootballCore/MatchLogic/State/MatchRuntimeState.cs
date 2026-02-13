@@ -1,0 +1,33 @@
+using UnityEngine;
+
+namespace FootballAI.FootballCore
+{
+public enum MatchGameState
+{
+    Playing,
+    Goal,
+    OutOfBounds
+}
+
+public class MatchRuntimeState
+{
+    #region Bool State
+    public bool GamePaused = false;
+    public bool IsMatchEndPause = false;
+    #endregion
+
+    #region Timer State
+    public float AutoResumeTimer = 0f;
+    public float BlueOverlapDiagnosticsTimer = 0f;
+    #endregion
+
+    #region Phase State
+    public MatchGameState CurrentGameState = MatchGameState.Playing;
+    #endregion
+
+    #region ThrowIn State
+    public Vector3 OutOfBoundsPosition = Vector3.zero;
+    public GameObject ThrowInPlayer;
+    #endregion
+}
+}

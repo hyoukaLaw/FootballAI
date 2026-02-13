@@ -6,45 +6,8 @@ using UnityEngine.Events; // 添加UnityEvents命名空间引用
 
 namespace FootballAI.FootballCore
 {
-public enum MatchGameState
-{
-    Playing,
-    Goal,
-    OutOfBounds
-}
-
-public class MatchRuntimeState
-{
-    #region Bool State
-    public bool GamePaused = false;
-    public bool IsMatchEndPause = false;
-    #endregion
-
-    #region Timer State
-    public float AutoResumeTimer = 0f;
-    public float BlueOverlapDiagnosticsTimer = 0f;
-    #endregion
-
-    #region Phase State
-    public MatchGameState CurrentGameState = MatchGameState.Playing;
-    #endregion
-
-    #region ThrowIn State
-    public Vector3 OutOfBoundsPosition = Vector3.zero;
-    public GameObject ThrowInPlayer;
-    #endregion
-}
-
 public partial class MatchManager : MonoBehaviour
 {
-    // 比赛结果数据结构
-    public class MatchResult
-    {
-        public int MatchNumber;
-        public int RedFinalScore;
-        public int BlueFinalScore;
-        public List<string> ScoreChanges = new List<string>();
-    }
     // --- 单例模式 (Singleton) ---
     // 方便任何地方都能访问 MatchManager.Instance
     public static MatchManager Instance { get; private set; }

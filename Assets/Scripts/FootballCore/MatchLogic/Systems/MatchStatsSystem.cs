@@ -27,10 +27,10 @@ public class MatchStatsSystem
         scoreChanges.Add($"{redScore}:{blueScore}");
     }
 
-    public MatchManager.MatchResult BuildMatchResultAndTrack(ref int currentMatchNumber, int redScore, int blueScore, List<string> scoreChanges, List<MatchManager.MatchResult> matchHistory)
+    public MatchResult BuildMatchResultAndTrack(ref int currentMatchNumber, int redScore, int blueScore, List<string> scoreChanges, List<MatchResult> matchHistory)
     {
         currentMatchNumber++;
-        MatchManager.MatchResult result = new MatchManager.MatchResult
+        MatchResult result = new MatchResult
         {
             MatchNumber = currentMatchNumber,
             RedFinalScore = redScore,
@@ -53,7 +53,7 @@ public class MatchStatsSystem
         _onScoreChanged?.Invoke(redScore, blueScore);
     }
 
-    public string BuildOneMatchResultLog(MatchManager.MatchResult result)
+    public string BuildOneMatchResultLog(MatchResult result)
     {
         string log = $"第{result.MatchNumber}场比赛: Red {result.RedFinalScore} - Blue {result.BlueFinalScore}";
         for (int i = 0; i < result.ScoreChanges.Count; i++)
@@ -61,7 +61,7 @@ public class MatchStatsSystem
         return log;
     }
 
-    public string BuildMatchStatisticsReport(List<MatchManager.MatchResult> matchHistory)
+    public string BuildMatchStatisticsReport(List<MatchResult> matchHistory)
     {
         StringBuilder sb = new StringBuilder();
         sb.AppendLine("========================================");
@@ -71,7 +71,7 @@ public class MatchStatsSystem
         sb.AppendLine("【每场比赛比分】");
         for (int i = 0; i < matchHistory.Count; i++)
         {
-            MatchManager.MatchResult result = matchHistory[i];
+            MatchResult result = matchHistory[i];
             sb.AppendLine($"第{result.MatchNumber}场: 红方 {result.RedFinalScore} - 蓝方 {result.BlueFinalScore}");
         }
         sb.AppendLine();
@@ -82,7 +82,7 @@ public class MatchStatsSystem
         int draws = 0;
         for (int i = 0; i < matchHistory.Count; i++)
         {
-            MatchManager.MatchResult result = matchHistory[i];
+            MatchResult result = matchHistory[i];
             redTotal += result.RedFinalScore;
             blueTotal += result.BlueFinalScore;
             if (result.RedFinalScore > result.BlueFinalScore)
