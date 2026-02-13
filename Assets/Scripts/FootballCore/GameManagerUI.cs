@@ -9,12 +9,14 @@ public class GameManagerUI : MonoBehaviour
     [Header("UI References")]
     public Button ResumeButton;
     public TMP_Text ScoreText; // 比分显示文本 (TextMeshPro)
+    public Button CloseButton;
 
     void Start()
     {
         if (ResumeButton != null)
         {
             ResumeButton.onClick.AddListener(OnResumeButtonClick);
+            CloseButton.onClick.AddListener(OnCloseButtonClick);
         }
 
         // 注册比分变化事件
@@ -55,6 +57,11 @@ public class GameManagerUI : MonoBehaviour
         {
             MatchManager.Instance.OnScoreChanged.RemoveListener(UpdateScoreDisplay);
         }
+    }
+
+    private void OnCloseButtonClick()
+    {
+        MatchManager.Instance.QuitGame();
     }
 }
 }

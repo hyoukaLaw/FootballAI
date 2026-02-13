@@ -213,6 +213,11 @@ public partial class MatchManager : MonoBehaviour
         _matchFlowSystem.ResetPlayers(TeamRedPlayers, TeamBluePlayers);
         ResetBall();
     }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
     #endregion
 
     #region 比赛中的操作
