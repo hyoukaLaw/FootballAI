@@ -7,7 +7,7 @@ namespace BehaviorTree.Editor
 {
     public class RolePresetGenerator : EditorWindow
     {
-        [MenuItem("临时工具/Generate Role Presets")]
+        [MenuItem("Tools/FootballAI/Generate Role Presets")]
         public static void ShowWindow()
         {
             GetWindow<RolePresetGenerator>("Role Presets Generator");

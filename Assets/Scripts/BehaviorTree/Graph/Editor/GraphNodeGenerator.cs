@@ -15,7 +15,7 @@ namespace BehaviorTree.Graph.Editor
         // 生成文件的目标路径
         private const string GENERATE_PATH = "Assets/Scripts/BehaviorTree/Graph/Nodes";
 
-        [MenuItem("Tools/AI/Generate Graph Nodes")]
+        [MenuItem("Tools/FootballAI/Generate Graph Nodes")]
         public static void Generate()
         {
             // 1. 确保目录存在

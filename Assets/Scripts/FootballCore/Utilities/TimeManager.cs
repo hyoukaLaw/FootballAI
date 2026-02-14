@@ -17,7 +17,7 @@ public class TimeManager
 
     public float GetDeltaTime()
     {
-        return Time.deltaTime;
+        return Time.fixedDeltaTime;
     }
 }
 }
