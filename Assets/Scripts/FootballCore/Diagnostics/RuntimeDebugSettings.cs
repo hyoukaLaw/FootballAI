@@ -13,7 +13,9 @@ public static class RuntimeDebugSettings
     public static bool EnableExecutionPathTracing = false;
     public static bool EnableCandidateVisualization = false;
     public static bool EnableBlueOverlapDiagnostics = false;
+    public static bool EnableFpsLogging = true;
     public static float BlueOverlapDiagnosticInterval = 0.25f;
+    public static float FpsLogInterval = 1f;
 
     public static LogLevel MinLogLevel = LogLevel.Info;
     public static float InfoLogMinInterval = 0.1f;

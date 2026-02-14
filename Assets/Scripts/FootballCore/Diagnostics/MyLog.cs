@@ -15,6 +15,12 @@ public static class MyLog
         Debug.Log($"[INFO] {message}");
     }
 
+    public static void LogInfoNoSampling(string message)
+    {
+        if (!ShouldLog(LogLevel.Info)) return;
+        Debug.Log($"[INFO] {message}");
+    }
+
     public static void LogWarning(string message)
     {
         if (!ShouldLog(LogLevel.Warning)) return;
