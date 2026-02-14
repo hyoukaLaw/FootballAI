@@ -84,6 +84,14 @@ public static class FootballConstants
     public static float LateralSpreadDistance = 3f;
     #endregion
 
+    #region RestartTuning
+    public static float CornerKickInFieldOffset = 0.2f;
+    public static float GoalKickInFieldOffset = 2f;
+    public static float RestartSupportNearDistance = 4f;
+    public static float RestartSupportFarDistance = 8f;
+    public static float RestartLateralOffset = 2f;
+    #endregion
+
     #region PositionTuning
     public static float CandidateTeammateSafeDistance = 1.0f;
     public static float CandidatePredictedOverlapThreshold = 0.3f;

@@ -335,12 +335,15 @@ public partial class MatchManager : MonoBehaviour
     private void CheckBallOutOfBounds()
     {
         if (!_possessionRefereeSystem.TryHandleBallOutOfBounds(Context, Ball, TeamRedPlayers, TeamBluePlayers,
-                RedStartPlayer, BlueStartPlayer, out _runtimeState.OutOfBoundsPosition, out string _, out _runtimeState.ThrowInPlayer))
+                out _runtimeState.OutOfBoundsPosition, out RestartType restartType, out string restartTeam, out _runtimeState.RestartPlayer,
+                out Vector3 restartPosition))
             return;
         _runtimeState.CurrentGameState = MatchGameState.OutOfBounds;
+        _runtimeState.CurrentRestartType = restartType;
         _matchFlowSystem.ResetContext(Context);
         _matchFlowSystem.ResetPlayers(TeamRedPlayers, TeamBluePlayers);
-        _possessionRefereeSystem.SetupThrowInPositions(Context, Ball, _runtimeState.ThrowInPlayer, _runtimeState.OutOfBoundsPosition);
+        _possessionRefereeSystem.SetupRestartPositions(Context, Ball, TeamRedPlayers, TeamBluePlayers,
+            _runtimeState.RestartPlayer, restartPosition, restartType, restartTeam);
         _matchFlowSystem.BeginGoalPause(ref _runtimeState.GamePaused, ref _runtimeState.AutoResumeTimer);
     }
     
@@ -356,7 +359,7 @@ public partial class MatchManager : MonoBehaviour
     private void ResumeFromThrowIn()
     {
         _runtimeState.CurrentGameState = MatchGameState.Playing;
-        _runtimeState.ThrowInPlayer = null;
+        _runtimeState.RestartPlayer = null;
         _runtimeState.GamePaused = false;
     }
     #endregion

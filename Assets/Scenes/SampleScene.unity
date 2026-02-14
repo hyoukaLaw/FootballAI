@@ -446,7 +446,7 @@ MonoBehaviour:
   PossessionThreshold: 0.8
   GoalDistance: 1
   StealCooldownDuration: 0
-  NextKickoffTeam: Red
+  NextKickoffTeam: Blue
   AutoResumeInterval: 5
   ThrowInResumeInterval: 2
   PassTimeout: 3

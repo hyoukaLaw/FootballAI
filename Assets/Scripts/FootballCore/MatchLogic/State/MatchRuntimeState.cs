@@ -9,6 +9,13 @@ public enum MatchGameState
     OutOfBounds
 }
 
+public enum RestartType
+{
+    ThrowIn,
+    CornerKick,
+    GoalKick
+}
+
 public class MatchRuntimeState
 {
     #region Bool State
@@ -25,9 +32,10 @@ public class MatchRuntimeState
     public MatchGameState CurrentGameState = MatchGameState.Playing;
     #endregion
 
-    #region ThrowIn State
+    #region Restart State
     public Vector3 OutOfBoundsPosition = Vector3.zero;
-    public GameObject ThrowInPlayer;
+    public GameObject RestartPlayer;
+    public RestartType CurrentRestartType = RestartType.ThrowIn;
     #endregion
 }
 }
