@@ -54,6 +54,7 @@ public partial class MatchManager : MonoBehaviour
     private MatchStatsSystem _matchStatsSystem;
     private MatchFlowSystem _matchFlowSystem;
     private PossessionRefereeSystem _possessionRefereeSystem;
+    private MatchDiagnosticsSystem _matchDiagnosticsSystem;
     
     #region Unity 生命周期
     private void Awake()
@@ -65,10 +66,11 @@ public partial class MatchManager : MonoBehaviour
         _matchStatsSystem = new MatchStatsSystem(OnScoreChanged);
         _matchFlowSystem = new MatchFlowSystem();
         _possessionRefereeSystem = new PossessionRefereeSystem();
+        _matchDiagnosticsSystem = new MatchDiagnosticsSystem();
         InitContext();
         ResetBall();
         InitScoreEvent();
-        LogZoneInfo();
+        _matchDiagnosticsSystem.LogZoneInfo(Context, TeamRedPlayers);
     }
 
 
@@ -88,7 +90,7 @@ public partial class MatchManager : MonoBehaviour
             return; // 游戏暂停，不执行任何逻辑
         }
         UpdatePlayerAI();
-        UpdateBlueOverlapDiagnostics();
+        _matchDiagnosticsSystem.UpdateBlueOverlapDiagnostics(TeamBluePlayers);
         BallController.Update(); // UpdateBall
         UpdatePossessionState();// 1. 计算物理状态 (谁拿着球？)
         UpdatePassTargetState();// 2. 清理过期的传球状态
@@ -191,7 +193,6 @@ public partial class MatchManager : MonoBehaviour
     /// <param name="currentHolder">当前持球人（被抢断者）</param>
     public void StealBall(GameObject tackler, GameObject currentHolder)
     {
-        MyLog.LogInfo($"stealBall: tackler={tackler.name} currentHolder={currentHolder.name}");
         _possessionRefereeSystem.StealBall(Context, Ball, tackler, currentHolder, StealCooldownDuration);
     }
     #endregion
@@ -255,39 +256,6 @@ public partial class MatchManager : MonoBehaviour
         }
     }
 
-    private void UpdateBlueOverlapDiagnostics()
-    {
-        if (!RuntimeDebugSettings.EnableBlueOverlapDiagnostics)
-            return;
-
-        _runtimeState.BlueOverlapDiagnosticsTimer += TimeManager.Instance.GetDeltaTime();
-        if (_runtimeState.BlueOverlapDiagnosticsTimer < RuntimeDebugSettings.BlueOverlapDiagnosticInterval)
-            return;
-
-        _runtimeState.BlueOverlapDiagnosticsTimer = 0f;
-        LogBlueTeammateOverlapErrors();
-    }
-
-    private void LogBlueTeammateOverlapErrors()
-    {
-        const float minDistance = 0.5f;
-        for (int i = 0; i < TeamBluePlayers.Count; i++)
-        {
-            GameObject playerA = TeamBluePlayers[i];
-            if (playerA == null) continue;
-            for (int j = i + 1; j < TeamBluePlayers.Count; j++)
-            {
-                GameObject playerB = TeamBluePlayers[j];
-                if (playerB == null) continue;
-                float distance = Vector3.Distance(playerA.transform.position, playerB.transform.position);
-                if (distance < minDistance)
-                {
-                    LogBlueOverlapError(playerA, playerB, distance, minDistance);
-                }
-            }
-        }
-    }
-
     private void HandleAutoGame()
     {
         _matchFlowSystem.HandleAutoGame(TimeManager.Instance.GetDeltaTime(), AutoResumeInterval, ref _runtimeState.AutoResumeTimer,
@@ -309,7 +277,7 @@ public partial class MatchManager : MonoBehaviour
     /// </summary>
     private void UpdatePossessionState()
     {
-        _possessionRefereeSystem.UpdatePossessionState(Context, Ball, PossessionThreshold, IsStunned, LogPossessionChange);
+        _possessionRefereeSystem.UpdatePossessionState(Context, Ball, PossessionThreshold, IsStunned);
     }
 
     private bool IsStunned(GameObject player)
@@ -365,8 +333,14 @@ public partial class MatchManager : MonoBehaviour
     }
     #endregion
     
+#if !UNITY_EDITOR
+    private static void PauseEditorPlayMode()
+    {
+        // Runtime no-op. Editor implementation lives in MatchManager.Editor.cs.
+    }
+#endif
+
     #region 日志
-    
     /// <summary>
     /// 输出比赛统计信息
     /// </summary>
@@ -378,41 +352,6 @@ public partial class MatchManager : MonoBehaviour
             return;
         }
         MyLog.LogInfo(_matchStatsSystem.BuildMatchStatisticsReport(MatchHistory));
-    }
-
-#if !UNITY_EDITOR
-    private static void PauseEditorPlayMode()
-    {
-        // Runtime no-op. Editor implementation lives in MatchManager.Editor.cs.
-    }
-#endif
-    
-    private void LogZoneInfo()
-    {
-        foreach (var fieldZone in typeof(FieldZone).GetEnumValues())
-        {
-            ZoneUtils.ZoneRange zoneRange = ZoneUtils.GetZoneRange((FieldZone)fieldZone,
-                Context.GetEnemyGoalPosition(TeamRedPlayers[0]), Context.GetMyGoalPosition(TeamRedPlayers[0]));
-            LogFieldZoneInfo((FieldZone)fieldZone, zoneRange);
-        }
-    }
-
-    private void LogFieldZoneInfo(FieldZone zone, ZoneUtils.ZoneRange zoneRange)
-    {
-        MyLog.LogInfo($"fieldZone: {zone} {zoneRange.LeftBottom} {zoneRange.Width} {zoneRange.Length}");
-    }
-
-    private void LogPossessionChange(GameObject previousHolder, GameObject newHolder)
-    {
-        if (previousHolder == newHolder)
-            return;
-
-        MyLog.LogInfo($"frame: {Time.frameCount} possession {previousHolder?.name}->{newHolder?.name}");
-    }
-
-    private void LogBlueOverlapError(GameObject playerA, GameObject playerB, float distance, float minDistance)
-    {
-        MyLog.LogError($"[BlueOverlap] {playerA.name} and {playerB.name} distance={distance:F3} (< {minDistance:F1})");
     }
     #endregion
 }

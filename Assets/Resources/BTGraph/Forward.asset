@@ -390,10 +390,7 @@ MonoBehaviour:
       _node: {fileID: -6201215106250790050}
       _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: Exit
-        node: {fileID: -2985318896935645102}
-        reroutePoints: []
+      connections: []
       _direction: 0
       _connectionType: 0
       _typeConstraint: 0
@@ -577,55 +574,6 @@ MonoBehaviour:
       _dynamic: 0
   Entry: 0
   Exit: 0
---- !u!114 &-2985318896935645102
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed37a66498fc045488008517c68a9953, type: 3}
-  m_Name: Sequence Node Graph
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: -664, y: -872}
-  ports:
-    keys:
-    - Entry
-    - Exit
-    values:
-    - _fieldName: Entry
-      _node: {fileID: -2985318896935645102}
-      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: Exit
-        node: {fileID: -1525673592170635992}
-        reroutePoints: []
-      _direction: 0
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-    - _fieldName: Exit
-      _node: {fileID: -2985318896935645102}
-      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: Entry
-        node: {fileID: -6201215106250790050}
-        reroutePoints: []
-      - fieldName: Entry
-        node: {fileID: -636025082164109663}
-        reroutePoints: []
-      _direction: 1
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-  Entry: 0
-  Exit: 0
-  AbortType: 0
 --- !u!114 &-1941547433003822118
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -725,9 +673,6 @@ MonoBehaviour:
         reroutePoints: []
       - fieldName: Entry
         node: {fileID: -6747439883699929565}
-        reroutePoints: []
-      - fieldName: Entry
-        node: {fileID: -2985318896935645102}
         reroutePoints: []
       _direction: 1
       _connectionType: 0
@@ -850,10 +795,7 @@ MonoBehaviour:
       _node: {fileID: -636025082164109663}
       _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: Exit
-        node: {fileID: -2985318896935645102}
-        reroutePoints: []
+      connections: []
       _direction: 0
       _connectionType: 0
       _typeConstraint: 0
@@ -920,7 +862,6 @@ MonoBehaviour:
   - {fileID: 558706044601452449}
   - {fileID: 2986000985979798580}
   - {fileID: -636025082164109663}
-  - {fileID: -2985318896935645102}
   - {fileID: -6201215106250790050}
 --- !u!114 &327808866674277516
 MonoBehaviour:

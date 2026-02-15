@@ -14,7 +14,7 @@ public class PossessionRefereeSystem
         context.UpdatePassTarget(passTimeout, context.GetBallHolder());
     }
 
-    public void UpdatePossessionState(MatchContext context, GameObject ball, float possessionThreshold, Func<GameObject, bool> isStunned, Action<GameObject, GameObject> logPossessionChange)
+    public void UpdatePossessionState(MatchContext context, GameObject ball, float possessionThreshold, Func<GameObject, bool> isStunned)
     {
         context.UpdateStealCooldown(TimeManager.Instance.GetDeltaTime());
         bool isBallMoving = context.BallController.GetIsMoving();
@@ -30,7 +30,7 @@ public class PossessionRefereeSystem
         AddClosestPlayers(context.TeamBluePlayers, context, ball, possessionThreshold, isStunned, _closestPlayersBuffer, ref minDistance, distanceTolerance, isBallMoving, ballFlightDirection);
         GameObject previousHolder = context.GetBallHolder();
         GameObject closestPlayer = SelectClosestPlayer(_closestPlayersBuffer);
-        logPossessionChange(previousHolder, closestPlayer);
+        LogPossessionChange(previousHolder, closestPlayer);
         context.SetBallHolder(closestPlayer);
     }
 
@@ -356,5 +356,14 @@ public class PossessionRefereeSystem
         }
         return nearest;
     }
+
+    #region 日志
+    private static void LogPossessionChange(GameObject previousHolder, GameObject newHolder)
+    {
+        if (previousHolder == newHolder)
+            return;
+        MyLog.LogInfo($"possession {previousHolder?.name}->{newHolder?.name}");
+    }
+    #endregion
 }
 }

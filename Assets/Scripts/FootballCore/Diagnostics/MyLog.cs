@@ -12,27 +12,27 @@ public static class MyLog
     {
         if (!ShouldLog(LogLevel.Info)) return;
         if (!PassesSampling(ref _lastInfoLogTime, RuntimeDebugSettings.InfoLogMinInterval)) return;
-        Debug.Log($"[INFO] {message}");
+        Debug.Log($"{BuildPrefix(LogLevel.Info)} {message}");
     }
 
     public static void LogInfoNoSampling(string message)
     {
         if (!ShouldLog(LogLevel.Info)) return;
-        Debug.Log($"[INFO] {message}");
+        Debug.Log($"{BuildPrefix(LogLevel.Info)} {message}");
     }
 
     public static void LogWarning(string message)
     {
         if (!ShouldLog(LogLevel.Warning)) return;
         if (!PassesSampling(ref _lastWarningLogTime, RuntimeDebugSettings.WarningLogMinInterval)) return;
-        Debug.LogWarning($"[WARNING] {message}");
+        Debug.LogWarning($"{BuildPrefix(LogLevel.Warning)} {message}");
     }
 
     public static void LogError(string message)
     {
         if (!ShouldLog(LogLevel.Error)) return;
         if (!PassesSampling(ref _lastErrorLogTime, RuntimeDebugSettings.ErrorLogMinInterval)) return;
-        Debug.LogError($"[ERROR] {message}");
+        Debug.LogError($"{BuildPrefix(LogLevel.Error)} {message}");
     }
 
     private static bool ShouldLog(LogLevel level)
@@ -52,6 +52,13 @@ public static class MyLog
 
         lastLogTime = now;
         return true;
+    }
+
+    private static string BuildPrefix(LogLevel level)
+    {
+        int frameCount = Time.frameCount;
+        float timeSeconds = Time.unscaledTime;
+        return $"[{level.ToString().ToUpperInvariant()}][f={frameCount}][t={timeSeconds:F3}s]";
     }
 }
 }

@@ -25,7 +25,6 @@ public class MatchRuntimeState
 
     #region Timer State
     public float AutoResumeTimer = 0f;
-    public float BlueOverlapDiagnosticsTimer = 0f;
     #endregion
 
     #region Phase State

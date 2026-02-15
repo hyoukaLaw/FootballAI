@@ -261,7 +261,7 @@ namespace BehaviorTree.Runtime
         {
             List<Vector3> candidatePositions = GenerateCandidatePositionsCommon(player, context, 
                 role, currentPosition, myGoal, enemyGoal, ballPosition);
-            //MyLog.LogInfoNoSampling($"[RoleBasedPosition] player={player.name} candidates={candidatePositions.Count}");
+            MyLog.LogInfoNoSampling($"[RoleBasedPosition] player={player.name} candidates={candidatePositions.Count}");
             List<PositionEvaluation> evaluations = EvaluatePositions(candidatePositions, currentPosition, role,
                 myGoal, enemyGoal, ballPosition, context, player);
             Vector3 bestPosition = SelectBestPosition(evaluations, currentPosition);

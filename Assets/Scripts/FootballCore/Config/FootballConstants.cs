@@ -1,4 +1,3 @@
-using UnityEngine;
 
 namespace FootballAI.FootballCore
 {
@@ -39,9 +38,6 @@ public static class FootballConstants
     public static float ShootBlockPenaltyFactor = 0.1f;
     public static float ShootNoBlockFactor = 1.1f;
     public static float ShootForce = 20f;
-    public static float ShootAccuracyBase = 1.0f;
-    public static float ShootXOffsetRange = 1.5f;
-    public static float ShootYOffsetRange = 1.0f;
     public static float BaseScoreShootScore = 80f;
     #endregion
 
@@ -126,7 +122,7 @@ public static class FootballConstants
     #endregion
 
     #region LegacyUnusedTuning
-    public const float DefaultPassRouteSafeDistance = 3f;
+    public static float DefaultPassRouteSafeDistance = 3f;
     public static float ZeroDistanceBoundary = 0;
     public static float PassThreshold = 60f;
     public static float TooClosePassDistance = 3f;
