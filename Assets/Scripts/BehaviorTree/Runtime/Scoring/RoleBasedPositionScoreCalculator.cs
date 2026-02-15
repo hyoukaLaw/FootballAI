@@ -261,7 +261,7 @@ namespace BehaviorTree.Runtime
         {
             List<Vector3> candidatePositions = GenerateCandidatePositionsCommon(player, context, 
                 role, currentPosition, myGoal, enemyGoal, ballPosition);
-            MyLog.LogInfoNoSampling($"[RoleBasedPosition] player={player.name} candidates={candidatePositions.Count}");
+            //MyLog.LogInfoNoSampling($"[RoleBasedPosition] player={player.name} candidates={candidatePositions.Count}");
             List<PositionEvaluation> evaluations = EvaluatePositions(candidatePositions, currentPosition, role,
                 myGoal, enemyGoal, ballPosition, context, player);
             Vector3 bestPosition = SelectBestPosition(evaluations, currentPosition);
@@ -350,7 +350,8 @@ namespace BehaviorTree.Runtime
             MatchState currentState = DetermineMatchState(player, matchContext);
             RolePreferences rolePreferences = currentState == MatchState.Attacking ? role.AttackPreferences : role.DefendPreferences;
             FieldZone zone = ZoneUtils.FindHighestWeightZoneAndWeight(rolePreferences).zone;
-            candidates.AddRange(GenerateZoneCandidatePositions(ZoneUtils.GetZoneRange(zone, enemyGoal, myGoal), 1f, 1f));
+            candidates.AddRange(GenerateZoneCandidatePositions(ZoneUtils.GetZoneRange(zone, enemyGoal, myGoal),
+                FootballConstants.ZoneCandidateWidthInterval, FootballConstants.ZoneCandidateLengthInterval));
             candidates.AddRange(GenerateSupportCandidatePositions(player, matchContext, matchContext.GetTeammates(player)));
             candidates.AddRange(GenerateMarkCandidatePositions(player, matchContext, matchContext.GetOpponents(player)));
             candidates.AddRange(GenerateAroundBallCandidatePositions(player, ballPosition));
@@ -373,7 +374,7 @@ namespace BehaviorTree.Runtime
             foreach(var teammate in teammates)
                 if(teammate != player)
                     candidates.AddRange(PointsGenerator.GeneratePointsAround(teammate.transform.position, 
-                        1, 5f, 8));
+                        FootballConstants.SupportCandidateLayers, FootballConstants.SupportCandidateLayerWidth, FootballConstants.SupportCandidatePointsPerLayer));
             return candidates;
         }
 
@@ -383,7 +384,7 @@ namespace BehaviorTree.Runtime
             List<Vector3> candidates = new List<Vector3>();
             foreach(var enemy in enemies)
                 candidates.AddRange(PointsGenerator.GeneratePointsAround(enemy.transform.position, 
-                    3, 1f, 8));
+                    FootballConstants.MarkCandidateLayers, FootballConstants.MarkCandidateLayerWidth, FootballConstants.MarkCandidatePointsPerLayer));
             return candidates;
         }
 
@@ -391,7 +392,8 @@ namespace BehaviorTree.Runtime
         {
             List<Vector3> candidates = new List<Vector3>();
             candidates.Add(ballPosition);
-            candidates.AddRange(PointsGenerator.GeneratePointsAround(ballPosition, 2, 1f, 8));
+            candidates.AddRange(PointsGenerator.GeneratePointsAround(ballPosition, FootballConstants.AroundBallCandidateLayers,
+                FootballConstants.AroundBallCandidateLayerWidth, FootballConstants.AroundBallCandidatePointsPerLayer));
             return candidates;
         }
 
@@ -510,6 +512,7 @@ namespace BehaviorTree.Runtime
 
             return deduplicated;
         }
+
         private static MatchState DetermineMatchState(GameObject player, MatchContext context)
         {
             if (context == null) return MatchState.ChasingBall;

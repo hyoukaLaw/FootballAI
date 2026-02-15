@@ -17,15 +17,17 @@ public class PossessionRefereeSystem
     public void UpdatePossessionState(MatchContext context, GameObject ball, float possessionThreshold, Func<GameObject, bool> isStunned, Action<GameObject, GameObject> logPossessionChange)
     {
         context.UpdateStealCooldown(TimeManager.Instance.GetDeltaTime());
-        if (context.BallController.GetIsMoving())
+        bool isBallMoving = context.BallController.GetIsMoving();
+        if (isBallMoving)
             context.SetBallHolder(null);
         if (context.GetBallHolder() != null)
             return;
         _closestPlayersBuffer.Clear();
         float minDistance = float.MaxValue;
         float distanceTolerance = 0.001f;
-        AddClosestPlayers(context.TeamRedPlayers, context, ball, possessionThreshold, isStunned, _closestPlayersBuffer, ref minDistance, distanceTolerance);
-        AddClosestPlayers(context.TeamBluePlayers, context, ball, possessionThreshold, isStunned, _closestPlayersBuffer, ref minDistance, distanceTolerance);
+        Vector3 ballFlightDirection = isBallMoving ? context.BallController.GetFlightDirection() : Vector3.zero;
+        AddClosestPlayers(context.TeamRedPlayers, context, ball, possessionThreshold, isStunned, _closestPlayersBuffer, ref minDistance, distanceTolerance, isBallMoving, ballFlightDirection);
+        AddClosestPlayers(context.TeamBluePlayers, context, ball, possessionThreshold, isStunned, _closestPlayersBuffer, ref minDistance, distanceTolerance, isBallMoving, ballFlightDirection);
         GameObject previousHolder = context.GetBallHolder();
         GameObject closestPlayer = SelectClosestPlayer(_closestPlayersBuffer);
         logPossessionChange(previousHolder, closestPlayer);
@@ -132,7 +134,7 @@ public class PossessionRefereeSystem
         blackboard.StunTimer = blackboard.StunDuration;
     }
 
-    private static void AddClosestPlayers(List<GameObject> players, MatchContext context, GameObject ball, float possessionThreshold, Func<GameObject, bool> isStunned, List<GameObject> closestPlayers, ref float minDistance, float distanceTolerance)
+    private static void AddClosestPlayers(List<GameObject> players, MatchContext context, GameObject ball, float possessionThreshold, Func<GameObject, bool> isStunned, List<GameObject> closestPlayers, ref float minDistance, float distanceTolerance, bool isBallMoving, Vector3 ballFlightDirection)
     {
         for (int i = 0; i < players.Count; i++)
         {
@@ -141,6 +143,8 @@ public class PossessionRefereeSystem
                 continue;
             float distance = Vector3.Distance(player.transform.position, ball.transform.position);
             if (distance >= possessionThreshold || player == context.BallController.GetRecentKicker() || isStunned(player))
+                continue;
+            if (isBallMoving && !IsInBallFlightForwardDirection(ball.transform.position, player.transform.position, ballFlightDirection))
                 continue;
             if (distance < minDistance - distanceTolerance)
             {
@@ -153,6 +157,19 @@ public class PossessionRefereeSystem
                 closestPlayers.Add(player);
             }
         }
+    }
+
+    private static bool IsInBallFlightForwardDirection(Vector3 ballPosition, Vector3 playerPosition, Vector3 flightDirection)
+    {
+        if (flightDirection.sqrMagnitude <= FootballConstants.FloatEpsilon)
+            return true;
+        Vector3 toPlayer = playerPosition - ballPosition;
+        toPlayer.y = 0f;
+        Vector3 planarFlightDirection = flightDirection;
+        planarFlightDirection.y = 0f;
+        if (toPlayer.sqrMagnitude <= FootballConstants.FloatEpsilon || planarFlightDirection.sqrMagnitude <= FootballConstants.FloatEpsilon)
+            return true;
+        return Vector3.Dot(planarFlightDirection, toPlayer) > 0f;
     }
 
     private static GameObject SelectClosestPlayer(List<GameObject> closestPlayers)

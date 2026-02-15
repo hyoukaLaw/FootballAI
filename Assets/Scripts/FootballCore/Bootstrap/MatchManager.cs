@@ -89,8 +89,8 @@ public partial class MatchManager : MonoBehaviour
         }
         UpdatePlayerAI();
         UpdateBlueOverlapDiagnostics();
-        UpdatePossessionState();// 1. 计算物理状态 (谁拿着球？)
         BallController.Update(); // UpdateBall
+        UpdatePossessionState();// 1. 计算物理状态 (谁拿着球？)
         UpdatePassTargetState();// 2. 清理过期的传球状态
         CheckGoal();// 3. 检测进球
         CheckBallOutOfBounds();// 4. 检测球出界
@@ -191,6 +191,7 @@ public partial class MatchManager : MonoBehaviour
     /// <param name="currentHolder">当前持球人（被抢断者）</param>
     public void StealBall(GameObject tackler, GameObject currentHolder)
     {
+        MyLog.LogInfo($"stealBall: tackler={tackler.name} currentHolder={currentHolder.name}");
         _possessionRefereeSystem.StealBall(Context, Ball, tackler, currentHolder, StealCooldownDuration);
     }
     #endregion
@@ -406,7 +407,7 @@ public partial class MatchManager : MonoBehaviour
         if (previousHolder == newHolder)
             return;
 
-        MyLog.LogInfo($"possession {previousHolder?.name}->{newHolder?.name}");
+        MyLog.LogInfo($"frame: {Time.frameCount} possession {previousHolder?.name}->{newHolder?.name}");
     }
 
     private void LogBlueOverlapError(GameObject playerA, GameObject playerB, float distance, float minDistance)

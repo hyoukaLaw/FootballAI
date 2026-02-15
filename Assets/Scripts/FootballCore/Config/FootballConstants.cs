@@ -96,6 +96,17 @@ public static class FootballConstants
     public static float CandidateTeammateSafeDistance = 1.0f;
     public static float CandidatePredictedOverlapThreshold = 0.3f;
     public static float CandidateDeduplicateGridSize = 0.2f;
+    public static float ZoneCandidateWidthInterval = 1.5f; // was 1f
+    public static float ZoneCandidateLengthInterval = 1.5f; // was 1f
+    public static int SupportCandidateLayers = 1;
+    public static float SupportCandidateLayerWidth = 5f;
+    public static int SupportCandidatePointsPerLayer = 8;
+    public static int MarkCandidateLayers = 3; // was 3
+    public static float MarkCandidateLayerWidth = 1f;
+    public static int MarkCandidatePointsPerLayer = 8; // was 8
+    public static int AroundBallCandidateLayers = 2;
+    public static float AroundBallCandidateLayerWidth = 1f;
+    public static int AroundBallCandidatePointsPerLayer = 8;
     #endregion
 
     #region MarkingTuning

@@ -95,5 +95,15 @@ public class BallController
     {
         return _isMoving;
     }
+
+    public Vector3 GetFlightDirection()
+    {
+        if (!_isMoving || _ballGameObject == null)
+            return Vector3.zero;
+        Vector3 direction = _targetPos - _ballGameObject.transform.position;
+        if (direction.sqrMagnitude <= FootballConstants.FloatEpsilon)
+            return Vector3.zero;
+        return direction.normalized;
+    }
 }
 }
