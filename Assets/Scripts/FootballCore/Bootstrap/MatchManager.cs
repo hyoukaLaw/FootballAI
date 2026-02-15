@@ -183,6 +183,17 @@ public partial class MatchManager : MonoBehaviour
     {
         Application.Quit();
     }
+
+    public bool GetIsKickoffCountDownActive()
+    {
+        return _runtimeState.GamePaused && _runtimeState.CurrentGameState == MatchGameState.Goal && AutoGame;
+    }
+
+    public float GetKickoffCountDownRemainingSeconds()
+    {
+        float remaining = AutoResumeInterval - _runtimeState.AutoResumeTimer;
+        return Mathf.Max(0f, remaining);
+    }
     #endregion
 
     #region 比赛中的操作

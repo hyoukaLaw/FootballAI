@@ -11,6 +11,9 @@ public class GameManagerUI : MonoBehaviour
     public TMP_Text ScoreText; // 比分显示文本 (TextMeshPro)
     public Button CloseButton;
 
+    public TMP_Text CountDownTextMain;
+    public TMP_Text CountDownTextSeconds;
+
     void Start()
     {
         if (ResumeButton != null)
@@ -27,6 +30,12 @@ public class GameManagerUI : MonoBehaviour
             // 初始化显示
             // UpdateScoreDisplay(MatchManager.Instance.RedScore, MatchManager.Instance.BlueScore);
         }
+        SetCountDownVisible(false);
+    }
+
+    private void Update()
+    {
+        UpdateKickoffCountDownDisplay();
     }
 
     void OnResumeButtonClick()
@@ -62,6 +71,30 @@ public class GameManagerUI : MonoBehaviour
     private void OnCloseButtonClick()
     {
         MatchManager.Instance.QuitGame();
+    }
+
+    private void UpdateKickoffCountDownDisplay()
+    {
+        if (MatchManager.Instance == null)
+        {
+            SetCountDownVisible(false);
+            return;
+        }
+        bool isCountDownActive = MatchManager.Instance.GetIsKickoffCountDownActive();
+        SetCountDownVisible(isCountDownActive);
+        if (!isCountDownActive || CountDownTextSeconds == null)
+            return;
+        float remainingSeconds = MatchManager.Instance.GetKickoffCountDownRemainingSeconds();
+        int displaySeconds = Mathf.CeilToInt(remainingSeconds);
+        CountDownTextSeconds.text = displaySeconds.ToString();
+    }
+
+    private void SetCountDownVisible(bool isVisible)
+    {
+        if (CountDownTextMain != null)
+            CountDownTextMain.gameObject.SetActive(isVisible);
+        if (CountDownTextSeconds != null)
+            CountDownTextSeconds.gameObject.SetActive(isVisible);
     }
 }
 }
