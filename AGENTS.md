@@ -24,3 +24,11 @@
 ## 5) 重要约束
 - 运行时代码不得直接依赖 Editor-only API；必要时使用 `#if UNITY_EDITOR` 包裹。
 - 热路径中避免高频日志和不必要分配，除非功能必须。
+
+## 6) Editor 开发规范
+- Editor 代码放在 `Assets/Scripts/Editor` 或 Editor-only Assembly，避免运行时代码直接引用 `UnityEditor`。
+- 优先复用项目已有工具链（如 Odin），减少手写 IMGUI 样板代码。
+- Scene 交互与数据编辑分离：面板负责数据输入，`SceneView`/`Handles` 负责可视化与拖拽。
+- 对可编辑资产的修改必须支持 Undo（`Undo.RecordObject(...)`）并在修改后标记脏数据（`EditorUtility.SetDirty(...)`）。
+- 工具菜单统一放在 `Tools/FootballAI/...`。
+- 类内成员按职责分组，使用适量 `#region`（如：字段、生命周期、按钮动作、Scene 交互、日志）。
