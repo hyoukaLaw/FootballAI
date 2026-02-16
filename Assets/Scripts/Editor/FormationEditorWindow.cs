@@ -13,6 +13,12 @@ public class FormationEditorWindow : OdinEditorWindow
     #region 常量与字段
     private const float ZoneLabelYOffset = 0.1f;
     private readonly BoxBoundsHandle _zoneBoundsHandle = new BoxBoundsHandle();
+
+    public enum LayoutAssetType
+    {
+        Formation,
+        FieldSpecialZones
+    }
     #endregion
     
     #region 面板数据
@@ -25,10 +31,14 @@ public class FormationEditorWindow : OdinEditorWindow
     }
 
     [ShowInInspector]
-    [LabelText("Formation Layout")]
+    [LabelText("Layout Asset")]
     [OnValueChanged(nameof(OnLayoutChanged))]
     [InlineEditor(InlineEditorObjectFieldModes.Boxed)]
-    public FormationLayout FormationLayout;
+    public ZoneRectLayoutBase LayoutAsset;
+
+    [ShowInInspector]
+    [LabelText("Create Type")]
+    public LayoutAssetType CreateType = LayoutAssetType.Formation;
 
     [ShowInInspector]
     [LabelText("Selected Zone")]
@@ -48,7 +58,7 @@ public class FormationEditorWindow : OdinEditorWindow
         {
             if (!HasSelectedZone())
                 return null;
-            return FormationLayout.GetZoneAt(SelectedZoneIndex);
+            return LayoutAsset.GetZoneAt(SelectedZoneIndex);
         }
     }
     #endregion
@@ -72,14 +82,18 @@ public class FormationEditorWindow : OdinEditorWindow
     [Button(ButtonSizes.Medium)]
     private void CreateLayoutAsset()
     {
-        string path = EditorUtility.SaveFilePanelInProject("Create Formation Layout", "FormationLayout", "asset",
-            "Select location for new FormationLayout asset");
+        string defaultName = CreateType == LayoutAssetType.Formation ? "FormationLayout" : "FieldSpecialZonesConfig";
+        string displayName = CreateType == LayoutAssetType.Formation ? "Create Formation Layout" : "Create Field Special Zones Config";
+        string path = EditorUtility.SaveFilePanelInProject(displayName, defaultName, "asset",
+            "Select location for new layout asset");
         if (string.IsNullOrEmpty(path))
             return;
-        FormationLayout asset = CreateInstance<FormationLayout>();
+        ZoneRectLayoutBase asset = CreateType == LayoutAssetType.Formation
+            ? CreateInstance<FormationLayout>()
+            : CreateInstance<FieldSpecialZonesConfig>();
         AssetDatabase.CreateAsset(asset, path);
         AssetDatabase.SaveAssets();
-        FormationLayout = asset;
+        LayoutAsset = asset;
         SelectedZoneIndex = -1;
         Selection.activeObject = asset;
         Repaint();
@@ -91,8 +105,8 @@ public class FormationEditorWindow : OdinEditorWindow
     [EnableIf(nameof(HasLayout))]
     private void AddZone()
     {
-        Undo.RecordObject(FormationLayout, "Add Zone");
-        int nextIndex = FormationLayout.GetZoneCount() + 1;
+        Undo.RecordObject(LayoutAsset, "Add Zone");
+        int nextIndex = LayoutAsset.GetZoneCount() + 1;
         FormationZoneRect zone = new FormationZoneRect
         {
             ZoneId = $"zone_{nextIndex:00}",
@@ -103,8 +117,8 @@ public class FormationEditorWindow : OdinEditorWindow
             CenterXZ = Vector2.zero,
             SizeXZ = new Vector2(8f, 12f)
         };
-        FormationLayout.AddZone(zone);
-        SelectedZoneIndex = FormationLayout.GetZoneCount() - 1;
+        LayoutAsset.AddZone(zone);
+        SelectedZoneIndex = LayoutAsset.GetZoneCount() - 1;
         MarkLayoutDirty();
     }
 
@@ -113,10 +127,10 @@ public class FormationEditorWindow : OdinEditorWindow
     [EnableIf(nameof(HasSelectedZone))]
     private void DuplicateSelectedZone()
     {
-        FormationZoneRect source = FormationLayout.GetZoneAt(SelectedZoneIndex);
+        FormationZoneRect source = LayoutAsset.GetZoneAt(SelectedZoneIndex);
         if (source == null)
             return;
-        Undo.RecordObject(FormationLayout, "Duplicate Zone");
+        Undo.RecordObject(LayoutAsset, "Duplicate Zone");
         FormationZoneRect duplicate = new FormationZoneRect
         {
             ZoneId = source.ZoneId + "_copy",
@@ -127,8 +141,8 @@ public class FormationEditorWindow : OdinEditorWindow
             CenterXZ = source.CenterXZ + new Vector2(1f, 1f),
             SizeXZ = source.SizeXZ
         };
-        FormationLayout.AddZone(duplicate);
-        SelectedZoneIndex = FormationLayout.GetZoneCount() - 1;
+        LayoutAsset.AddZone(duplicate);
+        SelectedZoneIndex = LayoutAsset.GetZoneCount() - 1;
         MarkLayoutDirty();
     }
 
@@ -139,10 +153,10 @@ public class FormationEditorWindow : OdinEditorWindow
     {
         if (!HasSelectedZone())
             return;
-        Undo.RecordObject(FormationLayout, "Remove Zone");
-        FormationLayout.RemoveZoneAt(SelectedZoneIndex);
-        if (SelectedZoneIndex >= FormationLayout.GetZoneCount())
-            SelectedZoneIndex = FormationLayout.GetZoneCount() - 1;
+        Undo.RecordObject(LayoutAsset, "Remove Zone");
+        LayoutAsset.RemoveZoneAt(SelectedZoneIndex);
+        if (SelectedZoneIndex >= LayoutAsset.GetZoneCount())
+            SelectedZoneIndex = LayoutAsset.GetZoneCount() - 1;
         MarkLayoutDirty();
     }
     #endregion
@@ -173,9 +187,9 @@ public class FormationEditorWindow : OdinEditorWindow
         yield return new ValueDropdownItem<int>("None", -1);
         if (!HasLayout())
             yield break;
-        for (int i = 0; i < FormationLayout.GetZoneCount(); i++)
+        for (int i = 0; i < LayoutAsset.GetZoneCount(); i++)
         {
-            FormationZoneRect zone = FormationLayout.GetZoneAt(i);
+            FormationZoneRect zone = LayoutAsset.GetZoneAt(i);
             if (zone == null)
                 continue;
             string label = $"{i}: {zone.DisplayName} ({zone.ZoneId})";
@@ -187,27 +201,27 @@ public class FormationEditorWindow : OdinEditorWindow
     #region 场景交互
     private bool HasLayout()
     {
-        return FormationLayout != null;
+        return LayoutAsset != null;
     }
 
     private bool HasSelectedZone()
     {
-        return HasLayout() && SelectedZoneIndex >= 0 && SelectedZoneIndex < FormationLayout.GetZoneCount() && FormationLayout.GetZoneAt(SelectedZoneIndex) != null;
+        return HasLayout() && SelectedZoneIndex >= 0 && SelectedZoneIndex < LayoutAsset.GetZoneCount() && LayoutAsset.GetZoneAt(SelectedZoneIndex) != null;
     }
 
     private void OnSceneGUI(SceneView sceneView)
     {
         if (!HasLayout())
             return;
-        for (int i = 0; i < FormationLayout.GetZoneCount(); i++)
+        for (int i = 0; i < LayoutAsset.GetZoneCount(); i++)
         {
-            FormationZoneRect zone = FormationLayout.GetZoneAt(i);
+            FormationZoneRect zone = LayoutAsset.GetZoneAt(i);
             if (zone == null || !zone.IsEnabled)
                 continue;
             DrawZoneGizmo(zone, i == SelectedZoneIndex);
         }
         if (HasSelectedZone())
-            DrawSelectedZoneHandles(FormationLayout.GetZoneAt(SelectedZoneIndex));
+            DrawSelectedZoneHandles(LayoutAsset.GetZoneAt(SelectedZoneIndex));
     }
 
     private void DrawZoneGizmo(FormationZoneRect zone, bool isSelected)
@@ -233,7 +247,7 @@ public class FormationEditorWindow : OdinEditorWindow
         _zoneBoundsHandle.DrawHandle();
         if (EditorGUI.EndChangeCheck())
         {
-            Undo.RecordObject(FormationLayout, "Edit Zone Bounds");
+            Undo.RecordObject(LayoutAsset, "Edit Zone Bounds");
             zone.SetCenterFromWorld(_zoneBoundsHandle.center);
             zone.SetSizeFromWorld(new Vector3(_zoneBoundsHandle.size.x, 0f, _zoneBoundsHandle.size.z));
             MarkLayoutDirty();
@@ -246,7 +260,7 @@ public class FormationEditorWindow : OdinEditorWindow
     {
         if (!HasLayout())
             return;
-        EditorUtility.SetDirty(FormationLayout);
+        EditorUtility.SetDirty(LayoutAsset);
         SceneView.RepaintAll();
         Repaint();
     }

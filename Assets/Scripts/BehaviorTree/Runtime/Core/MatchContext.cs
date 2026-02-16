@@ -25,6 +25,7 @@ namespace BehaviorTree.Runtime
         public GameObject IncomingPassTarget;
         public GameObject Field;
         public FormationLayout FormationLayout;
+        public FieldSpecialZonesConfig FieldSpecialZonesConfig;
 
         // --- 传球状态管理 ---
         private float _passTimer = 0f; // 传球计时器

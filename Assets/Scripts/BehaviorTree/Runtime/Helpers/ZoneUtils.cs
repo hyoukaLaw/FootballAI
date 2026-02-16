@@ -5,9 +5,6 @@ namespace BehaviorTree.Runtime
 {
 public static class ZoneUtils
 {
-    private static float _penaltyAreaProgresses = 0.2f;
-    private static float _penaltyAreaWidthNormalized = 0.7f;
-
     public class ZoneRange
     {
         public Vector3 LeftBottom;
@@ -51,9 +48,7 @@ public static class ZoneUtils
         for (int i = 0; i < context.FormationLayout.Zones.Count; i++)
         {
             FormationZoneRect candidate = context.FormationLayout.Zones[i];
-            if (candidate == null || !candidate.IsEnabled)
-                continue;
-            if (!IsInZoneRect(position, candidate))
+            if ( !candidate.IsEnabled || !IsInZoneRect(position, candidate)) 
                 continue;
             if (zone == null || candidate.Priority > bestPriority)
             {
@@ -66,16 +61,12 @@ public static class ZoneUtils
 
     public static bool IsPositionInRange(Vector3 position, ZoneRange zoneRange)
     {
-        if (zoneRange == null)
-            return false;
         return position.x >= zoneRange.LeftBottom.x && position.x <= zoneRange.LeftBottom.x + zoneRange.Width
                && position.z >= zoneRange.LeftBottom.z && position.z <= zoneRange.LeftBottom.z + zoneRange.Length;
     }
 
     public static ZoneRange BuildFullFieldZoneRange(MatchContext context)
     {
-        if (context == null)
-            return null;
         return new ZoneRange
         {
             LeftBottom = new Vector3(context.GetLeftBorder(), 0f, context.GetBackwardBorder()),
@@ -86,19 +77,10 @@ public static class ZoneUtils
 
     public static bool IsInPenaltyArea(Vector3 position, Vector3 goalPosition)
     {
-        float penaltyAreaDepth = MatchManager.Instance.Context.GetFieldLength() * _penaltyAreaProgresses;
-        float penaltyAreaWidth = MatchManager.Instance.Context.GetFieldWidth() * _penaltyAreaWidthNormalized;
-        if (goalPosition.z < 0)
-        {
-            Vector3 leftBottom = new Vector3(goalPosition.x - penaltyAreaWidth / 2f, 0,
-                MatchManager.Instance.Context.GetBackwardBorder());
-            ZoneRange zoneRange = new ZoneRange{LeftBottom = leftBottom, Width = penaltyAreaWidth, Length = penaltyAreaDepth};
-            return IsPositionInRange(position, zoneRange);
-        }
-        Vector3 forwardLeftBottom = new Vector3(goalPosition.x - penaltyAreaWidth / 2f, 0,
-            MatchManager.Instance.Context.GetForwardBorder() - penaltyAreaDepth);
-        ZoneRange forwardZoneRange = new ZoneRange{LeftBottom = forwardLeftBottom, Width = penaltyAreaWidth, Length = penaltyAreaDepth};
-        return IsPositionInRange(position, forwardZoneRange);
+        MatchContext context = MatchManager.Instance != null ? MatchManager.Instance.Context : null;
+        if (!TryGetPenaltyZoneRange(context, goalPosition, out ZoneRange zoneRange))
+            return false;
+        return IsPositionInRange(position, zoneRange);
     }
 
     private static RolePreferences GetPreferencesForState(PlayerRole role, MatchState state)
@@ -127,9 +109,7 @@ public static class ZoneUtils
         for (int i = 0; i < context.FormationLayout.Zones.Count; i++)
         {
             FormationZoneRect candidate = context.FormationLayout.Zones[i];
-            if (candidate == null || !candidate.IsEnabled)
-                continue;
-            if (candidate.ZoneId != zoneId)
+            if (!candidate.IsEnabled || candidate.ZoneId != zoneId)
                 continue;
             zone = candidate;
             return true;
@@ -150,12 +130,25 @@ public static class ZoneUtils
 
     private static ZoneRange BuildZoneRange(FormationZoneRect zone)
     {
-        if (zone == null)
-            return null;
         float width = Mathf.Max(0.1f, zone.SizeXZ.x);
         float length = Mathf.Max(0.1f, zone.SizeXZ.y);
         Vector3 leftBottom = new Vector3(zone.CenterXZ.x - width * 0.5f, 0f, zone.CenterXZ.y - length * 0.5f);
         return new ZoneRange{LeftBottom = leftBottom, Width = width, Length = length};
+    }
+
+    private static bool TryGetPenaltyZoneRange(MatchContext context, Vector3 goalPosition, out ZoneRange zoneRange)
+    {
+        zoneRange = null;
+        string zoneId = goalPosition.z < 0f ? "penalty_backward" : "penalty_forward";
+        for (int i = 0; i < context.FieldSpecialZonesConfig.Zones.Count; i++)
+        {
+            FormationZoneRect zone = context.FieldSpecialZonesConfig.Zones[i];
+            if (!zone.IsEnabled || zone.ZoneId != zoneId)
+                continue;
+            zoneRange = BuildZoneRange(zone);
+            return zoneRange != null;
+        }
+        return false;
     }
 }
 }

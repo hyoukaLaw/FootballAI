@@ -11,12 +11,22 @@ public class MatchDiagnosticsSystem
     #region 日志
     public void LogZoneInfo(MatchContext context)
     {
-        for (int i = 0; i < context.FormationLayout.Zones.Count; i++)
+        if (context.FormationLayout != null && context.FormationLayout.Zones != null)
         {
-            FormationZoneRect zone = context.FormationLayout.Zones[i];
+            for (int i = 0; i < context.FormationLayout.Zones.Count; i++)
+            {
+                FormationZoneRect zone = context.FormationLayout.Zones[i];
+                if (zone == null)
+                    continue;
+                MyLog.LogInfo($"formationZone: id={zone.ZoneId} name={zone.DisplayName} center={zone.CenterXZ} size={zone.SizeXZ} priority={zone.Priority} enabled={zone.IsEnabled}");
+            }
+        }
+        for (int i = 0; i < context.FieldSpecialZonesConfig.Zones.Count; i++)
+        {
+            FormationZoneRect zone = context.FieldSpecialZonesConfig.Zones[i];
             if (zone == null)
                 continue;
-            MyLog.LogInfo($"formationZone: id={zone.ZoneId} name={zone.DisplayName} center={zone.CenterXZ} size={zone.SizeXZ} priority={zone.Priority} enabled={zone.IsEnabled}");
+            MyLog.LogInfo($"specialZone: id={zone.ZoneId} name={zone.DisplayName} center={zone.CenterXZ} size={zone.SizeXZ} priority={zone.Priority} enabled={zone.IsEnabled}");
         }
     }
 

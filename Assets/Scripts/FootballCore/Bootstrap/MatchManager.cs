@@ -27,6 +27,7 @@ public partial class MatchManager : MonoBehaviour
     public GameObject BlueStartPlayer;// 蓝方开球人
     public GameObject Field; // 球场模型
     public FormationLayout FormationLayout;
+    public FieldSpecialZonesConfig FieldSpecialZonesConfig;
 
     [Header("Game Settings")]
     // 距离球多少米以内算"持球"
@@ -216,6 +217,8 @@ public partial class MatchManager : MonoBehaviour
         Context = new MatchContext();
         if (FormationLayout == null)
             FormationLayout = Resources.Load<FormationLayout>("Config/FormationLayout");
+        if (FieldSpecialZonesConfig == null)
+            FieldSpecialZonesConfig = Resources.Load<FieldSpecialZonesConfig>("Config/FieldSpecialZonesConfig");
         Context.Ball = Ball;
         Context.BallController = BallController;
         Context.TeamRedPlayers = TeamRedPlayers;
@@ -224,6 +227,7 @@ public partial class MatchManager : MonoBehaviour
         Context.BlueGoal = BlueGoal;
         Context.Field = Field;
         Context.FormationLayout = FormationLayout;
+        Context.FieldSpecialZonesConfig = FieldSpecialZonesConfig;
         foreach(var player in TeamRedPlayers)
         {
             var playerAI = player.GetComponent<PlayerAI>();
