@@ -1,5 +1,8 @@
+using System;
 using UnityEngine;
 using FootballAI.FootballCore;
+using System.Collections.Generic;
+using Sirenix.OdinInspector;
 
 namespace BehaviorTree.Runtime
 {
@@ -10,14 +13,6 @@ namespace BehaviorTree.Runtime
         Forward
     }
 
-    public enum FieldZone
-    {
-        OwnDefensiveZone,
-        OwnOffensiveZone,
-        EnemyOffensiveZone,
-        EnemyDefensiveZone
-    }
-
     public enum MatchState
     {
         Attacking,
@@ -26,27 +21,82 @@ namespace BehaviorTree.Runtime
     }
 
     [System.Serializable]
+    public class ZoneWeightEntry
+    {
+        [ValueDropdown(nameof(GetZoneIdOptions))]
+        [ValidateInput(nameof(IsZoneIdValid), "ZoneId not found in Resources/Config/FormationLayout", InfoMessageType.Warning)]
+        public string ZoneId = "zone_01";
+        public float Weight = 0f;
+
+        private static IEnumerable<ValueDropdownItem<string>> GetZoneIdOptions()
+        {
+            FormationLayout layout = Resources.Load<FormationLayout>("Config/FormationLayout");
+            if (layout != null && layout.Zones != null && layout.Zones.Count > 0)
+            {
+                for (int i = 0; i < layout.Zones.Count; i++)
+                {
+                    FormationZoneRect zone = layout.Zones[i];
+                    if (zone == null || string.IsNullOrEmpty(zone.ZoneId))
+                        continue;
+                    string label = string.IsNullOrEmpty(zone.DisplayName) ? zone.ZoneId : $"{zone.DisplayName} ({zone.ZoneId})";
+                    yield return new ValueDropdownItem<string>(label, zone.ZoneId);
+                }
+            }
+        }
+
+        private static bool IsZoneIdValid(string zoneId)
+        {
+            if (string.IsNullOrEmpty(zoneId))
+                return false;
+            FormationLayout layout = Resources.Load<FormationLayout>("Config/FormationLayout");
+            if (layout == null || layout.Zones == null || layout.Zones.Count == 0)
+                return true;
+            for (int i = 0; i < layout.Zones.Count; i++)
+            {
+                FormationZoneRect zone = layout.Zones[i];
+                if (zone == null)
+                    continue;
+                if (zone.ZoneId == zoneId)
+                    return true;
+            }
+            return false;
+        }
+    }
+
+    [System.Serializable]
     public class RolePreferences
     {
         [Header("区域权重")]
-        [Tooltip("己方防守区权重（0.0-0.25）")]
-        public float OwnDefensiveZoneWeight = 0.0f;
+        public List<ZoneWeightEntry> ZoneWeights = new List<ZoneWeightEntry>();
 
-        [Tooltip("己方进攻区权重（0.25-0.5）")]
-        public float OwnOffensiveZoneWeight = 0.0f;
+        public float GetZoneWeightById(string zoneId)
+        {
+            for (int i = 0; i < ZoneWeights.Count; i++)
+            {
+                ZoneWeightEntry entry = ZoneWeights[i];
+                if (entry.ZoneId == zoneId)
+                    return entry.Weight;
+            }
+            return 0f;
+        }
 
-        [Tooltip("敌方进攻区权重（0.5-0.75）")]
-        public float EnemyOffensiveZoneWeight = 0.0f;
-
-        [Tooltip("敌方防守区权重（0.75-1.0）")]
-        public float EnemyDefensiveZoneWeight = 0.0f;
-
-        [Header("距离衰减参数")]
-        [Tooltip("距离理想区域越远，权重衰减越快")]
-        public float DistanceDecayRate = 0.1f;
-
-        [Tooltip("允许偏离理想区域的最大距离")]
-        public float MaxZoneDeviation = 8f;
+        public (string zoneId, float weight) GetHighestZoneWeight()
+        {
+            string bestZoneId = string.Empty;
+            float bestWeight = float.MinValue;
+            for (int i = 0; i < ZoneWeights.Count; i++)
+            {
+                ZoneWeightEntry entry = ZoneWeights[i];
+                if (entry.Weight > bestWeight)
+                {
+                    bestWeight = entry.Weight;
+                    bestZoneId = entry.ZoneId;
+                }
+            }
+            if (Math.Abs(bestWeight - float.MinValue) < FootballConstants.FloatEpsilon)
+                return (string.Empty, 0f);
+            return (bestZoneId, bestWeight);
+        }
     }
 
     [CreateAssetMenu(fileName = "New Player Role", menuName = "Football/Player Role")]
@@ -64,26 +114,6 @@ namespace BehaviorTree.Runtime
         [Header("位置计算权重")]
         public PositionWeight AttackPositionWeight;
         public PositionWeight DefendPositionWeight;
-
-        [Header("行为倾向")]
-        [Range(0f, 1f)]
-        [Tooltip("进攻倾向")]
-        public float OffensiveBias = 0.5f;
-
-        [Range(0f, 1f)]
-        [Tooltip("防守倾向")]
-        public float DefensiveBias = 0.5f;
-
-        [Range(0f, 1f)]
-        [Tooltip("支持倾向")]
-        public float SupportBias = 0.5f;
-
-        [Header("活动范围")]
-        [Tooltip("主要活动区域半径")]
-        public float HomeZoneRadius = 5f;
-
-        [Tooltip("最大漫游距离")]
-        public float MaximumRoamingDistance = 15f;
 
         private void OnEnable()
         {

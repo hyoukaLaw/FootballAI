@@ -26,6 +26,7 @@ public partial class MatchManager : MonoBehaviour
     public GameObject RedStartPlayer;// 红方开球人
     public GameObject BlueStartPlayer;// 蓝方开球人
     public GameObject Field; // 球场模型
+    public FormationLayout FormationLayout;
 
     [Header("Game Settings")]
     // 距离球多少米以内算"持球"
@@ -70,7 +71,7 @@ public partial class MatchManager : MonoBehaviour
         InitContext();
         ResetBall();
         InitScoreEvent();
-        _matchDiagnosticsSystem.LogZoneInfo(Context, TeamRedPlayers);
+        _matchDiagnosticsSystem.LogZoneInfo(Context);
     }
 
 
@@ -213,6 +214,8 @@ public partial class MatchManager : MonoBehaviour
     {
         // 初始化全局上下文
         Context = new MatchContext();
+        if (FormationLayout == null)
+            FormationLayout = Resources.Load<FormationLayout>("Config/FormationLayout");
         Context.Ball = Ball;
         Context.BallController = BallController;
         Context.TeamRedPlayers = TeamRedPlayers;
@@ -220,6 +223,7 @@ public partial class MatchManager : MonoBehaviour
         Context.RedGoal = RedGoal;
         Context.BlueGoal = BlueGoal;
         Context.Field = Field;
+        Context.FormationLayout = FormationLayout;
         foreach(var player in TeamRedPlayers)
         {
             var playerAI = player.GetComponent<PlayerAI>();

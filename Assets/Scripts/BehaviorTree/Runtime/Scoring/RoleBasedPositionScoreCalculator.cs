@@ -34,7 +34,8 @@ namespace BehaviorTree.Runtime
                 weightPressing = role.DefendPositionWeight.WeightPressing;
                 weightSupport = role.DefendPositionWeight.WeightSupport;
             }
-            float zoneScore = ZoneUtils.CalculateNormalizedZoneScore(position, role, myGoal, enemyGoal, DetermineMatchState(player, context)) * weightZone;
+            float zoneScore = ZoneUtils.CalculateNormalizedZoneScore(position, role, myGoal, enemyGoal,
+                DetermineMatchState(player, context), context, player) * weightZone;
             float ballScore = CalculateBallScore(position, ballPosition) * weightBallDist;
             float goalScore = CalculateGoalScore(position, enemyGoal) * weightGoalDist;
             float markScore = CalculateMarkScore(position, role, context, myGoal, player) * weightMarking;
@@ -349,9 +350,11 @@ namespace BehaviorTree.Runtime
             List<Vector3> candidates = new List<Vector3>();
             MatchState currentState = DetermineMatchState(player, matchContext);
             RolePreferences rolePreferences = currentState == MatchState.Attacking ? role.AttackPreferences : role.DefendPreferences;
-            FieldZone zone = ZoneUtils.FindHighestWeightZoneAndWeight(rolePreferences).zone;
-            candidates.AddRange(GenerateZoneCandidatePositions(ZoneUtils.GetZoneRange(zone, enemyGoal, myGoal),
-                FootballConstants.ZoneCandidateWidthInterval, FootballConstants.ZoneCandidateLengthInterval));
+            ZoneUtils.ZoneRange zoneRange;
+            if (!ZoneUtils.TryGetPreferredZoneRangeFromFormation(matchContext, player, rolePreferences, out zoneRange))
+                zoneRange = ZoneUtils.BuildFullFieldZoneRange(matchContext);
+            candidates.AddRange(GenerateZoneCandidatePositions(zoneRange, FootballConstants.ZoneCandidateWidthInterval,
+                FootballConstants.ZoneCandidateLengthInterval));
             candidates.AddRange(GenerateSupportCandidatePositions(player, matchContext, matchContext.GetTeammates(player)));
             candidates.AddRange(GenerateMarkCandidatePositions(player, matchContext, matchContext.GetOpponents(player)));
             candidates.AddRange(GenerateAroundBallCandidatePositions(player, ballPosition));

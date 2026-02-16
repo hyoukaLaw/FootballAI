@@ -15,24 +15,39 @@ MonoBehaviour:
   RoleType: 1
   RoleName: Midfielder
   AttackPreferences:
-    OwnDefensiveZoneWeight: 1
-    OwnOffensiveZoneWeight: 3
-    EnemyOffensiveZoneWeight: 4
-    EnemyDefensiveZoneWeight: 2
+    ZoneWeights:
+    - ZoneId: zone_01
+      Weight: 1
+    - ZoneId: zone_02
+      Weight: 3
+    - ZoneId: zone_03
+      Weight: 4
+    - ZoneId: zone_04
+      Weight: 2
     DistanceDecayRate: 0.12
     MaxZoneDeviation: 12
   DefendPreferences:
-    OwnDefensiveZoneWeight: 4
-    OwnOffensiveZoneWeight: 4
-    EnemyOffensiveZoneWeight: 1
-    EnemyDefensiveZoneWeight: 1
+    ZoneWeights:
+    - ZoneId: zone_01
+      Weight: 4
+    - ZoneId: zone_02
+      Weight: 4
+    - ZoneId: zone_03
+      Weight: 1
+    - ZoneId: zone_04
+      Weight: 1
     DistanceDecayRate: 0.1
     MaxZoneDeviation: 15
   ChaseBallPreferences:
-    OwnDefensiveZoneWeight: 3
-    OwnOffensiveZoneWeight: 5
-    EnemyOffensiveZoneWeight: 5
-    EnemyDefensiveZoneWeight: 2
+    ZoneWeights:
+    - ZoneId: zone_01
+      Weight: 3
+    - ZoneId: zone_02
+      Weight: 5
+    - ZoneId: zone_03
+      Weight: 5
+    - ZoneId: zone_04
+      Weight: 2
     DistanceDecayRate: 0.15
     MaxZoneDeviation: 18
   AttackPositionWeight:

@@ -17,12 +17,15 @@ namespace BehaviorTree.Runtime
         }
         private bool IsInDanger()
         {
-            Vector3 myGoal = Blackboard.MatchContext.GetMyGoalPosition(Blackboard.Owner);
-            Vector3 enemyGoal = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
-            FieldZone preferZone = ZoneUtils.FindHighestWeightZoneAndWeight(Blackboard.Role.DefendPreferences).zone;
+            bool isBallInPreferredZone;
+            if (ZoneUtils.TryGetPreferredZoneRangeFromFormation(Blackboard.MatchContext, Blackboard.Owner, Blackboard.Role.DefendPreferences,
+                    out ZoneUtils.ZoneRange preferredRange))
+                isBallInPreferredZone = ZoneUtils.IsPositionInRange(Blackboard.MatchContext.Ball.transform.position, preferredRange);
+            else
+                isBallInPreferredZone = false;
             Vector3 ballPos = Blackboard.MatchContext.Ball.transform.position;
             var teammates = Blackboard.MatchContext.GetTeammates(Blackboard.Owner);
-            if (ZoneUtils.IsInZone(ballPos, preferZone, enemyGoal, myGoal) && 
+            if (isBallInPreferredZone && 
                 (IsLastDefensePlayer() || FootballUtils.IsClosestTeammateToTarget(ballPos, Blackboard.Owner, teammates)) && 
                 !IsBallHolderMark(Blackboard.Owner.transform.position))
             {

@@ -15,24 +15,39 @@ MonoBehaviour:
   RoleType: 0
   RoleName: Defender
   AttackPreferences:
-    OwnDefensiveZoneWeight: 3
-    OwnOffensiveZoneWeight: 4
-    EnemyOffensiveZoneWeight: 3
-    EnemyDefensiveZoneWeight: 0
+    ZoneWeights:
+    - ZoneId: zone_01
+      Weight: 3
+    - ZoneId: zone_02
+      Weight: 4
+    - ZoneId: zone_03
+      Weight: 3
+    - ZoneId: zone_04
+      Weight: 0
     DistanceDecayRate: 0.1
     MaxZoneDeviation: 10
   DefendPreferences:
-    OwnDefensiveZoneWeight: 5
-    OwnOffensiveZoneWeight: 4
-    EnemyOffensiveZoneWeight: 0.5
-    EnemyDefensiveZoneWeight: 0.5
+    ZoneWeights:
+    - ZoneId: zone_01
+      Weight: 5
+    - ZoneId: zone_02
+      Weight: 4
+    - ZoneId: zone_03
+      Weight: 0.5
+    - ZoneId: zone_04
+      Weight: 0.5
     DistanceDecayRate: 0.08
     MaxZoneDeviation: 8
   ChaseBallPreferences:
-    OwnDefensiveZoneWeight: 3
-    OwnOffensiveZoneWeight: 3
-    EnemyOffensiveZoneWeight: 3
-    EnemyDefensiveZoneWeight: 1
+    ZoneWeights:
+    - ZoneId: zone_01
+      Weight: 3
+    - ZoneId: zone_02
+      Weight: 3
+    - ZoneId: zone_03
+      Weight: 3
+    - ZoneId: zone_04
+      Weight: 1
     DistanceDecayRate: 0.12
     MaxZoneDeviation: 12
   AttackPositionWeight:

@@ -78,37 +78,16 @@ namespace BehaviorTree.Editor
 
             preset.AttackPreferences = new RolePreferences
             {
-                OwnDefensiveZoneWeight = 0.5f,
-                OwnOffensiveZoneWeight = 2.0f,
-                EnemyOffensiveZoneWeight = 6.0f,
-                EnemyDefensiveZoneWeight = 10.0f,
-                DistanceDecayRate = 0.15f,
-                MaxZoneDeviation = 10f
+                ZoneWeights = BuildZoneWeights(0.5f, 2.0f, 6.0f, 10.0f),
             };
             preset.DefendPreferences = new RolePreferences
             {
-                OwnDefensiveZoneWeight = 1.0f,
-                OwnOffensiveZoneWeight = 3.0f,
-                EnemyOffensiveZoneWeight = 4.0f,
-                EnemyDefensiveZoneWeight = 2.0f,
-                DistanceDecayRate = 0.1f,
-                MaxZoneDeviation = 12f
+                ZoneWeights = BuildZoneWeights(1.0f, 3.0f, 4.0f, 2.0f),
             };
             preset.ChaseBallPreferences = new RolePreferences
             {
-                OwnDefensiveZoneWeight = 1.0f,
-                OwnOffensiveZoneWeight = 3.0f,
-                EnemyOffensiveZoneWeight = 5.0f,
-                EnemyDefensiveZoneWeight = 8.0f,
-                DistanceDecayRate = 0.2f,
-                MaxZoneDeviation = 15f
+                ZoneWeights = BuildZoneWeights(1.0f, 3.0f, 5.0f, 8.0f),
             };
-
-            preset.OffensiveBias = 0.8f;
-            preset.DefensiveBias = 0.2f;
-            preset.SupportBias = 0.4f;
-            preset.HomeZoneRadius = 8f;
-            preset.MaximumRoamingDistance = 20f;
         }
         
         private static void SetUpMidfielderPreset(PlayerRole preset)
@@ -117,39 +96,18 @@ namespace BehaviorTree.Editor
             preset.RoleName = "Midfielder";
             preset.AttackPreferences = new RolePreferences
             {
-                OwnDefensiveZoneWeight = 2.0f,
-                OwnOffensiveZoneWeight = 5.0f,
-                EnemyOffensiveZoneWeight = 5.0f,
-                EnemyDefensiveZoneWeight = 2.0f,
-                DistanceDecayRate = 0.12f,
-                MaxZoneDeviation = 12f
+                ZoneWeights = BuildZoneWeights(2.0f, 5.0f, 5.0f, 2.0f),
             };
 
             preset.DefendPreferences = new RolePreferences
             {
-                OwnDefensiveZoneWeight = 4.0f,
-                OwnOffensiveZoneWeight = 5.0f,
-                EnemyOffensiveZoneWeight = 3.0f,
-                EnemyDefensiveZoneWeight = 1.0f,
-                DistanceDecayRate = 0.1f,
-                MaxZoneDeviation = 15f
+                ZoneWeights = BuildZoneWeights(4.0f, 5.0f, 3.0f, 1.0f),
             };
 
             preset.ChaseBallPreferences = new RolePreferences
             {
-                OwnDefensiveZoneWeight = 3.0f,
-                OwnOffensiveZoneWeight = 5.0f,
-                EnemyOffensiveZoneWeight = 5.0f,
-                EnemyDefensiveZoneWeight = 2.0f,
-                DistanceDecayRate = 0.15f,
-                MaxZoneDeviation = 18f
+                ZoneWeights = BuildZoneWeights(3.0f, 5.0f, 5.0f, 2.0f),
             };
-
-            preset.OffensiveBias = 0.5f;
-            preset.DefensiveBias = 0.5f;
-            preset.SupportBias = 0.7f;
-            preset.HomeZoneRadius = 10f;
-            preset.MaximumRoamingDistance = 18f;
         }
         
         private static void SetUpDefenderPreset(PlayerRole preset)
@@ -158,39 +116,30 @@ namespace BehaviorTree.Editor
             preset.RoleName = "Defender";        
             preset.AttackPreferences = new RolePreferences
             {
-                OwnDefensiveZoneWeight = 6.0f,
-                OwnOffensiveZoneWeight = 4.0f,
-                EnemyOffensiveZoneWeight = 1.5f,
-                EnemyDefensiveZoneWeight = 0.5f,
-                DistanceDecayRate = 0.1f,
-                MaxZoneDeviation = 10f
+                ZoneWeights = BuildZoneWeights(6.0f, 4.0f, 1.5f, 0.5f),
             };
 
             preset.DefendPreferences = new RolePreferences
             {
-                OwnDefensiveZoneWeight = 10.0f,
-                OwnOffensiveZoneWeight = 3.0f,
-                EnemyOffensiveZoneWeight = 0.5f,
-                EnemyDefensiveZoneWeight = 0.2f,
-                DistanceDecayRate = 0.08f,
-                MaxZoneDeviation = 8f
+                ZoneWeights = BuildZoneWeights(10.0f, 3.0f, 0.5f, 0.2f),
             };
 
             preset.ChaseBallPreferences = new RolePreferences
             {
-                OwnDefensiveZoneWeight = 5.0f,
-                OwnOffensiveZoneWeight = 4.0f,
-                EnemyOffensiveZoneWeight = 2.0f,
-                EnemyDefensiveZoneWeight = 1.0f,
-                DistanceDecayRate = 0.12f,
-                MaxZoneDeviation = 12f
+                ZoneWeights = BuildZoneWeights(5.0f, 4.0f, 2.0f, 1.0f),
             };
+        }
 
-            preset.OffensiveBias = 0.3f;
-            preset.DefensiveBias = 0.8f;
-            preset.SupportBias = 0.5f;
-            preset.HomeZoneRadius = 6f;
-            preset.MaximumRoamingDistance = 15f;
+        private static System.Collections.Generic.List<ZoneWeightEntry> BuildZoneWeights(float zone01, float zone02,
+            float zone03, float zone04)
+        {
+            return new System.Collections.Generic.List<ZoneWeightEntry>
+            {
+                new ZoneWeightEntry{ZoneId = "zone_01", Weight = zone01},
+                new ZoneWeightEntry{ZoneId = "zone_02", Weight = zone02},
+                new ZoneWeightEntry{ZoneId = "zone_03", Weight = zone03},
+                new ZoneWeightEntry{ZoneId = "zone_04", Weight = zone04}
+            };
         }
     }
 }

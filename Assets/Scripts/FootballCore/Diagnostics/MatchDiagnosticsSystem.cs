@@ -9,17 +9,14 @@ public class MatchDiagnosticsSystem
     private float _blueOverlapDiagnosticsTimer;
 
     #region 日志
-    public void LogZoneInfo(MatchContext context, List<GameObject> teamRedPlayers)
+    public void LogZoneInfo(MatchContext context)
     {
-        if (context == null || teamRedPlayers == null || teamRedPlayers.Count == 0 || teamRedPlayers[0] == null)
-            return;
-        GameObject referencePlayer = teamRedPlayers[0];
-        for (int i = 0; i < System.Enum.GetValues(typeof(FieldZone)).Length; i++)
+        for (int i = 0; i < context.FormationLayout.Zones.Count; i++)
         {
-            FieldZone fieldZone = (FieldZone)i;
-            ZoneUtils.ZoneRange zoneRange = ZoneUtils.GetZoneRange(fieldZone,
-                context.GetEnemyGoalPosition(referencePlayer), context.GetMyGoalPosition(referencePlayer));
-            MyLog.LogInfo($"fieldZone: {fieldZone} {zoneRange.LeftBottom} {zoneRange.Width} {zoneRange.Length}");
+            FormationZoneRect zone = context.FormationLayout.Zones[i];
+            if (zone == null)
+                continue;
+            MyLog.LogInfo($"formationZone: id={zone.ZoneId} name={zone.DisplayName} center={zone.CenterXZ} size={zone.SizeXZ} priority={zone.Priority} enabled={zone.IsEnabled}");
         }
     }
 

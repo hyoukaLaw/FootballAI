@@ -24,6 +24,7 @@ namespace BehaviorTree.Runtime
         public Transform BlueGoal;
         public GameObject IncomingPassTarget;
         public GameObject Field;
+        public FormationLayout FormationLayout;
 
         // --- 传球状态管理 ---
         private float _passTimer = 0f; // 传球计时器

@@ -15,24 +15,39 @@ MonoBehaviour:
   RoleType: 2
   RoleName: Forward
   AttackPreferences:
-    OwnDefensiveZoneWeight: 0.5
-    OwnOffensiveZoneWeight: 0.5
-    EnemyOffensiveZoneWeight: 3
-    EnemyDefensiveZoneWeight: 6
+    ZoneWeights:
+    - ZoneId: zone_01
+      Weight: 0.5
+    - ZoneId: zone_02
+      Weight: 0.5
+    - ZoneId: zone_03
+      Weight: 3
+    - ZoneId: zone_04
+      Weight: 6
     DistanceDecayRate: 0.15
     MaxZoneDeviation: 10
   DefendPreferences:
-    OwnDefensiveZoneWeight: 2
-    OwnOffensiveZoneWeight: 2
-    EnemyOffensiveZoneWeight: 3
-    EnemyDefensiveZoneWeight: 1
+    ZoneWeights:
+    - ZoneId: zone_01
+      Weight: 2
+    - ZoneId: zone_02
+      Weight: 2
+    - ZoneId: zone_03
+      Weight: 3
+    - ZoneId: zone_04
+      Weight: 1
     DistanceDecayRate: 0.1
     MaxZoneDeviation: 12
   ChaseBallPreferences:
-    OwnDefensiveZoneWeight: 1
-    OwnOffensiveZoneWeight: 3
-    EnemyOffensiveZoneWeight: 3
-    EnemyDefensiveZoneWeight: 3
+    ZoneWeights:
+    - ZoneId: zone_01
+      Weight: 1
+    - ZoneId: zone_02
+      Weight: 3
+    - ZoneId: zone_03
+      Weight: 3
+    - ZoneId: zone_04
+      Weight: 3
     DistanceDecayRate: 0.2
     MaxZoneDeviation: 15
   AttackPositionWeight:
