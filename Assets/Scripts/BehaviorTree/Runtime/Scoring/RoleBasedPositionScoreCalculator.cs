@@ -79,19 +79,40 @@ namespace BehaviorTree.Runtime
             GameObject ballHolder = context.GetBallHolder();
             if (ballHolder == null || ballHolder == player) return 0f;
             float distanceToHolder = Vector3.Distance(position, ballHolder.transform.position);
-            float idealSupportDistance =6f;
-            float maxSupportDistance = 10f;
-            float minSupportDistance = 3f;
-            if (distanceToHolder > maxSupportDistance || distanceToHolder < minSupportDistance)
+            if (distanceToHolder > FootballConstants.SupportMaxDistanceToHolder || 
+                distanceToHolder < FootballConstants.SupportMinDistanceToHolder)
             {
                 return 0f;
             }
-            else
+            float distanceFromIdeal = Mathf.Abs(distanceToHolder - FootballConstants.IdealSupportDistance);
+            float deviationRatio = distanceFromIdeal / ( FootballConstants.SupportMaxDistanceToHolder - 
+                                                         FootballConstants.SupportMinDistanceToHolder);
+            float distanceScore = Mathf.Clamp01(1f - deviationRatio);
+            float laneSafetyScore = CalculateSupportPassLaneSafetyScore(ballHolder.transform.position, position,
+                context.GetOpponents(player));
+            return distanceScore * laneSafetyScore;
+        }
+
+        private static float CalculateSupportPassLaneSafetyScore(Vector3 passerPosition, Vector3 receiverPosition,
+            List<GameObject> enemies)
+        {
+            Vector3 passDirection = (receiverPosition - passerPosition).normalized;
+            float safetyScore = 1f;
+            for (int i = 0; i < enemies.Count; i++)
             {
-                float distanceFromIdeal = Mathf.Abs(distanceToHolder - idealSupportDistance);
-                float deviationRatio = distanceFromIdeal / (maxSupportDistance - minSupportDistance);
-                return Mathf.Clamp01(1f - deviationRatio);
+                GameObject enemy = enemies[i];
+                Vector3 toEnemy = enemy.transform.position - passerPosition;
+                // 传球方向反向的敌人不参与截断评分。
+                if (Vector3.Dot(passDirection, toEnemy) <= 0f)
+                    continue;
+                float distanceToSegment = FootballUtils.DistancePointToLineSegment(passerPosition, receiverPosition,
+                    enemy.transform.position);
+                if (distanceToSegment >= FootballConstants.SupportPassLaneInterceptThreshold)
+                    continue;
+                float threat = 1f - distanceToSegment / FootballConstants.SupportPassLaneInterceptThreshold;
+                safetyScore -= threat * FootballConstants.SupportPassLanePenaltyPerEnemy;
             }
+            return Mathf.Clamp01(safetyScore);
         }
 
         private static float CalculateSafetyScore(Vector3 position, GameObject player, List<GameObject> teammates)

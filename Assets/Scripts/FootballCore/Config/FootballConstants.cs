@@ -76,8 +76,12 @@ public static class FootballConstants
     #endregion
 
     #region SupportTuning
-    public static float IdealSupportDistance = 4.0f;
+    public static float IdealSupportDistance = 6.0f; // was 4.0f
     public static float LateralSpreadDistance = 3f;
+    public static float SupportMinDistanceToHolder = 3f;
+    public static float SupportMaxDistanceToHolder = 10f;
+    public static float SupportPassLaneInterceptThreshold = 0.9f; // was 1.2f
+    public static float SupportPassLanePenaltyPerEnemy = 0.15f; // was 0.35f
     #endregion
 
     #region RestartTuning
