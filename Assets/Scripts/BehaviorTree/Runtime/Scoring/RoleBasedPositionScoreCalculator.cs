@@ -283,7 +283,6 @@ namespace BehaviorTree.Runtime
         {
             List<Vector3> candidatePositions = GenerateCandidatePositionsCommon(player, context, 
                 role, currentPosition, myGoal, enemyGoal, ballPosition);
-            MyLog.LogInfoNoSampling($"[RoleBasedPosition] player={player.name} candidates={candidatePositions.Count}");
             List<PositionEvaluation> evaluations = EvaluatePositions(candidatePositions, currentPosition, role,
                 myGoal, enemyGoal, ballPosition, context, player);
             Vector3 bestPosition = SelectBestPosition(evaluations, currentPosition);
@@ -374,14 +373,23 @@ namespace BehaviorTree.Runtime
             ZoneUtils.ZoneRange zoneRange;
             if (!ZoneUtils.TryGetPreferredZoneRangeFromFormation(matchContext, player, rolePreferences, out zoneRange))
                 zoneRange = ZoneUtils.BuildFullFieldZoneRange(matchContext);
-            candidates.AddRange(GenerateZoneCandidatePositions(zoneRange, FootballConstants.ZoneCandidateWidthInterval,
-                FootballConstants.ZoneCandidateLengthInterval));
-            candidates.AddRange(GenerateSupportCandidatePositions(player, matchContext, matchContext.GetTeammates(player)));
-            candidates.AddRange(GenerateMarkCandidatePositions(player, matchContext, matchContext.GetOpponents(player)));
-            candidates.AddRange(GenerateAroundBallCandidatePositions(player, ballPosition));
+            List<Vector3> zoneCandidates = GenerateZoneCandidatePositions(zoneRange, FootballConstants.ZoneCandidateWidthInterval,
+                FootballConstants.ZoneCandidateLengthInterval);
+            List<Vector3> supportCandidates = GenerateSupportCandidatePositions(player, matchContext, matchContext.GetTeammates(player));
+            List<Vector3> markCandidates = GenerateMarkCandidatePositions(player, matchContext, matchContext.GetOpponents(player));
+            List<Vector3> aroundBallCandidates = GenerateAroundBallCandidatePositions(player, ballPosition);
+            candidates.AddRange(zoneCandidates);
+            candidates.AddRange(supportCandidates);
+            candidates.AddRange(markCandidates);
+            candidates.AddRange(aroundBallCandidates);
+            int rawCount = candidates.Count;
             candidates = DeduplicateCandidatePositions(candidates, FootballConstants.CandidateDeduplicateGridSize);
+            int dedupCount = candidates.Count;
             candidates = FilterOverlappingPositions(candidates, player, matchContext.GetTeammates(player), FootballConstants.CandidateTeammateSafeDistance);
+            int overlapFilteredCount = candidates.Count;
             candidates = FilterInvalidPositions(candidates, matchContext);
+            int inFieldCount = candidates.Count;
+            MyLog.LogInfoNoSampling($"[RoleBasedPosition] player={player.name} zone={zoneCandidates.Count} support={supportCandidates.Count} mark={markCandidates.Count} aroundBall={aroundBallCandidates.Count} raw={rawCount} dedup={dedupCount} overlap={overlapFilteredCount} inField={inFieldCount}");
             return candidates;
         }
 
