@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace FootballAI.Editor
 {
-public class FormationEditorWindow : OdinEditorWindow
+public class ZoneEditorWindow : OdinEditorWindow
 {
     #region 常量与字段
     private const float ZoneLabelYOffset = 0.1f;
@@ -22,10 +22,10 @@ public class FormationEditorWindow : OdinEditorWindow
     #endregion
     
     #region 面板数据
-    [MenuItem("Tools/FootballAI/Formation Editor")]
+    [MenuItem("Tools/FootballAI/Zone Editor")]
     private static void OpenWindow()
     {
-        FormationEditorWindow window = GetWindow<FormationEditorWindow>("Formation Editor");
+        ZoneEditorWindow window = GetWindow<ZoneEditorWindow>("Zone Editor");
         window.minSize = new Vector2(520f, 640f);
         window.Show();
     }
@@ -52,7 +52,7 @@ public class FormationEditorWindow : OdinEditorWindow
     [InlineProperty]
     [HideLabel]
     [OnValueChanged(nameof(OnSelectedZoneEdited))]
-    public FormationZoneRect SelectedZone
+    public ZoneRect SelectedZone
     {
         get
         {
@@ -107,7 +107,7 @@ public class FormationEditorWindow : OdinEditorWindow
     {
         Undo.RecordObject(LayoutAsset, "Add Zone");
         int nextIndex = LayoutAsset.GetZoneCount() + 1;
-        FormationZoneRect zone = new FormationZoneRect
+        ZoneRect zone = new ZoneRect
         {
             ZoneId = $"zone_{nextIndex:00}",
             DisplayName = $"Zone {nextIndex:00}",
@@ -127,11 +127,11 @@ public class FormationEditorWindow : OdinEditorWindow
     [EnableIf(nameof(HasSelectedZone))]
     private void DuplicateSelectedZone()
     {
-        FormationZoneRect source = LayoutAsset.GetZoneAt(SelectedZoneIndex);
+        ZoneRect source = LayoutAsset.GetZoneAt(SelectedZoneIndex);
         if (source == null)
             return;
         Undo.RecordObject(LayoutAsset, "Duplicate Zone");
-        FormationZoneRect duplicate = new FormationZoneRect
+        ZoneRect duplicate = new ZoneRect
         {
             ZoneId = source.ZoneId + "_copy",
             DisplayName = source.DisplayName + " Copy",
@@ -189,7 +189,7 @@ public class FormationEditorWindow : OdinEditorWindow
             yield break;
         for (int i = 0; i < LayoutAsset.GetZoneCount(); i++)
         {
-            FormationZoneRect zone = LayoutAsset.GetZoneAt(i);
+            ZoneRect zone = LayoutAsset.GetZoneAt(i);
             if (zone == null)
                 continue;
             string label = $"{i}: {zone.DisplayName} ({zone.ZoneId})";
@@ -215,7 +215,7 @@ public class FormationEditorWindow : OdinEditorWindow
             return;
         for (int i = 0; i < LayoutAsset.GetZoneCount(); i++)
         {
-            FormationZoneRect zone = LayoutAsset.GetZoneAt(i);
+            ZoneRect zone = LayoutAsset.GetZoneAt(i);
             if (zone == null || !zone.IsEnabled)
                 continue;
             DrawZoneGizmo(zone, i == SelectedZoneIndex);
@@ -224,7 +224,7 @@ public class FormationEditorWindow : OdinEditorWindow
             DrawSelectedZoneHandles(LayoutAsset.GetZoneAt(SelectedZoneIndex));
     }
 
-    private void DrawZoneGizmo(FormationZoneRect zone, bool isSelected)
+    private void DrawZoneGizmo(ZoneRect zone, bool isSelected)
     {
         Color fillColor = zone.ZoneColor;
         fillColor.a = isSelected ? 0.35f : Mathf.Min(0.18f, zone.ZoneColor.a);
@@ -236,7 +236,7 @@ public class FormationEditorWindow : OdinEditorWindow
         Handles.Label(labelPos, $"{zone.DisplayName} [{zone.ZoneId}]", EditorStyles.whiteLabel);
     }
 
-    private void DrawSelectedZoneHandles(FormationZoneRect zone)
+    private void DrawSelectedZoneHandles(ZoneRect zone)
     {
         Handles.color = Color.yellow;
         Vector3 center = zone.GetCenterWorld();

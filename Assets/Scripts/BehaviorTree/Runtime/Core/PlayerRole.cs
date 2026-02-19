@@ -35,7 +35,7 @@ namespace BehaviorTree.Runtime
             {
                 for (int i = 0; i < layout.Zones.Count; i++)
                 {
-                    FormationZoneRect zone = layout.Zones[i];
+                    ZoneRect zone = layout.Zones[i];
                     if (zone == null || string.IsNullOrEmpty(zone.ZoneId))
                         continue;
                     string label = string.IsNullOrEmpty(zone.DisplayName) ? zone.ZoneId : $"{zone.DisplayName} ({zone.ZoneId})";
@@ -53,7 +53,7 @@ namespace BehaviorTree.Runtime
                 return true;
             for (int i = 0; i < layout.Zones.Count; i++)
             {
-                FormationZoneRect zone = layout.Zones[i];
+                ZoneRect zone = layout.Zones[i];
                 if (zone == null)
                     continue;
                 if (zone.ZoneId == zoneId)

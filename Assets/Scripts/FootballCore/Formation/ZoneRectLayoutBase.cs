@@ -10,21 +10,21 @@ public abstract class ZoneRectLayoutBase : ScriptableObject
     public string LayoutName = "Default Layout";
 
     [TableList(AlwaysExpanded = true, DrawScrollView = true, NumberOfItemsPerPage = 12)]
-    public List<FormationZoneRect> Zones = new List<FormationZoneRect>();
+    public List<ZoneRect> Zones = new List<ZoneRect>();
 
     public int GetZoneCount()
     {
         return Zones.Count;
     }
 
-    public FormationZoneRect GetZoneAt(int index)
+    public ZoneRect GetZoneAt(int index)
     {
         if (index < 0 || index >= Zones.Count)
             return null;
         return Zones[index];
     }
 
-    public void AddZone(FormationZoneRect zone)
+    public void AddZone(ZoneRect zone)
     {
         if (zone == null)
             return;

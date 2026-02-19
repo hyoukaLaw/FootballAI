@@ -4,7 +4,7 @@ using Sirenix.OdinInspector;
 namespace FootballAI.FootballCore
 {
 [System.Serializable]
-public class FormationZoneRect
+public class ZoneRect
 {
     [HorizontalGroup("Id"), LabelWidth(55)]
     public string ZoneId = "zone_01";

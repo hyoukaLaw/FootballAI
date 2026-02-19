@@ -16,7 +16,7 @@ public static class ZoneUtils
         Vector3 enemyGoal, MatchState currentState, MatchContext context, GameObject player)
     {
         RolePreferences preferences = GetPreferencesForState(role, currentState);
-        if (!TryGetZoneByPosition(context, position, out FormationZoneRect zone))
+        if (!TryGetZoneByPosition(context, position, out ZoneRect zone))
             return 0f;
         return preferences.GetZoneWeightById(zone.ZoneId);
     }
@@ -35,19 +35,19 @@ public static class ZoneUtils
         RolePreferences preferences, out ZoneRange zoneRange)
     {
         zoneRange = null;
-        if (!TryGetPreferredZone(preferences, context, out FormationZoneRect zone))
+        if (!TryGetPreferredZone(preferences, context, out ZoneRect zone))
             return false;
         zoneRange = BuildZoneRange(zone);
         return zoneRange != null;
     }
 
-    public static bool TryGetZoneByPosition(MatchContext context, Vector3 position, out FormationZoneRect zone)
+    public static bool TryGetZoneByPosition(MatchContext context, Vector3 position, out ZoneRect zone)
     {
         zone = null;
         int bestPriority = int.MinValue;
         for (int i = 0; i < context.FormationLayout.Zones.Count; i++)
         {
-            FormationZoneRect candidate = context.FormationLayout.Zones[i];
+            ZoneRect candidate = context.FormationLayout.Zones[i];
             if ( !candidate.IsEnabled || !IsInZoneRect(position, candidate)) 
                 continue;
             if (zone == null || candidate.Priority > bestPriority)
@@ -100,7 +100,7 @@ public static class ZoneUtils
         return weight;
     }
 
-    private static bool TryGetPreferredZone(RolePreferences preferences, MatchContext context, out FormationZoneRect zone)
+    private static bool TryGetPreferredZone(RolePreferences preferences, MatchContext context, out ZoneRect zone)
     {
         zone = null;
         (string zoneId, float _) = preferences.GetHighestZoneWeight();
@@ -108,7 +108,7 @@ public static class ZoneUtils
             return false;
         for (int i = 0; i < context.FormationLayout.Zones.Count; i++)
         {
-            FormationZoneRect candidate = context.FormationLayout.Zones[i];
+            ZoneRect candidate = context.FormationLayout.Zones[i];
             if (!candidate.IsEnabled || candidate.ZoneId != zoneId)
                 continue;
             zone = candidate;
@@ -117,7 +117,7 @@ public static class ZoneUtils
         return false;
     }
 
-    private static bool IsInZoneRect(Vector3 position, FormationZoneRect zone)
+    private static bool IsInZoneRect(Vector3 position, ZoneRect zone)
     {
         float halfWidth = Mathf.Max(0.1f, zone.SizeXZ.x) * 0.5f;
         float halfLength = Mathf.Max(0.1f, zone.SizeXZ.y) * 0.5f;
@@ -128,7 +128,7 @@ public static class ZoneUtils
         return position.x >= minX && position.x <= maxX && position.z >= minZ && position.z <= maxZ;
     }
 
-    private static ZoneRange BuildZoneRange(FormationZoneRect zone)
+    private static ZoneRange BuildZoneRange(ZoneRect zone)
     {
         float width = Mathf.Max(0.1f, zone.SizeXZ.x);
         float length = Mathf.Max(0.1f, zone.SizeXZ.y);
@@ -142,7 +142,7 @@ public static class ZoneUtils
         string zoneId = goalPosition.z < 0f ? "penalty_backward" : "penalty_forward";
         for (int i = 0; i < context.FieldSpecialZonesConfig.Zones.Count; i++)
         {
-            FormationZoneRect zone = context.FieldSpecialZonesConfig.Zones[i];
+            ZoneRect zone = context.FieldSpecialZonesConfig.Zones[i];
             if (!zone.IsEnabled || zone.ZoneId != zoneId)
                 continue;
             zoneRange = BuildZoneRange(zone);
