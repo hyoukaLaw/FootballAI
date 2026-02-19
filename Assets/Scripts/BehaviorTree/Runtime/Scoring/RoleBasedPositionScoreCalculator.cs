@@ -371,12 +371,14 @@ namespace BehaviorTree.Runtime
             MatchState currentState = DetermineMatchState(player, matchContext);
             RolePreferences rolePreferences = currentState == MatchState.Attacking ? role.AttackPreferences : role.DefendPreferences;
             ZoneUtils.ZoneRange zoneRange;
-            if (!ZoneUtils.TryGetPreferredZoneRangeFromFormation(matchContext, player, rolePreferences, out zoneRange))
+            bool isFullFieldFallback = !ZoneUtils.TryGetPreferredZoneRangeFromFormation(matchContext, player, rolePreferences, out zoneRange);
+            if (isFullFieldFallback)
                 zoneRange = ZoneUtils.BuildFullFieldZoneRange(matchContext);
             List<Vector3> zoneCandidates = GenerateZoneCandidatePositions(zoneRange, FootballConstants.ZoneCandidateWidthInterval,
                 FootballConstants.ZoneCandidateLengthInterval);
             List<Vector3> supportCandidates = GenerateSupportCandidatePositions(player, matchContext, matchContext.GetTeammates(player));
-            List<Vector3> markCandidates = GenerateMarkCandidatePositions(player, matchContext, matchContext.GetOpponents(player));
+            MarkCandidateBuildResult markBuildResult = GenerateMarkCandidatePositions(player, matchContext, matchContext.GetOpponents(player));
+            List<Vector3> markCandidates = markBuildResult.Candidates;
             List<Vector3> aroundBallCandidates = GenerateAroundBallCandidatePositions(player, ballPosition);
             candidates.AddRange(zoneCandidates);
             candidates.AddRange(supportCandidates);
@@ -389,7 +391,7 @@ namespace BehaviorTree.Runtime
             int overlapFilteredCount = candidates.Count;
             candidates = FilterInvalidPositions(candidates, matchContext);
             int inFieldCount = candidates.Count;
-            MyLog.LogInfoNoSampling($"[RoleBasedPosition] player={player.name} zone={zoneCandidates.Count} support={supportCandidates.Count} mark={markCandidates.Count} aroundBall={aroundBallCandidates.Count} raw={rawCount} dedup={dedupCount} overlap={overlapFilteredCount} inField={inFieldCount}");
+            MyLog.LogInfoNoSampling($"[RoleBasedPosition] player={player.name} zone={zoneCandidates.Count} support={supportCandidates.Count} mark={markCandidates.Count}(rel={markBuildResult.RelationalCount},fb={markBuildResult.FallbackCount}) aroundBall={aroundBallCandidates.Count} raw={rawCount} dedup={dedupCount} overlap={overlapFilteredCount} inField={inFieldCount}");
             return candidates;
         }
 
@@ -410,14 +412,39 @@ namespace BehaviorTree.Runtime
             return candidates;
         }
 
-        public static List<Vector3> GenerateMarkCandidatePositions(GameObject player, MatchContext matchContext,
+        private static MarkCandidateBuildResult GenerateMarkCandidatePositions(GameObject player, MatchContext matchContext,
             List<GameObject> enemies)
         {
             List<Vector3> candidates = new List<Vector3>();
-            foreach(var enemy in enemies)
-                candidates.AddRange(PointsGenerator.GeneratePointsAround(enemy.transform.position, 
-                    FootballConstants.MarkCandidateLayers, FootballConstants.MarkCandidateLayerWidth, FootballConstants.MarkCandidatePointsPerLayer));
-            return candidates;
+            List<GameObject> teammates = matchContext.GetTeammates(player);
+            List<GameObject> keyEnemies = SelectKeyMarkEnemies(player, matchContext, enemies, teammates);
+            int relationalCount = 0;
+            for (int i = 0; i < keyEnemies.Count; i++)
+            {
+                GameObject enemy = keyEnemies[i];
+                int beforeCount = candidates.Count;
+                AddRelationalMarkCandidates(candidates, player, matchContext, enemy);
+                relationalCount += candidates.Count - beforeCount;
+            }
+            int fallbackCount = 0;
+            if (candidates.Count == 0)
+            {
+                // 关系候选为空时，用少量环点兜底，避免无候选导致站位异常。
+                List<GameObject> fallbackEnemies = FindNearestEnemies(player.transform.position, enemies,
+                    FootballConstants.MarkFallbackEnemyCount);
+                for (int i = 0; i < fallbackEnemies.Count; i++)
+                {
+                    GameObject enemy = fallbackEnemies[i];
+                    if (enemy == null)
+                        continue;
+                    List<Vector3> fallbackCandidates = PointsGenerator.GeneratePointsAround(enemy.transform.position,
+                        FootballConstants.MarkFallbackLayers, FootballConstants.MarkCandidateLayerWidth,
+                        FootballConstants.MarkFallbackPointsPerLayer);
+                    fallbackCount += fallbackCandidates.Count;
+                    candidates.AddRange(fallbackCandidates);
+                }
+            }
+            return new MarkCandidateBuildResult(candidates, relationalCount, fallbackCount);
         }
 
         public static List<Vector3> GenerateAroundBallCandidatePositions(GameObject player, Vector3 ballPosition)
@@ -562,6 +589,105 @@ namespace BehaviorTree.Runtime
             public float Distance;
             public Vector3 Position;
         }
+        private struct MarkCandidateBuildResult
+        {
+            public List<Vector3> Candidates;
+            public int RelationalCount;
+            public int FallbackCount;
+
+            public MarkCandidateBuildResult(List<Vector3> candidates, int relationalCount, int fallbackCount)
+            {
+                Candidates = candidates;
+                RelationalCount = relationalCount;
+                FallbackCount = fallbackCount;
+            }
+        }
+
+        private static void AddRelationalMarkCandidates(List<Vector3> candidates, GameObject player,
+            MatchContext matchContext, GameObject enemy)
+        {
+            Vector3 passerPos = matchContext.GetBallHolder() != null
+                ? matchContext.GetBallHolder().transform.position
+                : matchContext.Ball.transform.position;
+            Vector3 enemyPos = enemy.transform.position;
+            Vector3 interceptPos = Vector3.Lerp(passerPos, enemyPos, FootballConstants.MarkRelationalInterceptRatio);
+            Vector3 laneDir = enemyPos - passerPos;
+            laneDir.y = 0f;
+            if (laneDir.sqrMagnitude > FootballConstants.FloatEpsilon)
+            {
+                laneDir.Normalize();
+                Vector3 sideDir = new Vector3(-laneDir.z, 0f, laneDir.x);
+                candidates.Add(interceptPos);
+                candidates.Add(interceptPos + sideDir * FootballConstants.MarkRelationalLateralOffset);
+                candidates.Add(interceptPos - sideDir * FootballConstants.MarkRelationalLateralOffset);
+            }
+            else
+                candidates.Add(interceptPos);
+            Vector3 myGoalPos = matchContext.GetMyGoalPosition(player);
+            Vector3 goalSideMarkPos = Vector3.Lerp(enemyPos, myGoalPos, FootballConstants.MarkRelationalGoalSideRatio);
+            candidates.Add(goalSideMarkPos);
+        }
+
+        private static List<GameObject> SelectKeyMarkEnemies(GameObject player, MatchContext context,
+            List<GameObject> enemies, List<GameObject> teammates)
+        {
+            Vector3 myPos = player.transform.position;
+            Vector3 ballPos = context.Ball.transform.position;
+            int targetCount = FootballConstants.MarkRelationalEnemyCount;
+            int preselectCount = Mathf.Min(enemies.Count, targetCount * 2);
+            List<GameObject> nearestEnemies = FindNearestEnemies(ballPos, enemies, preselectCount);
+            List<GameObject> result = new List<GameObject>(targetCount);
+            for (int i = 0; i < nearestEnemies.Count; i++)
+            {
+                GameObject enemy = nearestEnemies[i];
+                if (IsEnemyCoveredByCloserTeammate(enemy, myPos, teammates, player))
+                    continue;
+                result.Add(enemy);
+                if (result.Count >= targetCount)
+                    break;
+            }
+            return result;
+        }
+
+        private static bool IsEnemyCoveredByCloserTeammate(GameObject enemy, Vector3 myPos,
+            List<GameObject> teammates, GameObject self)
+        {
+            float myDistance = Vector3.Distance(enemy.transform.position, myPos);
+            for (int i = 0; i < teammates.Count; i++)
+            {
+                GameObject teammate = teammates[i];
+                if (teammate == null || teammate == self)
+                    continue;
+                if (Vector3.Distance(enemy.transform.position, teammate.transform.position) + FootballConstants.ClosestPlayerTolerance < myDistance)
+                    return true;
+            }
+            return false;
+        }
+
+        private static List<GameObject> FindNearestEnemies(Vector3 pivot, List<GameObject> enemies, int count)
+        {
+            List<EnemyDistanceInfo> infos = new List<EnemyDistanceInfo>();
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                GameObject enemy = enemies[i];
+                if (enemy == null)
+                    continue;
+                infos.Add(new EnemyDistanceInfo{Enemy = enemy, Distance = Vector3.Distance(enemy.transform.position, pivot)});
+            }
+            infos.Sort((a, b) => a.Distance.CompareTo(b.Distance));
+            int takeCount = Mathf.Min(count, infos.Count);
+            List<GameObject> result = new List<GameObject>(takeCount);
+            for (int i = 0; i < takeCount; i++)
+                result.Add(infos[i].Enemy);
+            return result;
+        }
+
+        private struct EnemyDistanceInfo
+        {
+            public GameObject Enemy;
+            public float Distance;
+        }
+
         private static List<Vector3> FindNearEnemies(Vector3 curPos, List<GameObject> enemies, int cnt)
         {
             List<EnemyInfo> points = new List<EnemyInfo>();

@@ -113,9 +113,16 @@ public static class FootballConstants
     public static int SupportCandidateLayers = 1;
     public static float SupportCandidateLayerWidth = 5f;
     public static int SupportCandidatePointsPerLayer = 8;
-    public static int MarkCandidateLayers = 3; // was 3
+    public static int MarkCandidateLayers = 2; // was 3
     public static float MarkCandidateLayerWidth = 1f;
     public static int MarkCandidatePointsPerLayer = 8; // was 8
+    public static int MarkRelationalEnemyCount = 2;
+    public static float MarkRelationalInterceptRatio = 0.7f;
+    public static float MarkRelationalLateralOffset = 1.2f;
+    public static float MarkRelationalGoalSideRatio = 0.35f;
+    public static int MarkFallbackEnemyCount = 2;
+    public static int MarkFallbackLayers = 1;
+    public static int MarkFallbackPointsPerLayer = 6;
     public static int AroundBallCandidateLayers = 2;
     public static float AroundBallCandidateLayerWidth = 1f;
     public static int AroundBallCandidatePointsPerLayer = 8;
