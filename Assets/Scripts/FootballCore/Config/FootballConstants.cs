@@ -108,8 +108,10 @@ public static class FootballConstants
     public static float CandidateTeammateSafeDistance = 1.0f;
     public static float CandidatePredictedOverlapThreshold = 0.3f;
     public static float CandidateDeduplicateGridSize = 0.2f;
-    public static float ZoneCandidateWidthInterval = 1.5f; // was 1f
-    public static float ZoneCandidateLengthInterval = 1.5f; // was 1f
+    public static int ZoneCandidateTopRegionCount = 2;
+    public static int ZoneCandidateTotalCap = 50;
+    public static float ZoneCandidateMinInterval = 1.2f;
+    public static float ZoneCandidateMaxInterval = 3.0f;
     public static int SupportCandidateLayers = 1;
     public static float SupportCandidateLayerWidth = 5f;
     public static int SupportCandidatePointsPerLayer = 8;

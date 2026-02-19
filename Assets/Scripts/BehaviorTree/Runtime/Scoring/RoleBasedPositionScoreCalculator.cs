@@ -370,12 +370,7 @@ namespace BehaviorTree.Runtime
             List<Vector3> candidates = new List<Vector3>();
             MatchState currentState = DetermineMatchState(player, matchContext);
             RolePreferences rolePreferences = currentState == MatchState.Attacking ? role.AttackPreferences : role.DefendPreferences;
-            ZoneUtils.ZoneRange zoneRange;
-            bool isFullFieldFallback = !ZoneUtils.TryGetPreferredZoneRangeFromFormation(matchContext, player, rolePreferences, out zoneRange);
-            if (isFullFieldFallback)
-                zoneRange = ZoneUtils.BuildFullFieldZoneRange(matchContext);
-            List<Vector3> zoneCandidates = GenerateZoneCandidatePositions(zoneRange, FootballConstants.ZoneCandidateWidthInterval,
-                FootballConstants.ZoneCandidateLengthInterval);
+            List<Vector3> zoneCandidates = GenerateZoneCandidatesByBudget(matchContext, rolePreferences, currentPos);
             List<Vector3> supportCandidates = GenerateSupportCandidatePositions(player, matchContext, matchContext.GetTeammates(player));
             MarkCandidateBuildResult markBuildResult = GenerateMarkCandidatePositions(player, matchContext, matchContext.GetOpponents(player));
             List<Vector3> markCandidates = markBuildResult.Candidates;
@@ -399,6 +394,52 @@ namespace BehaviorTree.Runtime
         {
             List<Vector3> points = PointsGenerator.GeneratePointsInRectangle(zoneRange.LeftBottom, zoneRange.Width, zoneRange.Length, widthInterval, lengthInterval);
             return points;
+        }
+
+        private static List<Vector3> GenerateZoneCandidatesByBudget(MatchContext context, RolePreferences preferences,
+            Vector3 currentPos)
+        {
+            List<ZoneSelectionInfo> selectedZones = GetTopWeightedZones(context, preferences,
+                FootballConstants.ZoneCandidateTopRegionCount);
+            if (selectedZones.Count == 0)
+            {
+                ZoneUtils.ZoneRange fullRange = ZoneUtils.BuildFullFieldZoneRange(context);
+                float interval = Mathf.Clamp(
+                    Mathf.Sqrt(fullRange.Width * fullRange.Length / Mathf.Max(1, FootballConstants.ZoneCandidateTotalCap)),
+                    FootballConstants.ZoneCandidateMinInterval, FootballConstants.ZoneCandidateMaxInterval);
+                List<Vector3> fallbackCandidates = GenerateZoneCandidatePositions(fullRange, interval, interval);
+                TrimCandidatesByDistance(fallbackCandidates, currentPos, FootballConstants.ZoneCandidateTotalCap);
+                return fallbackCandidates;
+            }
+            List<Vector3> result = new List<Vector3>();
+            float totalWeight = 0f;
+            for (int i = 0; i < selectedZones.Count; i++)
+                totalWeight += Mathf.Max(0f, selectedZones[i].Weight);
+            int usedQuota = 0;
+            for (int i = 0; i < selectedZones.Count; i++)
+            {
+                ZoneSelectionInfo selectedZone = selectedZones[i];
+                int remainingRegions = selectedZones.Count - i;
+                int remainingQuota = FootballConstants.ZoneCandidateTotalCap - usedQuota;
+                int zoneQuota = remainingQuota;
+                if (remainingRegions > 1)
+                {
+                    float ratio = totalWeight > FootballConstants.FloatEpsilon
+                        ? Mathf.Max(0f, selectedZone.Weight) / totalWeight
+                        : 1f / selectedZones.Count;
+                    zoneQuota = Mathf.Max(1, Mathf.RoundToInt(FootballConstants.ZoneCandidateTotalCap * ratio));
+                    zoneQuota = Mathf.Min(zoneQuota, remainingQuota - (remainingRegions - 1));
+                }
+                float interval = Mathf.Clamp(
+                    Mathf.Sqrt(selectedZone.Range.Width * selectedZone.Range.Length / Mathf.Max(1, zoneQuota)),
+                    FootballConstants.ZoneCandidateMinInterval, FootballConstants.ZoneCandidateMaxInterval);
+                List<Vector3> zonePoints = GenerateZoneCandidatePositions(selectedZone.Range, interval, interval);
+                TrimCandidatesByDistance(zonePoints, currentPos, zoneQuota);
+                result.AddRange(zonePoints);
+                usedQuota += zonePoints.Count;
+            }
+            TrimCandidatesByDistance(result, currentPos, FootballConstants.ZoneCandidateTotalCap);
+            return result;
         }
 
         public static List<Vector3> GenerateSupportCandidatePositions(GameObject player, MatchContext matchContext,
@@ -662,6 +703,60 @@ namespace BehaviorTree.Runtime
                     return true;
             }
             return false;
+        }
+
+        private static List<ZoneSelectionInfo> GetTopWeightedZones(MatchContext context, RolePreferences preferences,
+            int topCount)
+        {
+            List<ZoneSelectionInfo> selected = new List<ZoneSelectionInfo>();
+            List<ZoneWeightEntry> sortedWeights = new List<ZoneWeightEntry>(preferences.ZoneWeights);
+            sortedWeights.Sort((a, b) => b.Weight.CompareTo(a.Weight));
+            for (int i = 0; i < sortedWeights.Count && selected.Count < topCount; i++)
+            {
+                ZoneWeightEntry entry = sortedWeights[i];
+                if (entry == null || string.IsNullOrEmpty(entry.ZoneId))
+                    continue;
+                ZoneRect zone = FindZoneById(context.FormationLayout.Zones, entry.ZoneId);
+                if (zone == null || !zone.IsEnabled)
+                    continue;
+                ZoneUtils.ZoneRange range = BuildZoneRangeFromRect(zone);
+                selected.Add(new ZoneSelectionInfo{Range = range, Weight = entry.Weight});
+            }
+            return selected;
+        }
+
+        private static ZoneRect FindZoneById(List<ZoneRect> zones, string zoneId)
+        {
+            for (int i = 0; i < zones.Count; i++)
+            {
+                ZoneRect zone = zones[i];
+                if (zone == null || zone.ZoneId != zoneId)
+                    continue;
+                return zone;
+            }
+            return null;
+        }
+
+        private static ZoneUtils.ZoneRange BuildZoneRangeFromRect(ZoneRect zone)
+        {
+            float width = Mathf.Max(0.1f, zone.SizeXZ.x);
+            float length = Mathf.Max(0.1f, zone.SizeXZ.y);
+            Vector3 leftBottom = new Vector3(zone.CenterXZ.x - width * 0.5f, 0f, zone.CenterXZ.y - length * 0.5f);
+            return new ZoneUtils.ZoneRange{LeftBottom = leftBottom, Width = width, Length = length};
+        }
+
+        private static void TrimCandidatesByDistance(List<Vector3> candidates, Vector3 pivot, int maxCount)
+        {
+            if (maxCount <= 0 || candidates.Count <= maxCount)
+                return;
+            candidates.Sort((a, b) => Vector3.SqrMagnitude(a - pivot).CompareTo(Vector3.SqrMagnitude(b - pivot)));
+            candidates.RemoveRange(maxCount, candidates.Count - maxCount);
+        }
+
+        private struct ZoneSelectionInfo
+        {
+            public ZoneUtils.ZoneRange Range;
+            public float Weight;
         }
 
         private static List<GameObject> FindNearestEnemies(Vector3 pivot, List<GameObject> enemies, int count)
