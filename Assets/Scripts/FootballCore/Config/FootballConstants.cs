@@ -34,6 +34,7 @@ public static class FootballConstants
     #region ShootTuning
     public static float EnemyBlockDistanceThreshold = 1.5f;
     public static float ShootDistanceBase = 10f;
+    public static float ShootMaxDistance = 5f;
     public static float BaseShootScore = 100f;
     public static float ShootBlockPenaltyFactor = 0.1f;
     public static float ShootNoBlockFactor = 1.1f;
@@ -54,6 +55,11 @@ public static class FootballConstants
     public static float BasePassScoreForward = 55f;
     public static float BasePassScoreMidfielder = 64f;
     public static float PassForwardDirectionBonus = 10f;
+    public const float PassLineSafetyDefaultInterceptThreshold = 3f; // 传球线路默认拦截阈值
+    public static float PassLineSafetyThreatPenaltyScale = 0.5f; // 单个拦截威胁惩罚系数
+    public static float PassTargetSafetyBaseDistance = 2f; // 接应点危险距离
+    public static float PassTargetSafetyThreatScale = 0.5f; // 接应点威胁缩放
+    public static float PassTargetSafetyBehindFactor = 0.75f; // 身后敌人威胁折减
     #endregion
 
     #region DribbleTuning
@@ -63,6 +69,9 @@ public static class FootballConstants
     public static float BaseDribbleScore = 40f;
     public static float DribbleClearBonus = 24f;
     public static float DribbleDistancePenalty = 20f;
+    public static float DribbleSpaceDangerDistance = 2f; // 空间惩罚起始距离
+    public static float DribbleSpaceDangerRange = 3f; // 空间惩罚过渡范围
+    public static float DribbleLegacySpacePenaltyMultiplier = 10f; // 兼容旧评估分支
     #endregion
 
     #region ClearanceTuning
@@ -73,6 +82,9 @@ public static class FootballConstants
     public static float ClearanceDistance = 15f;
     public static float ClearanceDetectDistance = 3f;
     public static float ClearKickSpeed = 20f;
+    public static float ClearanceAngleNarrowThreshold = 30f; // 正前方高威胁角
+    public static float ClearanceAngleWideThreshold = 60f; // 侧前方中威胁角
+    public static readonly float[] ClearanceDirectionAngles = { 0f, 45f, -45f }; // 解围候选方向
     #endregion
 
     #region SupportTuning

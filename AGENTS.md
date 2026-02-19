@@ -32,3 +32,7 @@
 - 对可编辑资产的修改必须支持 Undo（`Undo.RecordObject(...)`）并在修改后标记脏数据（`EditorUtility.SetDirty(...)`）。
 - 工具菜单统一放在 `Tools/FootballAI/...`。
 - 类内成员按职责分组，使用适量 `#region`（如：字段、生命周期、按钮动作、Scene 交互、日志）。
+
+## 7) 常量引用规范
+- 默认直接引用 `FootballConstants.Xxx`，避免先声明局部变量再中转引用。
+- 仅在同一常量在函数内高频复用（如 >=3 次）或需要语义化别名时，才提取局部变量。

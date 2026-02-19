@@ -30,7 +30,6 @@ namespace BehaviorTree.Runtime
             {
                 return strategy;
             }
-
             return _strategies[PlayerRoleType.Forward];
         }
 

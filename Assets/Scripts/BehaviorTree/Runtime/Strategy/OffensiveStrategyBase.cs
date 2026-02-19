@@ -86,7 +86,8 @@ namespace BehaviorTree.Runtime
             List<GameObject> opponents = blackboard.MatchContext.GetOpponents(blackboard.Owner);
             
             float distToGoal = Vector3.Distance(blackboard.Owner.transform.position, enemyGoalPos);
-            float distanceScore = Mathf.Max((1 - Mathf.Max(distToGoal - 5, 0f) / 5f), 0) * FootballConstants.BaseScoreShootScore;
+            float distanceScore = Mathf.Max((1 - Mathf.Max(distToGoal - FootballConstants.ShootMaxDistance, 0f) /
+                FootballConstants.ShootMaxDistance), 0) * FootballConstants.BaseScoreShootScore;
             
             bool isPathClear = FootballUtils.IsPathClear(
                 blackboard.Owner.transform.position,

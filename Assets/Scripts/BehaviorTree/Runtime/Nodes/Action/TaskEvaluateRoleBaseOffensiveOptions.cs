@@ -145,7 +145,9 @@ namespace BehaviorTree.Runtime
                 totalDistance += Vector3.Distance(ownerPos, enemy.transform.position);
             }
             float avgDistance = totalDistance / nearbyEnemies.Count;
-            float spacePenalty = avgDistance * Mathf.Clamp01((avgDistance - 2f)/ 3f) * FootballConstants.DribbleDistancePenalty; // 2米以下很危险
+            float spacePenalty = avgDistance *
+                Mathf.Clamp01((avgDistance - FootballConstants.DribbleSpaceDangerDistance) /
+                              FootballConstants.DribbleSpaceDangerRange) * FootballConstants.DribbleDistancePenalty;
             return spacePenalty;
         }
         
@@ -196,7 +198,7 @@ namespace BehaviorTree.Runtime
             var opponents = Blackboard.MatchContext.GetOpponents(Blackboard.Owner);
             Vector3 forwardDir = FootballUtils.GetForward(Blackboard.Owner);
 
-            float[] angles = { 0f, 45f, -45f };
+            float[] angles = FootballConstants.ClearanceDirectionAngles;
             float bestScore = float.MinValue;
             Vector3 bestTarget = Vector3.zero;
             int totalEnemiesNear = 0;
@@ -237,11 +239,11 @@ namespace BehaviorTree.Runtime
                 Vector3 meToEnemy = (enemyNear.transform.position - startPos).normalized;
                 float angleToEnemy = Vector3.Angle(clearanceDir, meToEnemy);
 
-                if (angleToEnemy < 30f)
+                if (angleToEnemy < FootballConstants.ClearanceAngleNarrowThreshold)
                 {
                     score -= FootballConstants.ClearanceScorePerEnemy * 2;
                 }
-                else if (angleToEnemy < 60f)
+                else if (angleToEnemy < FootballConstants.ClearanceAngleWideThreshold)
                 {
                     score -= FootballConstants.ClearanceScorePerEnemy;
                 }
@@ -299,7 +301,8 @@ namespace BehaviorTree.Runtime
             Vector3 enemyGoalPosition = Blackboard.MatchContext.GetEnemyGoalPosition(Blackboard.Owner);
             List<GameObject> opponents = Blackboard.MatchContext.GetOpponents(Blackboard.Owner);
             float distToGoal = Vector3.Distance(Blackboard.Owner.transform.position, enemyGoalPosition);
-            shootScore = Mathf.Max((1 - Mathf.Max(distToGoal - 5, 0f) / 5f),0) * FootballConstants.BaseScoreShootScore;
+            shootScore = Mathf.Max((1 - Mathf.Max(distToGoal - FootballConstants.ShootMaxDistance, 0f) /
+                FootballConstants.ShootMaxDistance),0) * FootballConstants.BaseScoreShootScore;
             // 考虑射门是否被阻挡
             float shootBlockFactor = FootballUtils.IsPathClear(Blackboard.Owner.transform.position, 
                 enemyGoalPosition, opponents, FootballConstants.ClearanceBlockThreshold) ? FootballConstants.ShootNoBlockFactor : FootballConstants.ShootBlockPenaltyFactor;
@@ -375,7 +378,7 @@ namespace BehaviorTree.Runtime
                 var opponents = blackboard.MatchContext.GetOpponents(blackboard.Owner);
                 Vector3 forwardDir = FootballUtils.GetForward(blackboard.Owner);
 
-                float[] angles = { 0f, 45f, -45f };
+                float[] angles = FootballConstants.ClearanceDirectionAngles;
                 float bestScore = float.MinValue;
                 Vector3 bestTarget = Vector3.zero;
                 int totalEnemiesNear = 0;
@@ -474,7 +477,10 @@ namespace BehaviorTree.Runtime
                     totalDistance += Vector3.Distance(ownerPos, enemy.transform.position);
                 }
                 float avgDistance = totalDistance / nearbyEnemies.Count;
-                float spacePenalty = avgDistance * Mathf.Clamp01((avgDistance - 2f)/ 3f) * 10f; 
+                float spacePenalty = avgDistance *
+                    Mathf.Clamp01((avgDistance - FootballConstants.DribbleSpaceDangerDistance) /
+                                  FootballConstants.DribbleSpaceDangerRange) *
+                    FootballConstants.DribbleLegacySpacePenaltyMultiplier;
                 return spacePenalty;
             }
             
@@ -513,11 +519,11 @@ namespace BehaviorTree.Runtime
                     Vector3 meToEnemy = (enemyNear.transform.position - startPos).normalized;
                     float angleToEnemy = Vector3.Angle(clearanceDir, meToEnemy);
 
-                    if (angleToEnemy < 30f)
+                    if (angleToEnemy < FootballConstants.ClearanceAngleNarrowThreshold)
                     {
                         score -= FootballConstants.ClearanceScorePerEnemy * 2;
                     }
-                    else if (angleToEnemy < 60f)
+                    else if (angleToEnemy < FootballConstants.ClearanceAngleWideThreshold)
                     {
                         score -= FootballConstants.ClearanceScorePerEnemy;
                     }
@@ -538,19 +544,16 @@ namespace BehaviorTree.Runtime
                 Vector3 ownerPosition = blackboard.Owner.transform.position;
                 foreach (var candidate in teammates)
                 {
-                    if (candidate == null || candidate == blackboard.Owner) continue;
+                    if (candidate == blackboard.Owner) continue;
                     Vector3 candidatePos = candidate.transform.position;
                     float distance = Vector3.Distance(ownerPosition, candidatePos);
                     if(distance < FootballConstants.PassMinDistance || distance > FootballConstants.PassMaxDistance)
                         continue;
-
                     if(!FootballUtils.IsPathClear(ownerPosition, candidatePos, enemyPlayers, FootballConstants.PassBlockThreshold))
                         continue;
-
                     // 具象过滤1：接球点附近敌人过近/过多，直接跳过
                     if (!IsReceiverSpaceSafe(candidatePos, enemyPlayers))
                         continue;
-
                     float currentLineSafety = CalculatePassLineSafety(ownerPosition, candidatePos, enemyPlayers);
                     float currentTargetSafety = CalculatePassTargetSafety(candidate, enemyPlayers, enemyGoalPos);
                     float safetyFactor = currentLineSafety * currentTargetSafety;
@@ -558,7 +561,6 @@ namespace BehaviorTree.Runtime
                     float score = basePassScore * safetyFactor - 
                         FootballConstants.PassScoreDistancePenalty * Mathf.Abs(distance - mid) + 
                         directionScore;
-
                     if (score > passScore)
                     {
                         passScore = score;
@@ -599,7 +601,8 @@ namespace BehaviorTree.Runtime
                 return directionBonus;
             }
             
-            public static float CalculatePassLineSafety(Vector3 start, Vector3 end, List<GameObject> enemies, float interceptThreshold = 3f)
+            public static float CalculatePassLineSafety(Vector3 start, Vector3 end, List<GameObject> enemies,
+                float interceptThreshold = FootballConstants.PassLineSafetyDefaultInterceptThreshold)
             {
                 float safetyScore = 1f; // 1.0 = 完全安全，0.0 = 极度危险
                 foreach(var enemy in enemies)
@@ -616,7 +619,7 @@ namespace BehaviorTree.Runtime
                     {
                         // 距离越近，威胁越大
                         float threatLevel = 1f - (distanceToLine / interceptThreshold);
-                        safetyScore -= threatLevel * 0.5f; // 单个威胁最高降低50%安全性
+                        safetyScore -= threatLevel * FootballConstants.PassLineSafetyThreatPenaltyScale;
                     }
                 }
                 return Mathf.Clamp01(safetyScore);
@@ -625,15 +628,15 @@ namespace BehaviorTree.Runtime
             private static float CalculatePassTargetSafety(GameObject passTarget, List<GameObject> enemies, Vector3 enemyGoalPos)
             {
                 float safetyScore = 1f; // 1.0 = 完全安全，0.0 = 极度危险
-                float baseDistance = 2f; // 多少米以内算危险
+                float baseDistance = FootballConstants.PassTargetSafetyBaseDistance;
                 foreach (var enemy in enemies)
                 {
                     float enemyDistance = Vector3.Distance(enemy.transform.position, passTarget.transform.position);
-                    float threatLevel = Mathf.Max(0, 1 - enemyDistance / baseDistance) * 0.5f;// 单个威胁最高降低50%安全性
+                    float threatLevel = Mathf.Max(0, 1 - enemyDistance / baseDistance) * FootballConstants.PassTargetSafetyThreatScale;
                     Vector3 targetToEnemyGoal = enemyGoalPos - passTarget.transform.position;
                     Vector3 targetToEnemy = enemy.transform.position - passTarget.transform.position;
                     bool isEnemyInFront = Vector3.Dot(targetToEnemy, targetToEnemyGoal) > 0;
-                    safetyScore = safetyScore - threatLevel * (isEnemyInFront ? 1 : 0.75f);
+                    safetyScore = safetyScore - threatLevel * (isEnemyInFront ? 1 : FootballConstants.PassTargetSafetyBehindFactor);
                 }
                 return Mathf.Clamp01(safetyScore);
             }
