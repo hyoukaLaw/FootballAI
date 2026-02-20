@@ -45,6 +45,7 @@ namespace BehaviorTree.Runtime
         public bool IsStunned;        // 是否处于眩晕/停顿状态
         public float StunTimer = 0f;  // 停顿计时器
         public float StunDuration = 1f; // 停顿时长（秒）
+        public float PassStunDuration = 0.5f;
 
         // --- 调试数据 ---
         public List<CandidatePosition> DebugCandidatePositions;

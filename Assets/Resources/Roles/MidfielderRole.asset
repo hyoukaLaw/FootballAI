@@ -24,8 +24,6 @@ MonoBehaviour:
       Weight: 4
     - ZoneId: zone_04
       Weight: 2
-    DistanceDecayRate: 0.12
-    MaxZoneDeviation: 12
   DefendPreferences:
     ZoneWeights:
     - ZoneId: zone_01
@@ -36,8 +34,6 @@ MonoBehaviour:
       Weight: 1
     - ZoneId: zone_04
       Weight: 1
-    DistanceDecayRate: 0.1
-    MaxZoneDeviation: 15
   ChaseBallPreferences:
     ZoneWeights:
     - ZoneId: zone_01
@@ -48,26 +44,19 @@ MonoBehaviour:
       Weight: 5
     - ZoneId: zone_04
       Weight: 2
-    DistanceDecayRate: 0.15
-    MaxZoneDeviation: 18
   AttackPositionWeight:
-    WeightBallDist: 8
-    WeightGoalDist: 5
-    WeightMarking: 0
-    WeightSpace: 12
+    WeightBallDist: 0
+    WeightSpace: 0
     WeightSafety: 150
-    WeightPressing: 0
+    WeightGoalDist: 25
     WeightSupport: 25
+    WeightMarking: 0
+    WeightPressing: 0
   DefendPositionWeight:
-    WeightBallDist: 10
-    WeightGoalDist: 0
-    WeightMarking: 20
+    WeightBallDist: 0
     WeightSpace: 0
     WeightSafety: 200
-    WeightPressing: 20
+    WeightGoalDist: 0
     WeightSupport: 0
-  OffensiveBias: 0.5
-  DefensiveBias: 0.5
-  SupportBias: 0.7
-  HomeZoneRadius: 10
-  MaximumRoamingDistance: 18
+    WeightMarking: 20
+    WeightPressing: 30

@@ -386,7 +386,7 @@ namespace BehaviorTree.Runtime
             int overlapFilteredCount = candidates.Count;
             candidates = FilterInvalidPositions(candidates, matchContext);
             int inFieldCount = candidates.Count;
-            MyLog.LogInfoNoSampling($"[RoleBasedPosition] player={player.name} zone={zoneCandidates.Count} support={supportCandidates.Count} mark={markCandidates.Count}(rel={markBuildResult.RelationalCount},fb={markBuildResult.FallbackCount}) aroundBall={aroundBallCandidates.Count} raw={rawCount} dedup={dedupCount} overlap={overlapFilteredCount} inField={inFieldCount}");
+            //MyLog.LogInfoNoSampling($"[RoleBasedPosition] player={player.name} zone={zoneCandidates.Count} support={supportCandidates.Count} mark={markCandidates.Count}(rel={markBuildResult.RelationalCount},fb={markBuildResult.FallbackCount}) aroundBall={aroundBallCandidates.Count} raw={rawCount} dedup={dedupCount} overlap={overlapFilteredCount} inField={inFieldCount}");
             return candidates;
         }
 

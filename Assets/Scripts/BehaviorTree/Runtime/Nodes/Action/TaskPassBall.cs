@@ -48,7 +48,7 @@ namespace BehaviorTree.Runtime
             // --- 5. 传球给预测点，而不是当前点 ---
             ballCtrl.KickTo(Blackboard.Owner, predictedPos, Blackboard.Stats.PassingSpeed);
             Blackboard.IsStunned = true;
-            Blackboard.StunTimer = Blackboard.StunDuration;
+            Blackboard.StunTimer = Blackboard.PassStunDuration;
             return NodeState.SUCCESS;
         }
     }
